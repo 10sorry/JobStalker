@@ -1,0 +1,3 @@
+recursive-include job-stalker/src/job_stalker/static-files *
+recursive-include job-stalker/src/job_stalker/templates-html *
+include .env.example

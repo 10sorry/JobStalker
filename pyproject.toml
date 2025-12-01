@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-stalker"
+version = "0.1.0"
+description = "Telegram bot that filters job vacancies with a web UI"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+  { name = "10sorry", email = "rip.pip.pip@yandex.ru" },
+]
+
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "pyrogram",
+  "aiosqlite",
+  "python-dotenv",
+  "aiohttp",
+  "rich",
+  "psutil",
+  "jinja2",
+  "pydantic",
+]
+
+[project.optional-dependencies]
+gpu = [
+  "pynvml; platform_system == 'Linux' or platform_system == 'Windows'",
+  "pyamdgpuinfo; platform_system == 'Linux'",
+]
+
+[project.scripts]
+job-stalker = "job_stalker.run:main"
+
+[project.urls]
+Homepage = "https://github.com/10sorry/JobStalker"
+
+[tool.setuptools]
+package-dir = {"" = "job-stalker/src"}
+packages = ["job_stalker"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+job_stalker = ["static-files/**/*", "templates-html/**/*"]

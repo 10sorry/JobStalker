@@ -1,0 +1,24 @@
+# Environments
+.env
+.venv
+venv/
+*.env
+
+# Data
+/data/
+
+# Build artifacts
+/build/
+/dist/
+*.spec
+
+# Packaging metadata
+/job-stalker/src/job_stalker.egg-info/
+
+# Caches
+__pycache__/
+.pytest_cache/
+
+# Python bytecode
+*.pyc
+
