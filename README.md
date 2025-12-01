@@ -1,11 +1,13 @@
-# Telegram Vacancy Filter Bot
+# JobStalker | Telegram Vacancy Filter Bot
+
+<p align="center"> <img src="job-stalker/src/job_stalker/static-files/images/Banner.png" alt="Banner" width="1200"/> </p> <p align="center"> <a href="https://pypi.org/project/job-stalker/"> <img src="https://img.shields.io/pypi/v/job-stalker" alt="PyPI version"/> </a> </p>
 
 > **🚨 ALPHA VERSION NOTICE 🚨**
 > This is an alpha version of the application. It may contain bugs, and features might be incomplete or change without notice. Use at your own risk.
 
 This is a Telegram bot that filters job vacancies from specified channels using a machine learning model. It has a web interface for configuration, authorization, and viewing results.
 
-## Features
+## ✨ Features
 
 -   Filters vacancies from public Telegram channels.
 -   Uses a machine learning model to determine the relevance of a vacancy.
@@ -13,15 +15,17 @@ This is a Telegram bot that filters job vacancies from specified channels using 
 -   Real-time monitoring of new vacancies.
 -   Saves results in a database.
 
-## Screenshots
+## 🖼 Screenshots
 
-![Vacancy Scanner Screenshot 1](job-stalker/src/job_stalker/static-files/images/1.png)
-![Vacancy Scanner Screenshot 2](job-stalker/src/job_stalker/static-files/images/2.png)
-![Vacancy Scanner Screenshot 3](job-stalker/src/job_stalker/static-files/images/3.png)
-![Vacancy Scanner Screenshot 4](job-stalker/src/job_stalker/static-files/images/4.png)
-![Vacancy Scanner Screenshot 5](job-stalker/src/job_stalker/static-files/images/5.png)
+<div style="display: flex; overflow-x: auto; padding: 10px 0;">
+  <img src="job-stalker/src/job_stalker/static-files/images/1.png" width="200" style="margin-right:10px;"/>
+  <img src="job-stalker/src/job_stalker/static-files/images/2.png" width="200" style="margin-right:10px;"/>
+  <img src="job-stalker/src/job_stalker/static-files/images/3.png" width="200" style="margin-right:10px;"/>
+  <img src="job-stalker/src/job_stalker/static-files/images/4.png" width="200" style="margin-right:10px;"/>
+  <img src="job-stalker/src/job_stalker/static-files/images/5.png" width="200" style="margin-right:10px;"/>
+</div>
 
-## Installation and Usage
+## 🚀 Installation and Usage
 
 > **⚠️ Important!**
 > This application is a Telegram client that works on behalf of your personal account. You **must** obtain your own `API_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org).
@@ -30,12 +34,12 @@ This is a Telegram bot that filters job vacancies from specified channels using 
 
 There are four ways to run this application:
 
-1.  [Install via pip](#install-via-pip)
-2.  [Using Docker (recommended)](#using-docker)
+1.  [Install via pip (Recommended)](#install-via-pip)
+2.  [Using Docker ](#using-docker)
 3.  [From source code](#from-source-code)
 4.  [As a standalone executable](#standalone-executable)
 
-### Install via pip
+### 1️⃣ Install via pip
 
 Use this option if you don't need the source code and just want to start quickly.
 
@@ -53,7 +57,8 @@ Use this option if you don't need the source code and just want to start quickly
 
 2.  **Install the package:**
     ```bash
-    pip install "job-stalker[gpu]"  # or just job-stalker if you don't need GPU monitoring
+    pip install job-stalker       # for CPU
+    pip install "job-stalker[gpu]"  # or just job-stalker if you don't need GPU monitoring (optional)
     ```
 
 3.  **Download and configure `.env`:**
@@ -69,7 +74,7 @@ Use this option if you don't need the source code and just want to start quickly
     ```
     The server will start on `http://0.0.0.0:8000`. Run the command from the directory that contains `.env`.
 
-### Using Docker
+### 2️⃣ Using Docker
 
 This is the easiest and recommended way to run the application.
 
@@ -109,7 +114,7 @@ This is the easiest and recommended way to run the application.
 6.  **Start scanning:**
     Click the "START SCAN" button to begin the filtering process.
 
-### From Source Code
+### 3️⃣ From Source Code
 
 This method is for users who want to run the application directly from the source code.
 
@@ -153,7 +158,7 @@ This method is for users who want to run the application directly from the sourc
 6.  **Open the web interface:**
     Open your web browser and go to `http://localhost:8000` and follow the configuration steps as described in the Docker section.
 
-### Standalone Executable
+### 4️⃣ Standalone Executable
 
 This method is for users who want to run the application without installing Python or any dependencies.
 
@@ -189,7 +194,7 @@ This method is for users who want to run the application without installing Pyth
 4.  **Open the web interface:**
     Open your web browser and go to `http://localhost:8000`.
 
-## Development
+## 🛠 Development
 
 If you want to contribute to the project, you can follow the instructions for running from source code.
 
@@ -214,7 +219,7 @@ python pyinstaller_build.py
 ```
 The executable will be created in the `dist` directory.
 
-### .gitignore
+### ⚙️ .gitignore
 
 The following files and directories are ignored by Git:
 
