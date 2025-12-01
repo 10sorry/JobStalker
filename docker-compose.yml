@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  tgfilter:
+    build: .
+    container_name: tgfilter
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/data
+    # Опционально: если хочешь открыть терминал в контейнере для логинов
+    tty: true
