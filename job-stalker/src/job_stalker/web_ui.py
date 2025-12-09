@@ -137,6 +137,7 @@ class Settings(BaseModel):
     model_type: str
     days_back: int
     custom_prompt: str
+    resume_summary: str = ""
     channels: list = []
 
 
@@ -146,9 +147,15 @@ def load_settings():
     try:
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
-                current_settings.update(json.load(f))
+                loaded = json.load(f)
+                current_settings.update(loaded)
+                print(f"✅ Settings loaded from {SETTINGS_FILE}")
+                print(f"   - custom_prompt: {len(loaded.get('custom_prompt', ''))} chars")
+                print(f"   - channels: {loaded.get('channels', [])}")
+        else:
+            print(f"⚠️ Settings file not found: {SETTINGS_FILE}")
     except Exception as e:
-        print(f"Settings load error: {e}")
+        print(f"❌ Settings load error: {e}")
 
 
 def save_settings_to_file():
@@ -370,9 +377,13 @@ async def save_settings(settings: Settings):
     current_settings["model_type"] = settings.model_type
     current_settings["days_back"] = settings.days_back
     current_settings["custom_prompt"] = settings.custom_prompt
+    current_settings["resume_summary"] = settings.resume_summary
     current_settings["channels"] = settings.channels
 
     save_settings_to_file()
+    print(f"💾 Settings saved:")
+    print(f"   - custom_prompt: {len(settings.custom_prompt)} chars")
+    print(f"   - resume_summary: {len(settings.resume_summary)} chars")
     return JSONResponse({"status": "saved"})
 
 
