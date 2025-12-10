@@ -2,9 +2,6 @@
 
 <p align="center"> <img src="job-stalker/src/job_stalker/static-files/images/Banner.png" alt="Banner" width="1200"/> </p> <p align="center"> <a href="https://pypi.org/project/job-stalker/"> <img src="https://img.shields.io/pypi/v/job-stalker" alt="PyPI version"/> </a> </p>
 
-> **🚨 ALPHA VERSION NOTICE 🚨**
-> This is an alpha version of the application. It may contain bugs, and features might be incomplete or change without notice. Use at your own risk.
-
 This is a Telegram bot that filters job vacancies from specified channels using a machine learning model. It has a web interface for configuration, authorization, and viewing results.
 
 ## ✨ Features
