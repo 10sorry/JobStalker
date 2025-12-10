@@ -928,41 +928,228 @@
             letter-spacing: 1px;
         }
         
-        /* ============== STATS PANEL ============== */
-        .stats-panel {
-            background: linear-gradient(180deg, #3a4250, #2d333f);
-            padding: 16px;
+        /* ============== RESUME INTEL PANEL ============== */
+        .resume-intel-panel {
+            background: linear-gradient(180deg, #1a2530, #12181f);
+            padding: 0;
             border-radius: 12px;
-            border: 4px solid;
-            border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            border: 2px solid #2a3a4a;
+            overflow: hidden;
+            position: relative;
         }
-        
-        .stats-list {
+
+        .resume-intel-header {
+            padding: 14px 16px;
+            background: linear-gradient(90deg, rgba(125, 255, 125, 0.08) 0%, transparent 50%, rgba(77, 166, 255, 0.08) 100%);
+            border-bottom: 1px solid #2a3a4a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .resume-intel-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #1a3a3a 0%, #0d2525 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .resume-intel-title {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #7dff7d;
+        }
+
+        .resume-intel-body {
+            padding: 16px;
+            min-height: 120px;
+            position: relative;
+        }
+
+        /* Activity Visualizer */
+        .activity-visualizer {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
         }
-        
-        .stat-item {
+
+        .activity-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            background: #1a1d25;
-            padding: 10px 12px;
+            gap: 10px;
+        }
+
+        .activity-label {
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #5a7080;
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .activity-bars {
+            flex: 1;
+            display: flex;
+            gap: 2px;
+            height: 20px;
+            align-items: flex-end;
+        }
+
+        .activity-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #2a4a5a 0%, #1a3040 100%);
+            border-radius: 2px 2px 0 0;
+            min-height: 4px;
+            transition: height 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(125, 255, 125, 0.2), transparent);
+        }
+
+        .activity-bar.active {
+            background: linear-gradient(180deg, #3a6a5a 0%, #2a5040 100%);
+        }
+
+        .activity-bar.highlight {
+            background: linear-gradient(180deg, #7dff7d 0%, #4a9a6a 100%);
+            animation: barPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes barPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* Waveform animation */
+        .waveform {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 40px;
+            padding: 10px 0;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: linear-gradient(180deg, #7dff7d, #4a9a6a);
+            border-radius: 2px;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.6s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.7s; }
+
+        @keyframes wave {
+            0%, 100% { height: 8px; opacity: 0.4; }
+            50% { height: 30px; opacity: 1; }
+        }
+
+        /* Resume Stats */
+        .resume-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .resume-stat {
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 6px;
-            border: 2px solid #2d333f;
+            padding: 10px 12px;
+            border-left: 2px solid #3a5a5a;
         }
-        
-        .stat-item-left {
+
+        .resume-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #7dff7d;
+            margin-bottom: 2px;
+        }
+
+        .resume-stat-label {
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: #5a7080;
+        }
+
+        /* Circuit Pattern */
+        .circuit-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.03;
+            background-image:
+                linear-gradient(90deg, #7dff7d 1px, transparent 1px),
+                linear-gradient(#7dff7d 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .circuit-glow {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(125, 255, 125, 0.1) 0%, transparent 70%);
+            animation: circuitFloat 8s ease-in-out infinite;
+        }
+
+        .circuit-glow:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+        .circuit-glow:nth-child(2) { top: 60%; right: 15%; animation-delay: 2s; }
+
+        @keyframes circuitFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+            50% { transform: translate(10px, -10px) scale(1.2); opacity: 0.6; }
+        }
+
+        /* No resume state */
+        .no-resume-state {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            height: 100%;
+            min-height: 100px;
+            color: #4a5a6a;
+            text-align: center;
         }
-        
-        .stat-item-icon { color: #4a9eff; font-size: var(--font-size-lg); }
-        .stat-item-label { color: #7dff7d; font-size: var(--font-size-sm); }
-        .stat-item-value { color: #f69029; font-size: var(--font-size-lg); font-weight: 400; }
+
+        .no-resume-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        .no-resume-text {
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* Legacy support */
+        .stats-panel {
+            display: none;
+        }
         
         /* ============== VACANCY CARDS ============== */
         .vacancy-section {
@@ -1350,17 +1537,340 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        /* Resume comparison */
+        /* Resume comparison - Retro Terminal Style */
+        .resume-result-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Match Score Bar - Compact retro style */
+        .match-score-bar {
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 4px solid;
+            border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .match-score-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .match-score-num {
+            font-size: 32px;
+            font-weight: bold;
+            min-width: 70px;
+        }
+
+        .match-score-num.high { color: #7dff7d; }
+        .match-score-num.medium { color: #f69029; }
+        .match-score-num.low { color: #ff6b6b; }
+
+        .match-score-meter {
+            width: 120px;
+            height: 12px;
+            background: #1a1d25;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #2d333f;
+        }
+
+        .match-score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s ease-out;
+        }
+
+        .match-score-fill.high { background: linear-gradient(90deg, #5a9a5a, #7dff7d); }
+        .match-score-fill.medium { background: linear-gradient(90deg, #9a7a3a, #f69029); }
+        .match-score-fill.low { background: linear-gradient(90deg, #9a3a3a, #ff6b6b); }
+
+        .match-score-label {
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #7dff7d;
+        }
+
+        .match-score-status {
+            margin-left: auto;
+            padding: 6px 12px;
+            background: #1a1d25;
+            border-radius: 4px;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .match-score-status.high { color: #7dff7d; border: 1px solid #3a5a3a; }
+        .match-score-status.medium { color: #f69029; border: 1px solid #5a4a2a; }
+        .match-score-status.low { color: #ff6b6b; border: 1px solid #5a2a2a; }
+
+        /* Resume Tabs - Retro style */
+        .resume-tabs {
+            display: flex;
+            gap: 2px;
+        }
+
+        .resume-tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 3px solid;
+            border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
+            border-radius: 6px 6px 0 0;
+            color: #5a6070;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .resume-tab-btn:hover {
+            background: linear-gradient(180deg, #4a5260, #3d434f);
+            color: #8a9aaa;
+        }
+
+        .resume-tab-btn.active {
+            background: linear-gradient(180deg, #2d333f, #1a1d25);
+            border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
+            color: #7dff7d;
+        }
+
+        .resume-tab-btn.active.original {
+            color: #4a9eff;
+        }
+
+        .resume-tab-icon {
+            font-size: 12px;
+        }
+
+        /* Resume Content Panel - Retro terminal */
+        .resume-content-panel {
+            background: #1a1d25;
+            border: 4px solid;
+            border-color: #1a1d25 #5a6070 #5a6070 #1a1d25;
+            border-radius: 0 0 8px 8px;
+            min-height: 200px;
+            max-height: 300px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .resume-tab-content {
+            display: none;
+            padding: 16px;
+            height: 300px;
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .resume-tab-content.active {
+            display: block;
+        }
+
+        .resume-text {
+            font-size: 12px;
+            color: #c0c8d0;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .resume-text.improved {
+            white-space: normal;
+        }
+
+        /* Copy Button - Retro */
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 5px 10px;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 2px solid;
+            border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
+            border-radius: 4px;
+            color: #7dff7d;
+            font-size: 10px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .copy-btn:hover {
+            background: linear-gradient(180deg, #4a5260, #3d434f);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(180deg, #3a5a3a, #2d4a2d);
+            color: #fff;
+        }
+
+        /* Analysis Summary - Retro terminal */
+        .analysis-summary {
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 4px solid;
+            border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .analysis-header {
+            padding: 10px 14px;
+            background: linear-gradient(180deg, #2d333f, #1a1d25);
+            border-bottom: 2px solid #1a1d25;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analysis-header-icon {
+            font-size: 14px;
+        }
+
+        .analysis-header-title {
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #7dff7d;
+        }
+
+        .analysis-body {
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .analysis-section {
+            background: #1a1d25;
+            border-radius: 4px;
+            padding: 10px 12px;
+            border-left: 3px solid;
+        }
+
+        .analysis-section.strengths { border-left-color: #7dff7d; }
+        .analysis-section.weaknesses { border-left-color: #f69029; }
+        .analysis-section.missing { border-left-color: #ff6b6b; }
+        .analysis-section.risks { border-left-color: #ff4d4d; }
+        .analysis-section.tips { border-left-color: #4a9eff; }
+
+        .analysis-section-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .analysis-section.strengths .analysis-section-header { color: #7dff7d; }
+        .analysis-section.weaknesses .analysis-section-header { color: #f69029; }
+        .analysis-section.missing .analysis-section-header { color: #ff6b6b; }
+        .analysis-section.risks .analysis-section-header { color: #ff4d4d; }
+        .analysis-section.tips .analysis-section-header { color: #4a9eff; }
+
+        /* Recruiter Verdict */
+        .recruiter-verdict {
+            background: linear-gradient(180deg, #2a2a3a, #1a1a2a);
+            border: 3px solid;
+            border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .verdict-label {
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #7dccff;
+            margin-bottom: 6px;
+        }
+
+        .verdict-text {
+            font-size: 12px;
+            color: #e0e8f0;
+            line-height: 1.5;
+        }
+
+        .recruiter-analysis-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .analysis-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .analysis-list li {
+            padding: 4px 0;
+            font-size: 11px;
+            color: #a0a8b0;
+            border-bottom: 1px solid #2d333f;
+        }
+
+        .analysis-list li:last-child {
+            border-bottom: none;
+        }
+
+        .analysis-list li::before {
+            content: '› ';
+            opacity: 0.5;
+        }
+
+        /* Cover Letter Hint - Retro */
+        .cover-letter-section {
+            background: #1a1d25;
+            border: 2px solid #2d333f;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 12px;
+            margin-top: 0;
+        }
+
+        .cover-letter-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #4a9eff;
+        }
+
+        .cover-letter-text {
+            font-size: 11px;
+            color: #a0a8b0;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        /* Legacy support - keep old classes working */
         .resume-compare {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
         }
-        
+
         @media (max-width: 700px) {
             .resume-compare { grid-template-columns: 1fr; }
         }
-        
+
         .resume-column {
             background: #0a0d15;
             border: 2px solid;
@@ -1368,7 +1878,7 @@
             border-radius: 8px;
             overflow: hidden;
         }
-        
+
         .resume-column-header {
             padding: 12px;
             background: linear-gradient(180deg, #2d333f, #1e222a);
@@ -1377,10 +1887,10 @@
             font-weight: 400;
             letter-spacing: 1px;
         }
-        
+
         .resume-column.original .resume-column-header { color: #8b94a3; }
         .resume-column.improved .resume-column-header { color: #7dff7d; }
-        
+
         .resume-column-body {
             padding: 16px;
             font-family: var(--font-main);
@@ -1391,7 +1901,75 @@
             max-height: 300px;
             overflow-y: auto;
         }
-        
+
+        /* Markdown content styling */
+        .markdown-content {
+            white-space: normal !important;
+        }
+
+        .markdown-content h1 {
+            font-size: 1.8em;
+            color: #7dff7d;
+            margin: 0.5em 0;
+            border-bottom: 2px solid #3a4250;
+            padding-bottom: 0.3em;
+        }
+
+        .markdown-content h2 {
+            font-size: 1.4em;
+            color: #7dccff;
+            margin: 0.5em 0;
+        }
+
+        .markdown-content h3 {
+            font-size: 1.2em;
+            color: #ffaa7d;
+            margin: 0.5em 0;
+        }
+
+        .markdown-content strong {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .markdown-content em {
+            font-style: italic;
+            color: #a0a8b0;
+        }
+
+        .markdown-content ul {
+            margin: 0.5em 0;
+            padding-left: 1.5em;
+        }
+
+        .markdown-content li {
+            margin: 0.3em 0;
+            color: #c0c8d0;
+        }
+
+        .markdown-content p {
+            margin: 0.8em 0;
+        }
+
+        .markdown-content hr {
+            border: none;
+            border-top: 1px solid #3a4250;
+            margin: 1em 0;
+        }
+
+        .markdown-content pre {
+            background: #0a0d15;
+            border: 1px solid #3a4250;
+            border-radius: 4px;
+            padding: 1em;
+            overflow-x: auto;
+        }
+
+        .markdown-content code {
+            font-family: 'Courier New', monospace;
+            color: #7dff7d;
+        }
+
         /* Stream output */
         .stream-output {
             background: #0a0d15;
@@ -1573,6 +2151,10 @@
                                                 <span class="lcd-stat-label">REJECTED:</span>
                                                 <span class="lcd-stat-value red" id="lcdRejected">000</span>
                                             </div>
+                                            <div class="lcd-stat">
+                                                <span class="lcd-stat-label">SUITABLE:</span>
+                                                <span class="lcd-stat-value green" id="lcdSuitable">000</span>
+                                            </div>
                                         </div>
                                         
                                         <div class="lcd-message">
@@ -1737,33 +2319,53 @@
                                         
                                         <div class="disk-hint" id="diskHint">INSERT RESUME DISK</div>
                                     </div>
-                                    <input type="file" class="hidden-input" id="fileInput" accept=".txt,.pdf,.docx" onchange="uploadResume(this)">
+                                    <input type="file" class="hidden-input" id="fileInput" accept=".txt,.pdf,.docx,.html,.htm" onchange="uploadResume(this)">
                                 </div>
 
-                                <!-- Stats Panel -->
-                                <div class="stats-panel">
-                                    <div class="panel-title">SYSTEM STATUS</div>
-                                    <div class="stats-list">
-                                        <div class="stat-item">
-                                            <div class="stat-item-left">
-                                                <span class="stat-item-icon">📊</span>
-                                                <span class="stat-item-label">SUITABLE</span>
+                                <!-- Resume Intel Panel -->
+                                <div class="resume-intel-panel" id="resumeIntelPanel">
+                                    <div class="resume-intel-header">
+                                        <div class="resume-intel-icon">🔬</div>
+                                        <div class="resume-intel-title">RESUME INTEL</div>
+                                    </div>
+                                    <div class="resume-intel-body" id="resumeIntelBody">
+                                        <div class="circuit-pattern"></div>
+                                        <div class="circuit-glow"></div>
+                                        <div class="circuit-glow"></div>
+
+                                        <!-- Default state - animated waveform -->
+                                        <div class="no-resume-state" id="noResumeState">
+                                            <div class="waveform">
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
+                                                <div class="wave-bar"></div>
                                             </div>
-                                            <span class="stat-item-value" id="statSuitable">0</span>
+                                            <div class="no-resume-text">AWAITING RESUME DATA</div>
                                         </div>
-                                        <div class="stat-item">
-                                            <div class="stat-item-left">
-                                                <span class="stat-item-icon">⏳</span>
-                                                <span class="stat-item-label">PENDING</span>
+
+                                        <!-- Stats shown when resume loaded -->
+                                        <div class="resume-stats" id="resumeStatsView" style="display: none;">
+                                            <div class="resume-stat">
+                                                <div class="resume-stat-value" id="resumeWords">0</div>
+                                                <div class="resume-stat-label">WORDS</div>
                                             </div>
-                                            <span class="stat-item-value" id="statPending">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <div class="stat-item-left">
-                                                <span class="stat-item-icon">📈</span>
-                                                <span class="stat-item-label">MATCH AVG</span>
+                                            <div class="resume-stat">
+                                                <div class="resume-stat-value" id="resumeSkills">0</div>
+                                                <div class="resume-stat-label">SKILLS</div>
                                             </div>
-                                            <span class="stat-item-value" id="statMatchAvg">0%</span>
+                                            <div class="resume-stat">
+                                                <div class="resume-stat-value" id="resumeExp">0</div>
+                                                <div class="resume-stat-label">YRS EXP</div>
+                                            </div>
+                                            <div class="resume-stat">
+                                                <div class="resume-stat-value" id="resumeScore">-</div>
+                                                <div class="resume-stat-label">READY</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1930,6 +2532,7 @@ NOT suitable:
             updateClock();
             setInterval(updateClock, 1000);
             initSystemMonitor();
+            loadAvailableModels();  // Загружаем доступные модели
             restoreSession();
             loadVacancies();
             connectWS();
@@ -2089,6 +2692,40 @@ NOT suitable:
             }
         }
         
+        // ============== MODELS ==============
+        async function loadAvailableModels() {
+            try {
+                const res = await fetch('/api/models');
+                const data = await res.json();
+
+                if (data.models && data.models.length > 0) {
+                    const modelSelect = document.getElementById('modelSelect');
+                    const currentValue = modelSelect.value;
+
+                    // Очищаем текущие опции
+                    modelSelect.innerHTML = '';
+
+                    // Добавляем найденные модели
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.name;
+                        option.textContent = model.display_name;
+                        modelSelect.appendChild(option);
+                    });
+
+                    // Восстанавливаем выбранную модель если она есть
+                    if (currentValue && Array.from(modelSelect.options).some(opt => opt.value === currentValue)) {
+                        modelSelect.value = currentValue;
+                    }
+
+                    console.log(`✓ Loaded ${data.models.length} models:`, data.models.map(m => m.name));
+                }
+            } catch (e) {
+                console.warn('Failed to load models:', e);
+                // Оставляем дефолтные опции если не удалось загрузить
+            }
+        }
+
         // ============== SESSION ==============
         async function restoreSession() {
             try {
@@ -2139,17 +2776,63 @@ NOT suitable:
         // ============== WEBSOCKET ==============
         function connectWS() {
             if (ws && ws.readyState === WebSocket.OPEN) return;
-            
+
             ws = new WebSocket(`ws://${window.location.host}/ws`);
             ws.onopen = () => console.log('WS connected');
             ws.onmessage = (e) => handleWSMessage(JSON.parse(e.data));
-            ws.onclose = () => { if (isScanning) setTimeout(connectWS, 2000); };
+            ws.onclose = () => {
+                console.log('WS disconnected, will reconnect in 2s');
+                setTimeout(connectWS, 2000);
+            };
+            ws.onerror = (e) => console.error('WS error:', e);
+        }
+
+        function ensureWSConnected() {
+            return new Promise((resolve) => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    resolve(true);
+                    return;
+                }
+
+                console.log('WS not connected, reconnecting...');
+
+                // Create new WebSocket
+                ws = new WebSocket(`ws://${window.location.host}/ws`);
+
+                ws.onopen = () => {
+                    console.log('WS connected');
+                    resolve(true);
+                };
+                ws.onmessage = (e) => handleWSMessage(JSON.parse(e.data));
+                ws.onclose = () => {
+                    console.log('WS disconnected, will reconnect in 2s');
+                    setTimeout(connectWS, 2000);
+                };
+                ws.onerror = (e) => {
+                    console.error('WS error:', e);
+                    resolve(false);
+                };
+
+                // Timeout after 5 seconds
+                setTimeout(() => resolve(false), 5000);
+            });
         }
         
         function handleWSMessage(data) {
+            // Логируем ВСЕ сообщения для отладки
+            console.log('[WS] Message received:', data.type, data);
+
+            // Отладка resume_improved
+            if (data.type === 'resume_improved') {
+                console.log('!!! RESUME_IMPROVED RECEIVED !!!', data);
+            }
+
             switch (data.type) {
                 case 'vacancy':
                     addVacancy(data.vacancy);
+                    break;
+                case 'vacancy_update':
+                    handleVacancyUpdate(data);
                     break;
                 case 'status':
                     document.getElementById('lcdMessage').textContent = data.message;
@@ -2173,14 +2856,22 @@ NOT suitable:
         }
         
         function updateStatsDisplay(stats) {
-            if (stats.found !== undefined) 
-                document.getElementById('lcdFound').textContent = String(stats.found).padStart(3, '0');
-            if (stats.processed !== undefined) 
-                document.getElementById('lcdProcessed').textContent = String(stats.processed).padStart(3, '0');
-            if (stats.rejected !== undefined) 
-                document.getElementById('lcdRejected').textContent = String(stats.rejected).padStart(3, '0');
-            if (stats.suitable !== undefined)
-                document.getElementById('statSuitable').textContent = stats.suitable;
+            if (stats.found !== undefined) {
+                const el = document.getElementById('lcdFound');
+                if (el) el.textContent = String(stats.found).padStart(3, '0');
+            }
+            if (stats.processed !== undefined) {
+                const el = document.getElementById('lcdProcessed');
+                if (el) el.textContent = String(stats.processed).padStart(3, '0');
+            }
+            if (stats.rejected !== undefined) {
+                const el = document.getElementById('lcdRejected');
+                if (el) el.textContent = String(stats.rejected).padStart(3, '0');
+            }
+            if (stats.suitable !== undefined) {
+                const el = document.getElementById('lcdSuitable');
+                if (el) el.textContent = String(stats.suitable).padStart(3, '0');
+            }
         }
         
         // ============== RESUME ==============
@@ -2190,32 +2881,41 @@ NOT suitable:
         
         async function uploadResume(input) {
             if (!input.files || !input.files[0]) return;
-            
+
             const file = input.files[0];
             showResumeLoading(file.name, file.size);
-            
+
             try {
-                const text = await file.text();
+                // Получаем расширение файла
+                const fileName = file.name;
+                const fileExt = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+
+                // Читаем файл как ArrayBuffer для бинарных форматов (PDF, DOCX)
+                const fileData = await file.arrayBuffer();
                 const model = document.getElementById('modelSelect').value;
-                
-                const res = await fetch(`/api/upload-resume?model_type=${model}`, {
+
+                const res = await fetch(`/api/upload-resume?model_type=${model}&file_ext=${fileExt}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/octet-stream'},
-                    body: text
+                    body: fileData
                 });
-                
+
                 const result = await res.json();
-                
+
                 if (result.error) {
                     alert('Error: ' + result.error);
                     hideResumeLoading();
                 } else {
                     resumeData = result;
-                    resumeData.raw_text = text;
+                    // Сохраняем оригинальный текст, если он есть в ответе
+                    if (result.raw_text) {
+                        resumeData.raw_text = result.raw_text;
+                    }
                     showResumeInserted(result, true);
                 }
             } catch (e) {
-                alert('Upload failed');
+                console.error('Upload failed:', e);
+                alert('Upload failed: ' + e.message);
                 hideResumeLoading();
             }
         }
@@ -2283,13 +2983,40 @@ NOT suitable:
                 tag.textContent = skill;
                 skillsContainer.appendChild(tag);
             });
+
+            // Update Resume Intel panel
+            updateResumeIntel(data);
+        }
+
+        function updateResumeIntel(data) {
+            const noResumeState = document.getElementById('noResumeState');
+            const resumeStatsView = document.getElementById('resumeStatsView');
+
+            if (data) {
+                noResumeState.style.display = 'none';
+                resumeStatsView.style.display = 'grid';
+
+                // Calculate stats
+                const rawText = data.raw_text || '';
+                const wordCount = rawText.split(/\s+/).filter(w => w.length > 0).length;
+                const skills = data.key_skills || [];
+                const expYears = data.experience_years || 0;
+
+                document.getElementById('resumeWords').textContent = wordCount;
+                document.getElementById('resumeSkills').textContent = skills.length;
+                document.getElementById('resumeExp').textContent = expYears || '—';
+                document.getElementById('resumeScore').textContent = '✓';
+            } else {
+                noResumeState.style.display = 'flex';
+                resumeStatsView.style.display = 'none';
+            }
         }
         
         function ejectDisk() {
             const cassette = document.getElementById('diskCassette');
             cassette.classList.remove('inserted', 'inserting');
             cassette.classList.add('ejecting');
-            
+
             // После анимации сбрасываем
             setTimeout(() => {
                 resumeData = null;
@@ -2300,6 +3027,9 @@ NOT suitable:
                 document.getElementById('ejectBtn').disabled = true;
                 document.getElementById('resumeInfoCard').classList.remove('active');
                 document.getElementById('diskHint').textContent = 'INSERT RESUME DISK';
+
+                // Reset Resume Intel panel
+                updateResumeIntel(null);
             }, 600);
         }
         
@@ -2465,16 +3195,110 @@ NOT suitable:
             const grid = document.getElementById('vacanciesGrid');
             const empty = grid.querySelector('.empty-state');
             if (empty) empty.remove();
-            
+
             if (vacancies.find(v => v.id === vacancy.id)) return;
             vacancies.unshift(vacancy);
-            
+
             const card = createVacancyCard(vacancy);
             grid.insertBefore(card, grid.firstChild);
-            
+
             document.getElementById('vacancyCount').textContent = vacancies.length;
+
+            // Stage 2 запускается асинхронно в бэкенде
+            // Результат придёт через vacancy_update
         }
-        
+
+        function handleVacancyUpdate(data) {
+            // Обновление вакансии (например, когда Stage 2 завершился)
+            const vacancy = vacancies.find(v => v.id === data.vacancy_id);
+            if (!vacancy) {
+                console.warn('Vacancy not found for update:', data.vacancy_id);
+                return;
+            }
+
+            // Обновляем данные вакансии
+            if (data.recruiter_analysis) {
+                vacancy.recruiter_analysis = data.recruiter_analysis;
+                vacancy.comparison = { match_score: data.recruiter_analysis.match_score };
+
+                // Обновляем карточку (match score)
+                updateVacancyCard(vacancy);
+
+                // Если модал открыт для этой вакансии - обновляем вкладку ANALYSIS
+                if (currentVacancy && currentVacancy.id === vacancy.id) {
+                    currentVacancy.recruiter_analysis = data.recruiter_analysis;
+                    currentVacancy.comparison = vacancy.comparison;
+                    refreshAnalysisTab();
+                }
+
+                console.log('✅ Vacancy updated with Stage 2 analysis:', data.vacancy_id);
+            }
+        }
+
+        function updateVacancyCard(v) {
+            // Обновляем карточку с новым match score
+            const card = document.getElementById('card_' + v.id);
+            if (!card) return;
+
+            const match = v.comparison?.match_score;
+            if (match !== undefined && match !== null) {
+                const matchClass = match >= 90 ? 'high' : match >= 70 ? 'medium' : 'low';
+                const meterEl = card.querySelector('.match-meter');
+                if (meterEl) {
+                    meterEl.classList.remove('pending');
+                    meterEl.innerHTML = `
+                        <div class="match-meter-header">
+                            <div class="match-meter-label">
+                                <span class="match-meter-icon">📈</span>
+                                <span>MATCH RATE</span>
+                            </div>
+                            <span class="match-meter-value ${matchClass}">${match}%</span>
+                        </div>
+                        <div class="match-meter-bar">
+                            <div class="match-meter-fill ${matchClass}" style="width: ${match}%;"></div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function refreshAnalysisTab() {
+            // Обновляем вкладку ANALYSIS для текущей открытой вакансии
+            if (!currentVacancy) return;
+
+            let analysisContent = '';
+
+            // Этап 1: Результат фильтрации
+            if (currentVacancy.analysis) {
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a2a, #0a1a1a); border: 2px solid #3a5050; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #7dff7d; letter-spacing: 1px; margin-bottom: 12px;">🔍 STAGE 1: FILTER ANALYSIS</div>
+                        <div style="font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.6;">${formatAnalysis(currentVacancy.analysis)}</div>
+                    </div>
+                `;
+            }
+
+            // Этап 2: Анализ рекрутера
+            if (currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0) {
+                analysisContent += `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px; padding: 0 16px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        ${renderRecruiterAnalysis(currentVacancy.recruiter_analysis)}
+                    </div>
+                `;
+            } else {
+                // Stage 2 ещё выполняется
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        <div style="color: #6a7a8a; margin-top: 8px;">⏳ Analyzing your resume...</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('tabAnalysis').innerHTML = analysisContent || '<div style="color: #5a6070;">No analysis available</div>';
+        }
+
         function createVacancyCard(v) {
             const card = document.createElement('div');
             card.className = 'vacancy-card';
@@ -2569,17 +3393,51 @@ NOT suitable:
                 </div>
             `;
             
-            document.getElementById('tabAnalysis').innerHTML = currentVacancy.analysis ? `
-                <div style="padding: 16px; background: linear-gradient(180deg, #1a2a2a, #0a1a1a); border: 2px solid #3a5050; border-radius: 8px;">
-                    <div style="font-size: var(--font-size-sm); color: #7dff7d; letter-spacing: 1px; margin-bottom: 12px;">🤖 AI ANALYSIS</div>
-                    <div style="font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.6;">${formatAnalysis(currentVacancy.analysis)}</div>
-                </div>
-            ` : '<div style="color: #5a6070;">No analysis available</div>';
+            // Формируем контент для вкладки ANALYSIS
+            let analysisContent = '';
+
+            // Этап 1: Результат фильтрации
+            if (currentVacancy.analysis) {
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a2a, #0a1a1a); border: 2px solid #3a5050; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #7dff7d; letter-spacing: 1px; margin-bottom: 12px;">🔍 STAGE 1: FILTER ANALYSIS</div>
+                        <div style="font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.6;">${formatAnalysis(currentVacancy.analysis)}</div>
+                    </div>
+                `;
+            }
+
+            // Этап 2: Анализ рекрутера
+            if (currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0) {
+                analysisContent += `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px; padding: 0 16px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        ${renderRecruiterAnalysis(currentVacancy.recruiter_analysis)}
+                    </div>
+                `;
+            }
+
+            document.getElementById('tabAnalysis').innerHTML = analysisContent || '<div style="color: #5a6070;">No analysis available</div>';
             
             document.getElementById('resumeTab').style.display = resumeData ? 'block' : 'none';
-            document.getElementById('resumeComparison').innerHTML = '';
-            document.getElementById('improveBtn').style.display = 'block';
             document.getElementById('streamImprove').classList.remove('active');
+
+            // Вкладка RESUME+ показывает ТОЛЬКО Stage 3 (улучшенное резюме)
+            // Анализ рекрутера (Stage 2) показывается на вкладке ANALYSIS
+            if (currentVacancy.comparison && currentVacancy.comparison.improved_resume) {
+                // Stage 3 completed - показываем улучшенное резюме
+                document.getElementById('resumeComparison').innerHTML = renderComparisonResult(currentVacancy.comparison);
+                document.getElementById('improveBtn').style.display = 'none';
+            } else {
+                // Stage 3 не выполнен - показываем кнопку генерации
+                document.getElementById('resumeComparison').innerHTML = '';
+                document.getElementById('improveBtn').style.display = 'block';
+                document.getElementById('improveBtn').innerHTML = `
+                    <div class="ctrl-btn-content">
+                        <span class="ctrl-btn-icon">✨</span>
+                        <span>GENERATE IMPROVED RESUME</span>
+                    </div>
+                `;
+            }
             
             if (currentVacancy.link) {
                 document.getElementById('applyBtn').onclick = () => window.open(currentVacancy.link, '_blank');
@@ -2604,75 +3462,463 @@ NOT suitable:
         }
         
         async function improveResume() {
-            if (!currentVacancy || !resumeData) return;
-            
+            if (!currentVacancy || !resumeData) {
+                console.error('improveResume: Missing data', {
+                    currentVacancy: !!currentVacancy,
+                    resumeData: !!resumeData
+                });
+                return;
+            }
+
+            // Ensure WebSocket is connected to receive the result
+            const wsConnected = await ensureWSConnected();
+            console.log('improveResume: WS connected:', wsConnected, 'state:', ws?.readyState, '(1=OPEN)');
+
+            if (!wsConnected) {
+                console.error('improveResume: WebSocket not connected');
+                alert('WebSocket connection failed. Please refresh the page.');
+                return;
+            }
+
+            console.log('improveResume: Starting Stage 3 for vacancy:', {
+                id: currentVacancy.id,
+                channel: currentVacancy.channel,
+                textLength: currentVacancy.text?.length,
+                hasRecruiterAnalysis: !!currentVacancy.recruiter_analysis
+            });
+
             const btn = document.getElementById('improveBtn');
             const stream = document.getElementById('streamImprove');
-            
+            const comp = document.getElementById('resumeComparison');
+
+            comp.innerHTML = '';
             btn.style.display = 'none';
             stream.classList.add('active');
-            stream.textContent = 'Generating...';
-            
+            stream.textContent = 'Stage 3: Generating improved resume...';
+
             try {
+                // Передаём существующий recruiter_analysis если есть (для Stage 3)
+                const payload = {
+                    vacancy_text: currentVacancy.text,
+                    vacancy_title: currentVacancy.channel,
+                    vacancy_id: currentVacancy.id,
+                    recruiter_analysis: currentVacancy.recruiter_analysis || null
+                };
+                console.log('improveResume: Sending payload:', payload);
+
                 const res = await fetch('/api/improve-resume', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        vacancy_text: currentVacancy.text,
-                        vacancy_title: currentVacancy.channel,
-                        vacancy_id: currentVacancy.id
-                    })
+                    body: JSON.stringify(payload)
                 });
-                
-                await res.json();
+
+                const result = await res.json();
+                console.log('improveResume: Response:', result);
             } catch (e) {
+                console.error('improveResume: Error:', e);
                 stream.textContent = 'Error: ' + e;
                 btn.style.display = 'block';
             }
         }
         
         function handleStream(data) {
-            if (data.stream_type === 'comparison' || data.stream_type === 'improve_resume') {
-                const el = document.getElementById('streamImprove');
-                if (el && data.chunk && !['[START]', '[END]'].includes(data.chunk)) {
-                    if (el.textContent === 'Generating...') el.textContent = '';
+            // Обработка streaming для разных этапов пайплайна
+            const el = document.getElementById('streamImprove');
+            if (!el) return;
+
+            if (data.stream_type === 'recruiter_analysis') {
+                // ЭТАП 2: Анализ рекрутера
+                if (data.chunk) {
+                    if (data.chunk === '[START]') {
+                        el.textContent = 'Stage 2: Recruiter analyzing your resume...\n';
+                    } else if (data.chunk === '[END]') {
+                        el.textContent += '\n\n✓ Analysis complete!';
+                    } else {
+                        el.textContent += data.chunk;
+                    }
+                    el.scrollTop = el.scrollHeight;
+                }
+            } else if (data.stream_type === 'improved_resume') {
+                // ЭТАП 3: Генерация улучшенного резюме
+                if (data.chunk) {
+                    if (data.chunk === '[START]') {
+                        el.textContent = 'Stage 3: Generating improved resume...\n';
+                    } else if (data.chunk === '[END]') {
+                        el.textContent += '\n\n✓ Complete!';
+                    } else {
+                        el.textContent += data.chunk;
+                    }
+                    el.scrollTop = el.scrollHeight;
+                }
+            } else if (data.stream_type === 'comparison') {
+                // Legacy: быстрый анализ
+                if (data.chunk && !['[START]', '[END]'].includes(data.chunk)) {
                     el.textContent += data.chunk;
                     el.scrollTop = el.scrollHeight;
                 }
             }
         }
-        
-        function handleResumeImproved(data) {
-            const stream = document.getElementById('streamImprove');
-            const comp = document.getElementById('resumeComparison');
-            
-            stream.classList.remove('active');
-            
-            if (data.error) {
-                document.getElementById('improveBtn').style.display = 'block';
-                return;
-            }
-            
-            comp.innerHTML = `
-                <div class="resume-compare">
-                    <div class="resume-column original">
-                        <div class="resume-column-header">📄 ORIGINAL RESUME</div>
-                        <div class="resume-column-body">${escapeHtml(resumeData.raw_text || '')}</div>
+
+        // Helper function to render recruiter analysis (Stage 2)
+        function renderRecruiterAnalysis(analysis) {
+            if (!analysis || !analysis.match_score) return '';
+
+            const score = analysis.match_score || 0;
+            const scoreLevel = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
+            const scoreStatus = score >= 80 ? 'EXCELLENT' : score >= 60 ? 'GOOD' : score >= 40 ? 'PARTIAL' : 'LOW';
+
+            return `
+                <div class="recruiter-analysis-container">
+                    <!-- Match Score Bar -->
+                    <div class="match-score-bar">
+                        <div class="match-score-display">
+                            <div class="match-score-num ${scoreLevel}">${score}%</div>
+                            <div>
+                                <div class="match-score-meter">
+                                    <div class="match-score-fill ${scoreLevel}" style="width: ${score}%"></div>
+                                </div>
+                                <div class="match-score-label">RECRUITER SCORE</div>
+                            </div>
+                        </div>
+                        <div class="match-score-status ${scoreLevel}">${scoreStatus}</div>
                     </div>
-                    <div class="resume-column improved">
-                        <div class="resume-column-header">✨ IMPROVED (${data.result?.match_score || 0}% MATCH)</div>
-                        <div class="resume-column-body">${escapeHtml(data.result?.improved_resume || 'No improved resume')}</div>
+
+                    ${analysis.verdict ? `
+                    <div class="recruiter-verdict">
+                        <div class="verdict-label">RECRUITER VERDICT</div>
+                        <div class="verdict-text">${escapeHtml(analysis.verdict)}</div>
+                    </div>` : ''}
+
+                    <!-- Analysis Details -->
+                    <div class="analysis-summary">
+                        <div class="analysis-body">
+                            ${analysis.strong_sides && analysis.strong_sides.length > 0 ? `
+                            <div class="analysis-section strengths">
+                                <div class="analysis-section-header">STRENGTHS</div>
+                                <ul class="analysis-list">
+                                    ${analysis.strong_sides.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+
+                            ${analysis.weak_sides && analysis.weak_sides.length > 0 ? `
+                            <div class="analysis-section weaknesses">
+                                <div class="analysis-section-header">WEAKNESSES</div>
+                                <ul class="analysis-list">
+                                    ${analysis.weak_sides.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+
+                            ${analysis.missing_skills && analysis.missing_skills.length > 0 ? `
+                            <div class="analysis-section missing">
+                                <div class="analysis-section-header">MISSING SKILLS</div>
+                                <ul class="analysis-list">
+                                    ${analysis.missing_skills.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+
+                            ${analysis.risks && analysis.risks.length > 0 ? `
+                            <div class="analysis-section risks">
+                                <div class="analysis-section-header">RISKS</div>
+                                <ul class="analysis-list">
+                                    ${analysis.risks.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+
+                            ${analysis.recommendations && analysis.recommendations.length > 0 ? `
+                            <div class="analysis-section tips">
+                                <div class="analysis-section-header">RECOMMENDATIONS</div>
+                                <ul class="analysis-list">
+                                    ${analysis.recommendations.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+                        </div>
+
+                        ${analysis.cover_letter_hint ? `
+                        <div class="cover-letter-section">
+                            <div class="cover-letter-header">COVER LETTER HINT</div>
+                            <div class="cover-letter-text">${escapeHtml(analysis.cover_letter_hint)}</div>
+                        </div>` : ''}
                     </div>
                 </div>
             `;
         }
-        
+
+        // Helper function to render comparison result (used by both handleResumeImproved and showDetails)
+        function renderComparisonResult(comparison) {
+            const score = comparison.match_score || 0;
+            const scoreLevel = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
+            const scoreStatus = score >= 80 ? 'EXCELLENT' : score >= 60 ? 'GOOD' : score >= 40 ? 'PARTIAL' : 'LOW';
+
+            const improvedHtml = comparison.improved_resume
+                ? simpleMarkdownToHtml(comparison.improved_resume)
+                : '<div style="color: #888;">No improved resume text</div>';
+
+            return `
+                <div class="resume-result-container">
+                    <!-- Match Score Bar -->
+                    <div class="match-score-bar">
+                        <div class="match-score-display">
+                            <div class="match-score-num ${scoreLevel}">${score}%</div>
+                            <div>
+                                <div class="match-score-meter">
+                                    <div class="match-score-fill ${scoreLevel}" style="width: ${score}%"></div>
+                                </div>
+                                <div class="match-score-label">MATCH SCORE</div>
+                            </div>
+                        </div>
+                        <div class="match-score-status ${scoreLevel}">${scoreStatus} MATCH</div>
+                    </div>
+
+                    <!-- Resume Tabs -->
+                    <div>
+                        <div class="resume-tabs">
+                            <button class="resume-tab-btn improved active" onclick="switchResumeTab('improved')">
+                                IMPROVED
+                            </button>
+                            <button class="resume-tab-btn original" onclick="switchResumeTab('original')">
+                                ORIGINAL
+                            </button>
+                        </div>
+                        <div class="resume-content-panel">
+                            <button class="copy-btn" onclick="copyResumeText()" id="copyResumeBtn">COPY</button>
+                            <div class="resume-tab-content active" id="resumeTabImproved">
+                                <div class="resume-text improved markdown-content">${improvedHtml}</div>
+                            </div>
+                            <div class="resume-tab-content" id="resumeTabOriginal">
+                                <div class="resume-text">${escapeHtml(resumeData?.raw_text || '')}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Summary -->
+                    <div class="analysis-summary">
+                        <div class="analysis-header">
+                            <div class="analysis-header-title">DETAILED ANALYSIS</div>
+                        </div>
+                        <div class="analysis-body">
+                            ${comparison.strong_sides && comparison.strong_sides.length > 0 ? `
+                            <div class="analysis-section strengths">
+                                <div class="analysis-section-header">STRENGTHS</div>
+                                <ul class="analysis-list">
+                                    ${comparison.strong_sides.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+
+                            ${comparison.weak_sides && comparison.weak_sides.length > 0 ? `
+                            <div class="analysis-section weaknesses">
+                                <div class="analysis-section-header">AREAS TO IMPROVE</div>
+                                <ul class="analysis-list">
+                                    ${comparison.weak_sides.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+
+                            ${comparison.missing_skills && comparison.missing_skills.length > 0 ? `
+                            <div class="analysis-section missing">
+                                <div class="analysis-section-header">MISSING SKILLS</div>
+                                <ul class="analysis-list">
+                                    ${comparison.missing_skills.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+
+                            ${comparison.recommendations && comparison.recommendations.length > 0 ? `
+                            <div class="analysis-section tips">
+                                <div class="analysis-section-header">RECOMMENDATIONS</div>
+                                <ul class="analysis-list">
+                                    ${comparison.recommendations.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+                                </ul>
+                            </div>` : ''}
+                        </div>
+
+                        ${comparison.cover_letter_hint ? `
+                        <div class="cover-letter-section">
+                            <div class="cover-letter-header">COVER LETTER HINT</div>
+                            <div class="cover-letter-text">${escapeHtml(comparison.cover_letter_hint)}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleResumeImproved(data) {
+            console.log('=== handleResumeImproved START ===');
+
+            try {
+                const stream = document.getElementById('streamImprove');
+                const comp = document.getElementById('resumeComparison');
+
+                console.log('Elements found:', { stream: !!stream, comp: !!comp });
+
+                if (!comp) {
+                    alert('ERROR: resumeComparison element not found!');
+                    return;
+                }
+
+                // Показываем что данные получены
+                if (stream) {
+                    stream.textContent = '✓ Processing data...';
+                    stream.classList.add('active');
+                }
+
+                console.log('handleResumeImproved data:', JSON.stringify(data, null, 2).substring(0, 500));
+                console.log('vacancy_id:', data.vacancy_id);
+                console.log('result keys:', data.result ? Object.keys(data.result) : 'NO RESULT');
+                console.log('improved_resume length:', data.result?.improved_resume?.length);
+                console.log('resumeData available:', !!resumeData);
+
+                if (data.error) {
+                    console.error('Error in resume improvement:', data.error);
+                    document.getElementById('improveBtn').style.display = 'block';
+                    comp.innerHTML = `<div style="color: red; padding: 20px;">Error: ${data.error}</div>`;
+                    return;
+                }
+
+                // Проверяем, что данные есть
+                if (!data.result) {
+                    console.error('No result in data');
+                    document.getElementById('improveBtn').style.display = 'block';
+                    comp.innerHTML = `<div style="color: red; padding: 20px;">No result returned</div>`;
+                    return;
+                }
+
+                // Проверяем что есть improved_resume
+                if (!data.result.improved_resume) {
+                    console.error('No improved_resume in result');
+                    comp.innerHTML = `<div style="color: red; padding: 20px;">No improved resume text generated</div>`;
+                    return;
+                }
+
+                // Обновляем вакансию с comparison, чтобы match_score отображался на карточке
+                if (data.vacancy_id && data.result) {
+                    console.log('Searching for vacancy with id:', data.vacancy_id);
+                    console.log('Available vacancies:', vacancies.map(v => ({id: v.id, channel: v.channel})));
+
+                    const vacancy = vacancies.find(v => v.id === data.vacancy_id);
+                    console.log('Found vacancy:', vacancy ? 'YES' : 'NO');
+
+                    if (vacancy) {
+                        vacancy.comparison = {
+                            match_score: data.result.match_score || 0,
+                            strong_sides: data.result.strong_sides || [],
+                            weak_sides: data.result.weak_sides || [],
+                            missing_skills: data.result.missing_skills || [],
+                            recommendations: data.result.recommendations || [],
+                            cover_letter_hint: data.result.cover_letter_hint || '',
+                            improved_resume: data.result.improved_resume || ''
+                        };
+
+                        // Также обновляем currentVacancy если это она
+                        if (currentVacancy && currentVacancy.id === data.vacancy_id) {
+                            currentVacancy.comparison = vacancy.comparison;
+                        }
+
+                        console.log('Updated vacancy with match_score:', vacancy.comparison.match_score);
+
+                        // Обновляем карточку вакансии, чтобы показать match_score
+                        const cardEl = document.getElementById('card_' + vacancy.id);
+                        if (cardEl) {
+                            const newCard = createVacancyCard(vacancy);
+                            cardEl.replaceWith(newCard);
+                        }
+                    } else {
+                        console.warn('Vacancy not found in array!');
+                    }
+                }
+
+                // Скрываем stream output
+                if (stream) {
+                    stream.classList.remove('active');
+                    stream.textContent = '';
+                }
+
+                // Отображаем результат используя общую функцию
+                comp.innerHTML = renderComparisonResult(data.result);
+                console.log('Resume comparison displayed successfully');
+
+            } catch (outerError) {
+                console.error('=== handleResumeImproved OUTER ERROR ===', outerError);
+                alert('handleResumeImproved error: ' + outerError.message);
+                const comp = document.getElementById('resumeComparison');
+                if (comp) {
+                    comp.innerHTML = `<div style="color: red; padding: 20px;">Fatal error: ${outerError.message}</div>`;
+                }
+            }
+
+            console.log('=== handleResumeImproved END ===');
+        }
+
+        // Resume tab switching
+        function switchResumeTab(tab) {
+            // Update buttons
+            document.querySelectorAll('.resume-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.resume-tab-btn.${tab}`).classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.resume-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('resumeTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+        }
+
+        // Copy resume text
+        function copyResumeText() {
+            const activeTab = document.querySelector('.resume-tab-content.active');
+            if (!activeTab) return;
+
+            const text = activeTab.innerText || activeTab.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyResumeBtn');
+                btn.textContent = '✓ COPIED';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 COPY';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+            });
+        }
+
         // ============== UTILS ==============
         function escapeHtml(t) {
             if (!t) return '';
             const d = document.createElement('div');
             d.textContent = t;
             return d.innerHTML;
+        }
+
+        function simpleMarkdownToHtml(markdown) {
+            if (!markdown) return '';
+
+            let html = markdown;
+
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Italic
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // Lists
+            html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+            // Line breaks
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = '<p>' + html + '</p>';
+
+            // Horizontal rule
+            html = html.replace(/^---$/gim, '<hr>');
+
+            // Code blocks
+            html = html.replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>');
+
+            return html;
         }
         
         function formatDate(d) {

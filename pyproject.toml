@@ -24,6 +24,9 @@ dependencies = [
   "psutil",
   "jinja2",
   "pydantic",
+  "pypdf",
+  "python-docx",
+  "beautifulsoup4",
 ]
 
 [project.optional-dependencies]

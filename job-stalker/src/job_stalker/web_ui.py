@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import Optional
 import asyncio
 import json
 import os
@@ -16,6 +17,12 @@ from .telegram_auth import (
     submit_code, submit_password, logout, get_user_info,
     set_status_callback, is_authorized
 )
+
+# Импорт конфига для проверки Gemini API
+try:
+    from .config import GEMINI_API_KEY
+except ImportError:
+    GEMINI_API_KEY = None
 
 # ============== GPU DETECTION ==============
 # Определяем какой GPU доступен
@@ -261,27 +268,86 @@ async def reset_all():
 
 
 @app.post("/api/upload-resume")
-async def upload_resume(request: Request, model_type: str = "mistral"):
+async def upload_resume(request: Request, model_type: str = "mistral", file_ext: str = ".txt"):
     from .ml_filter import load_resume, set_stream_callback, save_session
     import tempfile
-    
+
     body = await request.body()
-    text = body.decode('utf-8')
-    
+
+    # Определяем тип файла и извлекаем текст
+    try:
+        if file_ext.lower() == '.pdf':
+            # Обработка PDF
+            from pypdf import PdfReader
+            import io
+
+            temp_path = tempfile.mktemp(suffix=".pdf")
+            with open(temp_path, 'wb') as f:
+                f.write(body)
+
+            reader = PdfReader(temp_path)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + "\n"
+
+            os.unlink(temp_path)
+
+        elif file_ext.lower() in ['.docx', '.doc']:
+            # Обработка DOCX
+            from docx import Document
+            import io
+
+            temp_path = tempfile.mktemp(suffix=".docx")
+            with open(temp_path, 'wb') as f:
+                f.write(body)
+
+            doc = Document(temp_path)
+            text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+
+            os.unlink(temp_path)
+
+        elif file_ext.lower() in ['.html', '.htm']:
+            # Обработка HTML
+            from bs4 import BeautifulSoup
+
+            html_content = body.decode('utf-8')
+            soup = BeautifulSoup(html_content, 'html.parser')
+
+            # Удаляем скрипты и стили
+            for script in soup(["script", "style"]):
+                script.decompose()
+
+            # Извлекаем текст
+            text = soup.get_text(separator='\n', strip=True)
+
+            # Убираем множественные пустые строки
+            lines = [line.strip() for line in text.split('\n') if line.strip()]
+            text = '\n'.join(lines)
+
+        else:
+            # Обработка текстовых файлов (.txt, .md)
+            text = body.decode('utf-8')
+
+    except Exception as e:
+        return JSONResponse({
+            "error": f"Ошибка парсинга файла: {str(e)}"
+        })
+
+    # Сохраняем извлеченный текст во временный файл для load_resume
     temp_path = tempfile.mktemp(suffix=".txt")
     with open(temp_path, 'w', encoding='utf-8') as f:
         f.write(text)
-    
+
     set_stream_callback(broadcast_message)
-    
+
     try:
         result = await load_resume(temp_path, model_type)
-        
+
         if result and not result.get("error"):
             current_settings["resume_summary"] = result.get("summary", "")
             save_settings_to_file()
             save_session()  # Сохраняем резюме в сессию!
-        
+
         return JSONResponse(result)
     finally:
         set_stream_callback(None)
@@ -295,40 +361,64 @@ class ImproveRequest(BaseModel):
     vacancy_text: str
     vacancy_title: str = ""
     vacancy_id: str = ""
+    # Существующий анализ рекрутера (Этап 2) для передачи в Этап 3
+    recruiter_analysis: Optional[dict] = None
 
 
 @app.post("/api/improve-resume")
 async def improve_resume_endpoint(request: ImproveRequest):
-    """Запуск улучшения резюме в фоне"""
+    """Этап 3: Запуск улучшения резюме в фоне"""
     from .ml_filter import RESUME_DATA
-    
+
     if not RESUME_DATA:
         return JSONResponse({"error": "Resume not loaded"})
-    
+
     vacancy_id = request.vacancy_id or str(hash(request.vacancy_text[:50]))
-    
+
     # Запускаем в фоне
     task = asyncio.create_task(
-        run_improvement(vacancy_id, request.vacancy_text, request.vacancy_title)
+        run_improvement(vacancy_id, request.vacancy_text, request.vacancy_title, request.recruiter_analysis)
     )
     improvement_tasks[vacancy_id] = {"task": task, "status": "running"}
-    
+
     return JSONResponse({"status": "started", "vacancy_id": vacancy_id})
 
 
-async def run_improvement(vacancy_id: str, vacancy_text: str, vacancy_title: str):
-    """Фоновая генерация улучшенного резюме"""
-    from .ml_filter import compare_with_resume, set_stream_callback
-    
+async def run_improvement(vacancy_id: str, vacancy_text: str, vacancy_title: str, existing_analysis: dict = None):
+    """Этап 3: Фоновая генерация улучшенного резюме"""
+    from .ml_filter import compare_with_resume, set_stream_callback, RecruiterAnalysis
+    import logging
+
+    log = logging.getLogger("web_ui")
+    log.info(f"🚀 Stage 3: Starting improvement for vacancy_id={vacancy_id}")
+
     async def scoped_callback(msg):
         msg["vacancy_id"] = vacancy_id
         await broadcast_message(msg)
-    
+
     set_stream_callback(scoped_callback)
-    
+
     try:
-        comparison = await compare_with_resume(vacancy_text, vacancy_title)
-        
+        # Преобразуем dict в RecruiterAnalysis если передан
+        recruiter_analysis_obj = None
+        if existing_analysis and existing_analysis.get('match_score', 0) > 0:
+            log.info(f"📊 Using existing recruiter analysis: match_score={existing_analysis.get('match_score')}")
+            recruiter_analysis_obj = RecruiterAnalysis(
+                match_score=existing_analysis.get('match_score', 0),
+                strong_sides=existing_analysis.get('strong_sides', []),
+                weak_sides=existing_analysis.get('weak_sides', []),
+                missing_skills=existing_analysis.get('missing_skills', []),
+                risks=existing_analysis.get('risks', []),
+                recommendations=existing_analysis.get('recommendations', []),
+                verdict=existing_analysis.get('verdict', ''),
+                cover_letter_hint=existing_analysis.get('cover_letter_hint', '')
+            )
+
+        comparison = await compare_with_resume(vacancy_text, vacancy_title, recruiter_analysis_obj)
+
+        log.info(f"✅ Stage 3 completed: match_score={comparison.match_score}")
+        log.info(f"📝 improved_resume length: {len(comparison.improved_resume)}")
+
         result = {
             "match_score": comparison.match_score,
             "strong_sides": comparison.strong_sides,
@@ -338,17 +428,25 @@ async def run_improvement(vacancy_id: str, vacancy_text: str, vacancy_title: str
             "cover_letter_hint": comparison.cover_letter_hint,
             "improved_resume": comparison.improved_resume,
         }
-        
+
         improvement_tasks[vacancy_id]["status"] = "completed"
         improvement_tasks[vacancy_id]["result"] = result
-        
-        await broadcast_message({
+
+        message = {
             "type": "resume_improved",
             "vacancy_id": vacancy_id,
             "result": result
-        })
-        
+        }
+
+        log.info(f"📤 Broadcasting resume_improved for vacancy_id={vacancy_id}")
+        log.info(f"📤 Active WebSocket connections: {len(clients)}")
+
+        await broadcast_message(message)
+
+        log.info(f"✅ Message broadcasted successfully to {len(clients)} connections")
+
     except Exception as e:
+        log.error(f"❌ Error in run_improvement: {e}", exc_info=True)
         improvement_tasks[vacancy_id]["status"] = "error"
         await broadcast_message({
             "type": "resume_improved",
@@ -390,6 +488,24 @@ async def save_settings(settings: Settings):
 @app.get("/api/settings")
 async def get_settings():
     return JSONResponse(current_settings)
+
+
+@app.get("/api/models")
+async def get_models():
+    """Получить список доступных моделей Ollama"""
+    from .ml_filter import get_available_ollama_models
+
+    models = await get_available_ollama_models()
+
+    # Добавляем Gemini если доступен API ключ
+    if GEMINI_API_KEY:
+        models.append({
+            "name": "gemini",
+            "display_name": "Gemini (Cloud)",
+            "size": 0
+        })
+
+    return JSONResponse({"models": models})
 
 
 # ============== TELEGRAM AUTH ==============
@@ -510,15 +626,24 @@ async def broadcast_progress(percent: int, remaining: int = None):
 
 
 async def broadcast_message(message: dict):
+    import logging
+    log = logging.getLogger("web_ui")
+
     to_remove = []
-    for client in clients:
+    msg_type = message.get("type", "unknown")
+
+    for i, client in enumerate(clients):
         try:
             await client.send_json(message)
-        except Exception:
+            log.info(f"📤 Sent {msg_type} to client {i}")
+        except Exception as e:
+            log.error(f"❌ Failed to send {msg_type} to client {i}: {e}")
             to_remove.append(client)
+
     for c in to_remove:
         if c in clients:
             clients.remove(c)
+            log.warning(f"🔌 Removed disconnected client, remaining: {len(clients)}")
 
 
 def update_stats(found: int = None, processed: int = None, 

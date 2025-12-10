@@ -11,7 +11,8 @@ from pyrogram.handlers import MessageHandler
 
 from .config import API_ID, API_HASH, SESSION_NAME
 from .db import init_db, is_forwarded, mark_forwarded
-from .ml_filter import ml_interesting_async
+from .ml_filter import ml_interesting_async, recruiter_analysis, RESUME_DATA
+from .vacancy_storage import update_vacancy
 
 # Логирование
 logging.basicConfig(
@@ -22,8 +23,8 @@ logging.basicConfig(
 log = logging.getLogger("main")
 
 # Импорты web_ui
-from .web_ui import (broadcast_vacancy, broadcast_status, broadcast_progress, 
-                    update_stats, get_current_settings)
+from .web_ui import (broadcast_vacancy, broadcast_status, broadcast_progress,
+                    update_stats, get_current_settings, broadcast_message)
 
 # Семафор для параллельного анализа
 CONCURRENT_ANALYSIS = 3
@@ -56,40 +57,85 @@ class Stats:
 stats = Stats()
 
 
+async def run_stage2_async(vacancy_id: str, vacancy_text: str):
+    """Stage 2: Асинхронный анализ рекрутера (не блокирует поиск)"""
+    try:
+        if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
+            log.info(f"⏭️ Stage 2 skipped for {vacancy_id[:8]}: no resume loaded")
+            return
+
+        log.info(f"🎯 Stage 2: Starting async recruiter analysis for {vacancy_id[:8]}...")
+
+        ra = await recruiter_analysis(vacancy_text, RESUME_DATA['raw_text'])
+
+        if ra and ra.match_score > 0:
+            recruiter_data = {
+                "match_score": ra.match_score,
+                "strong_sides": ra.strong_sides,
+                "weak_sides": ra.weak_sides,
+                "missing_skills": ra.missing_skills,
+                "risks": ra.risks,
+                "recommendations": ra.recommendations,
+                "verdict": ra.verdict,
+                "cover_letter_hint": ra.cover_letter_hint
+            }
+
+            # Сохраняем в файл
+            update_vacancy(vacancy_id, {
+                "recruiter_analysis": recruiter_data,
+                "comparison": {"match_score": ra.match_score}
+            })
+
+            # Отправляем обновление в UI
+            update_msg = {
+                "type": "vacancy_update",
+                "vacancy_id": vacancy_id,
+                "recruiter_analysis": recruiter_data
+            }
+            await broadcast_message(update_msg)
+            log.info(f"✅ Stage 2 done for {vacancy_id[:8]}: match_score={ra.match_score}")
+        else:
+            log.warning(f"⚠️ Stage 2 returned empty result for {vacancy_id[:8]}")
+
+    except Exception as e:
+        log.error(f"❌ Stage 2 error for {vacancy_id[:8]}: {e}")
+
+
 async def process_message(message, channel_title: str) -> bool:
     """Обработка одного сообщения"""
     async with analysis_semaphore:
         chat_id = message.chat.id
         msg_id = message.id
         text = message.text or message.caption or ""
-        
+
         if not text or len(text.strip()) < 30:
             return False
-        
+
         stats.found += 1
         update_stats(found=stats.found)
-        
+
         try:
-            # Быстрый анализ (без comparison!)
+            # Stage 1: Быстрая фильтрация
             result = await ml_interesting_async(text)
-            
+
             stats.processed += 1
             update_stats(processed=stats.processed)
-            
+
             if not result.suitable:
                 stats.rejected += 1
                 update_stats(rejected=stats.rejected)
                 log.info(f"❌ Отклонено: {chat_id}:{msg_id}")
                 return False
-            
-            # Подходит! Показываем СРАЗУ
+
+            # Подходит! Показываем карточку СРАЗУ
             stats.suitable += 1
             update_stats(suitable=stats.suitable)
-            
+
             link = f"https://t.me/{message.chat.username}/{message.id}" if message.chat.username else None
-            
+
+            vacancy_id = str(uuid.uuid4())
             vacancy = {
-                "id": str(uuid.uuid4()),
+                "id": vacancy_id,
                 "channel": channel_title,
                 "text": text,
                 "date": str(message.date),
@@ -97,17 +143,20 @@ async def process_message(message, channel_title: str) -> bool:
                 "analysis": result.analysis,
                 "is_new": True
             }
-            
+
             log.info(f"✅ Найдено: {channel_title}")
-            
-            # Отправляем в UI сразу
+
+            # Отправляем карточку в UI СРАЗУ (без ожидания Stage 2)
             await broadcast_vacancy(vacancy)
-            
+
             # Помечаем обработанным
             await mark_forwarded(chat_id, msg_id)
-            
+
+            # Stage 2: Запускаем АСИНХРОННО (не блокирует поиск следующих вакансий)
+            asyncio.create_task(run_stage2_async(vacancy_id, text))
+
             return True
-            
+
         except Exception as e:
             log.error(f"Ошибка: {e}")
             return False

@@ -1,7 +1,10 @@
 import json
 import os
+import logging
 from datetime import datetime
 from typing import List, Dict
+
+log = logging.getLogger("vacancy_storage")
 
 VACANCIES_FILE = "./data/vacancies.json"
 
@@ -24,7 +27,7 @@ def save_vacancy(vacancy: Dict):
         with open(VACANCIES_FILE, 'w', encoding='utf-8') as f:
             json.dump(vacancies, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        safe_print(f"Ошибка сохранения вакансии: {e}")
+        log.error(f"Ошибка сохранения вакансии: {e}")
 
 def load_all_vacancies() -> List[Dict]:
     """Загружает все сохраненные вакансии"""
@@ -35,7 +38,7 @@ def load_all_vacancies() -> List[Dict]:
             with open(VACANCIES_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
     except Exception as e:
-        safe_print(f"Ошибка загрузки вакансий: {e}")
+        log.error(f"Ошибка загрузки вакансий: {e}")
 
     return []
 
@@ -50,7 +53,7 @@ def mark_all_as_old():
         with open(VACANCIES_FILE, 'w', encoding='utf-8') as f:
             json.dump(vacancies, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        safe_print(f"Ошибка обновления вакансий: {e}")
+        log.error(f"Ошибка обновления вакансий: {e}")
 
 def clear_all_vacancies():
     """Удаляет все вакансии"""
@@ -60,7 +63,7 @@ def clear_all_vacancies():
         if os.path.exists(VACANCIES_FILE):
             os.remove(VACANCIES_FILE)
     except Exception as e:
-        safe_print(f"Ошибка очистки вакансий: {e}")
+        log.error(f"Ошибка очистки вакансий: {e}")
 
 def get_vacancies_count() -> Dict[str, int]:
     """Возвращает количество новых и старых вакансий"""
@@ -74,3 +77,28 @@ def get_vacancies_count() -> Dict[str, int]:
         'new': new_count,
         'old': old_count
     }
+
+
+def update_vacancy(vacancy_id: str, updates: Dict) -> bool:
+    """Обновляет вакансию по ID (например, добавляет recruiter_analysis)"""
+    ensure_data_dir()
+
+    vacancies = load_all_vacancies()
+    updated = False
+
+    for vac in vacancies:
+        if vac.get('id') == vacancy_id:
+            vac.update(updates)
+            updated = True
+            break
+
+    if updated:
+        try:
+            with open(VACANCIES_FILE, 'w', encoding='utf-8') as f:
+                json.dump(vacancies, f, ensure_ascii=False, indent=2)
+            log.info(f"✅ Vacancy {vacancy_id[:8]} updated")
+        except Exception as e:
+            log.error(f"Ошибка обновления вакансии: {e}")
+            return False
+
+    return updated

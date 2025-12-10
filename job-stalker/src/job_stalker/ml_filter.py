@@ -31,8 +31,20 @@ OUTPUT_DIR = "./output"
 
 
 @dataclass
+class RecruiterAnalysis:
+    """Этап 2: Результат анализа резюме рекрутером относительно вакансии"""
+    match_score: int = 0
+    strong_sides: List[str] = field(default_factory=list)
+    weak_sides: List[str] = field(default_factory=list)
+    missing_skills: List[str] = field(default_factory=list)
+    recommendations: List[str] = field(default_factory=list)
+    risks: List[str] = field(default_factory=list)
+    verdict: str = ""  # Краткий вердикт рекрутера
+    cover_letter_hint: str = ""
+
+@dataclass
 class ResumeComparison:
-    """Результат сравнения вакансии с резюме"""
+    """Этап 3: Результат улучшения резюме (включает анализ из Этапа 2)"""
     match_score: int = 0
     strong_sides: List[str] = field(default_factory=list)
     weak_sides: List[str] = field(default_factory=list)
@@ -43,12 +55,13 @@ class ResumeComparison:
 
 @dataclass
 class VacancyAnalysis:
-    """Результат анализа вакансии"""
+    """Результат анализа вакансии (Этап 1 + опционально Этап 2)"""
     suitable: bool
-    analysis: str = ""
-    comparison: Optional[ResumeComparison] = None
-    improved_resume_path: Optional[str] = None
-    
+    analysis: str = ""  # Результат фильтрации (Этап 1)
+    match_score: int = 0  # Match score из анализа рекрутера (0-100)
+    recruiter_analysis: Optional[RecruiterAnalysis] = None  # Этап 2: анализ рекрутера
+    comparison: Optional[ResumeComparison] = None  # Этап 3: улучшенное резюме (deprecated, для совместимости)
+
     def __bool__(self):
         return self.suitable
 
@@ -104,12 +117,13 @@ def get_filter_prompt(custom_prompt: str = "", resume_summary: str = "") -> str:
   "reasons_fit": ["почему подходит"],
   "reasons_reject": ["почему не подходит"],
   "position_type": "developer/manager/designer/artist/qa/other",
-  "summary": "краткий вывод на русском"
+  "summary": "краткий вывод на русском",
+  "match_score": число от 0 до 100 (насколько вакансия соответствует критериям{' и резюме' if resume_summary else ''})
 }}"""
 
     if resume_summary:
         base = f"Резюме кандидата: {resume_summary}\n\n{base}"
-    
+
     return base
 
 
@@ -149,7 +163,7 @@ soft skills
 если навык уже есть — усили его формулировку
 если навык есть, но описан слабо — перепиши и подчеркни опыт
 если навыка нет, но у меня был похожий опыт — добавь релевантную формулировку
-если навыка нет и нельзя предположить —
+если навыка нет и нельзя предположить — то пропусти его и переходи к следующему
 
 3. Перестрой структуру резюме:
 
@@ -166,7 +180,7 @@ soft skills
 Дай полностью переписанное резюме, адаптированное под эту вакансию, с естественно встроенными ключевыми словами.
 В поле "improved_resume" напиши ПОЛНЫЙ текст улучшенного резюме (не краткий, а полноценный документ), адаптированный под эту вакансию. Добавь релевантные ключевые слова из вакансии, подчеркни подходящий опыт.
 
-Верни ТОЛЬКО JSON (без markdown):
+ВАЖНО: Верни ТОЛЬКО ОДИН валидный JSON объект (без markdown, без escape символов, без разбиения):
 {{
   "match_score": число от 0 до 100,
   "strong_sides": ["сильная сторона 1", "сильная сторона 2"],
@@ -198,12 +212,16 @@ async def notify_stream(chunk: str, stream_type: str = "analysis"):
         except Exception as e:
             log.warning(f"Stream callback error: {e}")
 
-async def ollama_stream(prompt: str, model: str = "mistral7") -> AsyncGenerator[str, None]:
+async def ollama_stream(prompt: str, model: str = "mistral7", num_predict: int = 2048) -> AsyncGenerator[str, None]:
     """Streaming генерация через Ollama API"""
     payload = {
         "model": model,
         "prompt": prompt,
-        "stream": True
+        "stream": True,
+        "options": {
+            "num_predict": num_predict,  # Максимальное количество токенов для генерации
+            "temperature": 0.7
+        }
     }
     
     try:
@@ -237,31 +255,77 @@ async def ollama_stream(prompt: str, model: str = "mistral7") -> AsyncGenerator[
         log.error(f"Ollama stream error: {e}")
         yield f"[ERROR: {e}]"
 
-async def ollama_generate(prompt: str, model: str = "mistral7", stream_type: str = None) -> str:
+async def ollama_generate(prompt: str, model: str = "mistral7", stream_type: str = None, num_predict: int = 2048) -> str:
     """Генерация с опциональным streaming"""
     full_response = ""
-    
+
     if stream_type:
         await notify_stream("[START]", stream_type)
-    
-    async for chunk in ollama_stream(prompt, model):
+
+    async for chunk in ollama_stream(prompt, model, num_predict):
         full_response += chunk
         if stream_type:
             await notify_stream(chunk, stream_type)
             await asyncio.sleep(0.005)  # Уменьшил задержку
-    
+
     if stream_type:
         await notify_stream("[END]", stream_type)
-    
+
     return full_response
 
+
+async def get_available_ollama_models() -> List[Dict[str, str]]:
+    """Получает список доступных моделей из Ollama"""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                "http://localhost:11434/api/tags",
+                timeout=aiohttp.ClientTimeout(total=10)
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    models = []
+                    for model_info in data.get("models", []):
+                        model_name = model_info.get("name", "")
+                        # Извлекаем короткое имя модели (без тегов версий если не указаны явно)
+                        display_name = model_name
+                        models.append({
+                            "name": model_name,
+                            "display_name": display_name,
+                            "size": model_info.get("size", 0)
+                        })
+
+                    log.info(f"📋 Found {len(models)} Ollama models: {[m['name'] for m in models]}")
+                    return models
+                else:
+                    log.warning(f"Failed to get Ollama models: HTTP {response.status}")
+                    return []
+    except Exception as e:
+        log.warning(f"Could not connect to Ollama: {e}")
+        # Возвращаем дефолтные модели если Ollama недоступна
+        return [
+            {"name": "mistral7", "display_name": "mistral7", "size": 0},
+            {"name": "llama3.2:3b", "display_name": "llama3.2:3b", "size": 0}
+        ]
 
 
 def extract_json_safely(text: str) -> dict:
     """Безопасное извлечение JSON из текста AI"""
+    original_text = text
+
+    # Удаляем markdown code blocks
     text = text.replace('```json', '').replace('```', '').strip()
-    
-    # Метод 1: Сбалансированные скобки
+
+    # Удаляем "JSON:" в начале если есть
+    if text.startswith('JSON:'):
+        text = text[5:].strip()
+
+    # ИСПРАВЛЕНИЕ: Убираем escaped underscores (\_) которые генерирует модель
+    text = text.replace('\\_', '_')
+
+    log.debug(f"🔍 extract_json_safely: input length={len(text)}, first 200 chars={text[:200]}")
+
+    # Метод 1: Сбалансированные скобки (рекурсивный поиск)
     depth = 0
     start = -1
     for i, char in enumerate(text):
@@ -272,27 +336,125 @@ def extract_json_safely(text: str) -> dict:
         elif char == '}':
             depth -= 1
             if depth == 0 and start != -1:
+                json_str = text[start:i+1]
                 try:
-                    return json.loads(text[start:i+1])
-                except json.JSONDecodeError:
+                    parsed = json.loads(json_str)
+                    log.info(f"✅ JSON parsed successfully (method 1), keys: {list(parsed.keys())}")
+                    return parsed
+                except json.JSONDecodeError as e:
+                    log.warning(f"⚠️ Method 1 failed: {e}")
                     continue
-    
-    # Метод 2: Regex
-    json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
-    if json_match:
+
+    # Метод 2: Поиск самого длинного валидного JSON
+    # Ищем все возможные { ... }
+    all_matches = []
+    depth = 0
+    start = -1
+    for i, char in enumerate(text):
+        if char == '{':
+            if depth == 0:
+                start = i
+            depth += 1
+        elif char == '}':
+            depth -= 1
+            if depth == 0 and start != -1:
+                all_matches.append((start, i+1, text[start:i+1]))
+                start = -1
+
+    # Пробуем от самых длинных к коротким
+    all_matches.sort(key=lambda x: len(x[2]), reverse=True)
+    for start_idx, end_idx, json_str in all_matches:
         try:
-            return json.loads(json_match.group(0))
+            parsed = json.loads(json_str)
+            log.info(f"✅ JSON parsed successfully (method 2), keys: {list(parsed.keys())}")
+            return parsed
         except:
-            pass
-    
-    # Метод 3: Greedy
+            continue
+
+    # Метод 2.5: Попытка объединить несколько JSON объектов
+    # Иногда модель генерирует два отдельных JSON: первый с полями, второй с improved_resume
+    if len(all_matches) >= 2:
+        log.info(f"🔍 Found {len(all_matches)} JSON objects, trying to merge...")
+        try:
+            merged = {}
+            for start_idx, end_idx, json_str in all_matches:
+                try:
+                    obj = json.loads(json_str)
+                    merged.update(obj)
+                except:
+                    continue
+            if merged:
+                log.info(f"✅ JSON merged successfully (method 2.5), keys: {list(merged.keys())}")
+                return merged
+        except Exception as e:
+            log.warning(f"⚠️ Method 2.5 failed: {e}")
+
+    # Метод 3: Greedy regex
     json_match = re.search(r'\{.*\}', text, re.DOTALL)
     if json_match:
         try:
-            return json.loads(json_match.group(0))
-        except:
-            pass
-    
+            parsed = json.loads(json_match.group(0))
+            log.info(f"✅ JSON parsed successfully (method 3), keys: {list(parsed.keys())}")
+            return parsed
+        except Exception as e:
+            log.warning(f"⚠️ Method 3 failed: {e}")
+
+    # Метод 4: Специальная обработка для improved_resume
+    # Иногда модель генерирует improved_resume отдельно вне основного JSON
+    log.warning("⚠️ Standard methods failed, trying special improved_resume extraction...")
+
+    # Ищем "improved_resume": "..." в тексте
+    improved_match = re.search(r'"improved_resume"\s*:\s*"([^"]*(?:\\"[^"]*)*)"', text, re.DOTALL)
+    if improved_match:
+        improved_text = improved_match.group(1)
+        # Убираем escaped quotes
+        improved_text = improved_text.replace('\\"', '"')
+
+        # Ищем любой валидный JSON и добавляем к нему improved_resume
+        for start_idx, end_idx, json_str in all_matches:
+            try:
+                parsed = json.loads(json_str)
+                parsed['improved_resume'] = improved_text
+                log.info(f"✅ JSON parsed with special improved_resume extraction, keys: {list(parsed.keys())}")
+                return parsed
+            except:
+                continue
+
+    # Метод 5: Попытка автоматического исправления JSON
+    log.warning("⚠️ Trying auto-fix for incomplete JSON...")
+
+    # Проверяем есть ли хотя бы открывающая скобка
+    if '{' in text:
+        # Находим последнюю закрывающую скобку или добавляем её
+        start_idx = text.find('{')
+
+        # Берем текст от { до конца
+        json_part = text[start_idx:]
+
+        # Считаем баланс скобок
+        depth = 0
+        for i, char in enumerate(json_part):
+            if char == '{':
+                depth += 1
+            elif char == '}':
+                depth -= 1
+
+        # Если скобок не хватает, добавляем
+        if depth > 0:
+            json_part += '}' * depth
+            log.info(f"🔧 Added {depth} closing braces")
+
+            try:
+                parsed = json.loads(json_part)
+                log.info(f"✅ JSON auto-fixed successfully, keys: {list(parsed.keys())}")
+                return parsed
+            except Exception as e:
+                log.warning(f"⚠️ Auto-fix failed: {e}")
+
+    log.error(f"❌ All JSON extraction methods failed!")
+    log.error(f"❌ Full original text length: {len(original_text)}")
+    log.error(f"❌ Original text (first 1500 chars): {original_text[:1500]}")
+    log.error(f"❌ Original text (last 500 chars): {original_text[-500:]}")
     return {}
 
 
@@ -421,43 +583,275 @@ async def _call_gemini(prompt: str) -> str:
 
 
 
-async def compare_with_resume(vacancy_text: str, vacancy_title: str = "") -> ResumeComparison:
-    """Сравнение вакансии с резюме - вызывается ОТДЕЛЬНО по запросу"""
-    if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
-        log.warning("No resume for comparison")
-        return ResumeComparison()
-    
-    resume_text = RESUME_DATA['raw_text']
-    log.info(f"📝 Resume text length: {len(resume_text)}")
-    log.info(f"📝 Vacancy text length: {len(vacancy_text)}")
-    
-    prompt = get_comparison_prompt(vacancy_text, resume_text)
-    
-    log.info("🔄 Comparing vacancy with resume...")
-    
+async def recruiter_analysis(vacancy_text: str, resume_text: str, enable_stream: bool = False) -> RecruiterAnalysis:
+    """
+    ЭТАП 2: Глубокий анализ резюме строгим IT-рекрутером относительно конкретной вакансии.
+
+    Роль модели: строгий, опытный, но справедливый IT-рекрутер.
+    Возвращает: структурированный отчёт (RecruiterAnalysis)
+
+    Args:
+        enable_stream: если True - показывать streaming в UI (для интерактивного режима)
+                       если False - работать в фоне без streaming (по умолчанию)
+    """
+    prompt = f"""Ты — строгий, опытный, но справедливый IT-рекрутер с 10+ годами опыта найма.
+
+ТВОЯ ЗАДАЧА: Оценить кандидата по конкретной вакансии. Будь честен и критичен — это поможет кандидату понять реальные шансы.
+
+ВАКАНСИЯ:
+{vacancy_text[:2000]}
+
+РЕЗЮМЕ КАНДИДАТА:
+{resume_text[:2000]}
+
+АЛГОРИТМ ОЦЕНКИ:
+1. Сравни требования вакансии с опытом кандидата
+2. Найди сильные стороны, которые выделяют кандидата
+3. Найди слабые стороны и пробелы в опыте
+4. Определи критические недостающие навыки
+5. Оцени риски для кандидата (почему могут отказать)
+6. Дай честную оценку шансов (0-100)
+
+КРИТЕРИИ ОЦЕНКИ match_score:
+- 80-100: Отличный кандидат, высокие шансы на оффер
+- 60-79: Хороший кандидат, стоит подаваться
+- 40-59: Средний кандидат, шансы 50/50
+- 20-39: Слабый кандидат, нужна серьёзная подготовка
+- 0-19: Не соответствует требованиям
+
+Ответь ТОЛЬКО валидным JSON (без markdown):
+{{
+  "match_score": число от 0 до 100,
+  "strong_sides": ["конкретная сильная сторона 1", "сильная сторона 2"],
+  "weak_sides": ["конкретная слабая сторона 1", "слабая сторона 2"],
+  "missing_skills": ["критический навык 1", "навык 2"],
+  "risks": ["риск отказа 1", "риск 2"],
+  "recommendations": ["что конкретно улучшить 1", "рекомендация 2"],
+  "verdict": "краткий вердикт рекрутера (1-2 предложения)",
+  "cover_letter_hint": "ключевая мысль для сопроводительного письма"
+}}
+
+JSON:"""
+
     try:
-        output = await ollama_generate(prompt, "mistral7", "comparison")
-        log.info(f"📝 ML output length: {len(output)}")
-        
+        log.info("🎯 Stage 2: Running recruiter analysis...")
+
+        # Генерация с достаточным количеством токенов для развернутого ответа
+        # stream_type только если enable_stream=True (интерактивный режим)
+        stream_type = "recruiter_analysis" if enable_stream else None
+        output = await ollama_generate(prompt, "mistral7", stream_type, num_predict=1024)
+
+        # Убираем escape символы
+        output = output.replace('\\_', '_')
+
         data = extract_json_safely(output)
-        log.info(f"📝 Parsed data keys: {list(data.keys())}")
-        log.info(f"📝 improved_resume length: {len(data.get('improved_resume', ''))}")
-        
-        result = ResumeComparison(
-            match_score=data.get('match_score', 0),
+
+        if not data:
+            log.error(f"❌ Recruiter analysis JSON parsing failed")
+            return RecruiterAnalysis(
+                verdict="Не удалось выполнить анализ"
+            )
+
+        # Нормализуем match_score
+        match_score = data.get('match_score', 0)
+        if isinstance(match_score, str):
+            try:
+                match_score = int(match_score)
+            except:
+                match_score = 0
+
+        result = RecruiterAnalysis(
+            match_score=match_score,
             strong_sides=data.get('strong_sides', []),
             weak_sides=data.get('weak_sides', []),
             missing_skills=data.get('missing_skills', []),
+            risks=data.get('risks', []),
             recommendations=data.get('recommendations', []),
-            improved_resume=data.get('improved_resume', ''),
+            verdict=data.get('verdict', ''),
             cover_letter_hint=data.get('cover_letter_hint', '')
         )
-        
-        log.info(f"✅ Comparison done: score={result.match_score}, improved_len={len(result.improved_resume)}")
+
+        log.info(f"✅ Recruiter analysis done: match_score={match_score}, verdict={result.verdict[:50]}...")
+
         return result
-        
+
     except Exception as e:
-        log.error(f"Comparison error: {e}")
+        log.error(f"Recruiter analysis error: {e}")
+        return RecruiterAnalysis(
+            verdict=f"Ошибка анализа: {str(e)}"
+        )
+
+
+# Алиас для обратной совместимости
+async def quick_resume_analysis(vacancy_text: str, resume_text: str) -> dict:
+    """Deprecated: используйте recruiter_analysis()"""
+    result = await recruiter_analysis(vacancy_text, resume_text)
+    return {
+        "match_score": result.match_score,
+        "strong_sides": result.strong_sides,
+        "weak_sides": result.weak_sides,
+        "missing_skills": result.missing_skills,
+        "recommendations": result.recommendations,
+        "cover_letter_hint": result.cover_letter_hint
+    }
+
+
+async def generate_improved_resume(
+    vacancy_text: str,
+    resume_text: str,
+    analysis: Optional[RecruiterAnalysis] = None
+) -> str:
+    """
+    ЭТАП 3: Генерация улучшенного резюме на основе вакансии + анализа рекрутера.
+
+    Входы:
+    - vacancy_text: текст вакансии
+    - resume_text: исходное резюме
+    - analysis: результат анализа рекрутера (Этап 2)
+
+    Возвращает: улучшенное резюме в markdown формате
+    """
+    # Формируем контекст из анализа рекрутера
+    analysis_context = ""
+    if analysis and analysis.match_score > 0:
+        analysis_context = f"""
+АНАЛИЗ РЕКРУТЕРА (учти при улучшении):
+- Оценка соответствия: {analysis.match_score}%
+- Сильные стороны: {', '.join(analysis.strong_sides[:3]) if analysis.strong_sides else 'не указаны'}
+- Слабые стороны: {', '.join(analysis.weak_sides[:3]) if analysis.weak_sides else 'не указаны'}
+- Недостающие навыки: {', '.join(analysis.missing_skills[:3]) if analysis.missing_skills else 'не указаны'}
+- Рекомендации: {', '.join(analysis.recommendations[:2]) if analysis.recommendations else 'не указаны'}
+
+"""
+
+    prompt = f"""Ты — эксперт по оптимизации резюме под ATS (Applicant Tracking System) и HR-специалистов.
+
+ЗАДАЧА: Создай улучшенную версию резюме, адаптированную под конкретную вакансию.
+
+ВАКАНСИЯ:
+{vacancy_text[:2000]}
+
+ИСХОДНОЕ РЕЗЮМЕ:
+{resume_text[:2000]}
+{analysis_context}
+ПРАВИЛА УЛУЧШЕНИЯ:
+1. Усиль формулировки релевантных навыков (НЕ выдумывай опыт!)
+2. Аккуратно добавь недостающие компетенции, если они хоть как-то связаны с реальным опытом
+3. Подчеркни сильные стороны, выявленные рекрутером
+4. Адаптируй тон под стиль вакансии (формальный/неформальный)
+5. Перемести самый релевантный опыт выше
+6. Перепиши summary с ключевыми словами из вакансии
+7. ATS-friendly: без таблиц, иконок, картинок, сложного форматирования
+
+ВАЖНО:
+- НЕ выдумывай опыт, которого нет
+- НЕ добавляй навыки, которые нельзя подтвердить
+- Формат: чистый markdown
+
+СТРУКТУРА ОТВЕТА:
+# [Имя кандидата]
+
+**[Целевая должность из вакансии]**
+
+## Summary
+[3-4 предложения с ключевыми словами из вакансии]
+
+## Опыт работы
+**[Компания] — [Должность]** | [Даты]
+- [Достижение с метриками]
+- [Релевантный опыт]
+
+## Навыки
+- [Категория]: [навыки через запятую]
+
+## Образование
+[Образование]
+
+---
+
+Верни ТОЛЬКО текст улучшенного резюме (минимум 500 символов):"""
+
+    try:
+        log.info("📝 Stage 3: Generating improved resume...")
+
+        # Генерация с streaming для визуального прогресса
+        output = await ollama_generate(prompt, "mistral7", "improved_resume", num_predict=3072)
+
+        # Очищаем от артефактов
+        output = output.strip()
+
+        # Убираем markdown code blocks если модель их добавила
+        if output.startswith('```markdown'):
+            output = output[11:]
+        if output.startswith('```'):
+            output = output[3:]
+        if output.endswith('```'):
+            output = output[:-3]
+
+        output = output.strip()
+
+        log.info(f"✅ Improved resume generated: {len(output)} chars")
+
+        return output
+
+    except Exception as e:
+        log.error(f"Resume generation error: {e}")
+        return "# Ошибка генерации\n\nНе удалось сгенерировать улучшенное резюме."
+
+
+# Алиас для обратной совместимости
+async def generate_improved_resume_markdown(vacancy_text: str, resume_text: str) -> str:
+    """Deprecated: используйте generate_improved_resume()"""
+    return await generate_improved_resume(vacancy_text, resume_text, None)
+
+
+async def compare_with_resume(
+    vacancy_text: str,
+    vacancy_title: str = "",
+    existing_analysis: Optional[RecruiterAnalysis] = None
+) -> ResumeComparison:
+    """
+    ЭТАП 3: Генерация улучшенного резюме.
+
+    Если existing_analysis передан - использует его.
+    Если нет - сначала запускает Этап 2 (recruiter_analysis).
+    """
+    if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
+        log.warning("No resume for comparison")
+        return ResumeComparison()
+
+    resume_text = RESUME_DATA['raw_text']
+    log.info(f"📝 Resume text length: {len(resume_text)}")
+    log.info(f"📝 Vacancy text length: {len(vacancy_text)}")
+
+    try:
+        # Если анализ уже есть - используем его, иначе запускаем Этап 2
+        if existing_analysis and existing_analysis.match_score > 0:
+            log.info("🔄 Using existing recruiter analysis...")
+            analysis = existing_analysis
+        else:
+            log.info("🔄 Stage 2: Running recruiter analysis...")
+            analysis = await recruiter_analysis(vacancy_text, resume_text)
+
+        # ЭТАП 3: Генерация улучшенного резюме (30-60 секунд)
+        log.info("🔄 Stage 3: Generating improved resume...")
+        improved_resume = await generate_improved_resume(vacancy_text, resume_text, analysis)
+
+        result = ResumeComparison(
+            match_score=analysis.match_score,
+            strong_sides=analysis.strong_sides,
+            weak_sides=analysis.weak_sides,
+            missing_skills=analysis.missing_skills,
+            recommendations=analysis.recommendations,
+            improved_resume=improved_resume,
+            cover_letter_hint=analysis.cover_letter_hint
+        )
+
+        log.info(f"✅ Stage 3 done: score={result.match_score}, improved_len={len(result.improved_resume)}")
+        return result
+
+    except Exception as e:
+        log.error(f"Comparison error: {e}", exc_info=True)
         return ResumeComparison()
 
 
@@ -486,12 +880,14 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
         resume_summary = ""
 
     # НОВАЯ ЛОГИКА: если промпт пустой - все вакансии подходят
+    # Stage 2 запускается асинхронно в main.py после показа карточки
     if not custom_prompt or not custom_prompt.strip():
         log.info("📋 Filter prompt empty - vacancy auto-approved")
         return VacancyAnalysis(
             suitable=True,
             analysis="✅ Фильтр не настроен — вакансия добавлена автоматически.\n\n💡 Настройте критерии в Settings → Search Filter Prompt",
-            comparison=None
+            match_score=0,
+            recruiter_analysis=None
         )
 
     # Генерируем промпт с критериями пользователя
@@ -602,13 +998,26 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
             analysis_parts.append(f"🏷️ **Тип:** {position_type}")
         
         analysis_text = "\n\n".join(analysis_parts) if analysis_parts else output[:500]
-        
+
+        # Извлекаем match_score
+        match_score = data.get('match_score', 0)
+        if isinstance(match_score, str):
+            try:
+                match_score = int(match_score)
+            except:
+                match_score = 0
+
+        log.info(f"📊 Match score: {match_score}")
+
+        # Stage 2 (recruiter analysis) запускается асинхронно в main.py
+        # после того как карточка уже показана пользователю
         return VacancyAnalysis(
             suitable=suitable,
             analysis=analysis_text,
-            comparison=None
+            match_score=match_score,
+            recruiter_analysis=None  # Будет заполнено асинхронно
         )
-        
+
     except Exception as e:
         log.error(f"Vacancy analysis error: {e}")
         return VacancyAnalysis(False, f"⚠️ Ошибка: {e}")
