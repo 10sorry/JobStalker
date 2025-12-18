@@ -928,229 +928,7 @@
             letter-spacing: 1px;
         }
         
-        /* ============== RESUME INTEL PANEL ============== */
-        .resume-intel-panel {
-            background: linear-gradient(180deg, #1a2530, #12181f);
-            padding: 0;
-            border-radius: 12px;
-            border: 2px solid #2a3a4a;
-            overflow: hidden;
-            position: relative;
-        }
 
-        .resume-intel-header {
-            padding: 14px 16px;
-            background: linear-gradient(90deg, rgba(125, 255, 125, 0.08) 0%, transparent 50%, rgba(77, 166, 255, 0.08) 100%);
-            border-bottom: 1px solid #2a3a4a;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .resume-intel-icon {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, #1a3a3a 0%, #0d2525 100%);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .resume-intel-title {
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: #7dff7d;
-        }
-
-        .resume-intel-body {
-            padding: 16px;
-            min-height: 120px;
-            position: relative;
-        }
-
-        /* Activity Visualizer */
-        .activity-visualizer {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .activity-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .activity-label {
-            font-size: 10px;
-            letter-spacing: 1px;
-            color: #5a7080;
-            width: 60px;
-            flex-shrink: 0;
-        }
-
-        .activity-bars {
-            flex: 1;
-            display: flex;
-            gap: 2px;
-            height: 20px;
-            align-items: flex-end;
-        }
-
-        .activity-bar {
-            flex: 1;
-            background: linear-gradient(180deg, #2a4a5a 0%, #1a3040 100%);
-            border-radius: 2px 2px 0 0;
-            min-height: 4px;
-            transition: height 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .activity-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(180deg, rgba(125, 255, 125, 0.2), transparent);
-        }
-
-        .activity-bar.active {
-            background: linear-gradient(180deg, #3a6a5a 0%, #2a5040 100%);
-        }
-
-        .activity-bar.highlight {
-            background: linear-gradient(180deg, #7dff7d 0%, #4a9a6a 100%);
-            animation: barPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes barPulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-
-        /* Waveform animation */
-        .waveform {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            height: 40px;
-            padding: 10px 0;
-        }
-
-        .wave-bar {
-            width: 3px;
-            background: linear-gradient(180deg, #7dff7d, #4a9a6a);
-            border-radius: 2px;
-            animation: wave 1.2s ease-in-out infinite;
-        }
-
-        .wave-bar:nth-child(1) { animation-delay: 0s; }
-        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
-        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
-        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
-        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
-        .wave-bar:nth-child(6) { animation-delay: 0.5s; }
-        .wave-bar:nth-child(7) { animation-delay: 0.6s; }
-        .wave-bar:nth-child(8) { animation-delay: 0.7s; }
-
-        @keyframes wave {
-            0%, 100% { height: 8px; opacity: 0.4; }
-            50% { height: 30px; opacity: 1; }
-        }
-
-        /* Resume Stats */
-        .resume-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .resume-stat {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 6px;
-            padding: 10px 12px;
-            border-left: 2px solid #3a5a5a;
-        }
-
-        .resume-stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #7dff7d;
-            margin-bottom: 2px;
-        }
-
-        .resume-stat-label {
-            font-size: 9px;
-            letter-spacing: 1px;
-            color: #5a7080;
-        }
-
-        /* Circuit Pattern */
-        .circuit-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            opacity: 0.03;
-            background-image:
-                linear-gradient(90deg, #7dff7d 1px, transparent 1px),
-                linear-gradient(#7dff7d 1px, transparent 1px);
-            background-size: 20px 20px;
-            pointer-events: none;
-        }
-
-        .circuit-glow {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(125, 255, 125, 0.1) 0%, transparent 70%);
-            animation: circuitFloat 8s ease-in-out infinite;
-        }
-
-        .circuit-glow:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
-        .circuit-glow:nth-child(2) { top: 60%; right: 15%; animation-delay: 2s; }
-
-        @keyframes circuitFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
-            50% { transform: translate(10px, -10px) scale(1.2); opacity: 0.6; }
-        }
-
-        /* No resume state */
-        .no-resume-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            min-height: 100px;
-            color: #4a5a6a;
-            text-align: center;
-        }
-
-        .no-resume-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-            opacity: 0.5;
-        }
-
-        .no-resume-text {
-            font-size: 10px;
-            letter-spacing: 1px;
-        }
-
-        /* Legacy support */
-        .stats-panel {
-            display: none;
-        }
-        
         /* ============== VACANCY CARDS ============== */
         .vacancy-section {
             margin-top: 20px;
@@ -1203,7 +981,12 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.6);
         }
-        
+
+        .vacancy-card.viewed {
+            opacity: 0.8;
+            border-color: #3a4050 #1a1d25 #1a1d25 #3a4050;
+        }
+
         .vacancy-card-header {
             background: linear-gradient(90deg, #2d333f, #3a4250, #2d333f);
             padding: 10px 12px;
@@ -1212,6 +995,8 @@
             justify-content: space-between;
             align-items: center;
             position: relative;
+            overflow: hidden;
+            gap: 8px;
         }
         
         .vacancy-card-header::before {
@@ -1227,7 +1012,8 @@
         .vacancy-card-id {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            flex-shrink: 0;
         }
         
         .vacancy-card-led {
@@ -1246,13 +1032,65 @@
             font-size: var(--font-size-sm);
             color: #4a9eff;
             letter-spacing: 1px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
-        
+
+        .vacancy-card-source {
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            color: #7dff7d;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
+            opacity: 0.8;
+        }
+
         .vacancy-card-status {
             font-size: var(--font-size-sm);
             letter-spacing: 1px;
             color: #7dff7d;
             text-transform: uppercase;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .vacancy-card-status.analyzing {
+            color: #4a9eff;
+        }
+
+        .stage2-indicator.analyzing {
+            animation: stage2Pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes stage2Pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stage2-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3a4a6a;
+            border-top-color: #4a9eff;
+            border-radius: 50%;
+            animation: stage2Spin 1s linear infinite;
+        }
+
+        @keyframes stage2Spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stage2-btn {
+            transition: all 0.3s ease;
+        }
+
+        .stage2-btn:hover:not(:disabled) {
+            background: linear-gradient(180deg, #2a3a4a, #1a2a3a);
+            border-color: #4a9eff;
         }
         
         .vacancy-card-body {
@@ -1262,24 +1100,49 @@
         .vacancy-card-title {
             color: #f69029;
             font-size: var(--font-size-lg);
-            margin-bottom: 4px;
-            line-height: 1.3;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            word-break: break-word;
         }
-        
+
         .vacancy-card-company {
             color: #7dff7d;
             font-size: var(--font-size-md);
             opacity: 0.8;
             margin-bottom: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        
+
+        .vacancy-card-summary {
+            font-size: var(--font-size-sm);
+            color: #a0b0c0;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 2px solid #4a6a8a;
+            border-radius: 0 4px 4px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
         .vacancy-card-details {
             display: flex;
             flex-direction: column;
             gap: 6px;
             margin-bottom: 12px;
         }
-        
+
         .vacancy-card-detail {
             display: flex;
             align-items: center;
@@ -1364,36 +1227,57 @@
         
         .vacancy-card-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 6px;
             margin-top: 12px;
         }
         
         .vacancy-btn {
-            padding: 10px;
+            padding: 10px 8px;
             background: linear-gradient(180deg, #4a5565, #3a4250);
             border: 3px solid;
             border-color: #5a6570 #2a3040 #2a3040 #5a6570;
             border-radius: 6px;
             font-size: var(--font-size-sm);
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             cursor: pointer;
             transition: all 0.1s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
         }
         
         .vacancy-btn.details { color: #7dff7d; }
         .vacancy-btn.open { color: #f69029; }
+        .vacancy-btn.track { color: #4a9eff; }
+        .vacancy-btn.track:hover { background: rgba(74, 158, 255, 0.2); }
         
         .vacancy-btn:hover { filter: brightness(1.1); }
         .vacancy-btn:active {
             border-color: #2a3040 #5a6570 #5a6570 #2a3040;
             transform: translateY(1px);
         }
-        
+
+        .tracker-status-select {
+            padding: 8px 12px;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 2px solid #4a5565;
+            border-radius: 6px;
+            color: #e0e8f0;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+        }
+        .tracker-status-select:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
         .vacancy-card-footer {
             height: 4px;
             background: linear-gradient(90deg, #2d333f, #5a6070 50%, #2d333f);
@@ -1563,9 +1447,9 @@
         }
 
         .match-score-num {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
-            min-width: 70px;
+            min-width: 80px;
         }
 
         .match-score-num.high { color: #7dff7d; }
@@ -1573,17 +1457,17 @@
         .match-score-num.low { color: #ff6b6b; }
 
         .match-score-meter {
-            width: 120px;
-            height: 12px;
+            width: 150px;
+            height: 14px;
             background: #1a1d25;
-            border-radius: 6px;
+            border-radius: 7px;
             overflow: hidden;
             border: 2px solid #2d333f;
         }
 
         .match-score-fill {
             height: 100%;
-            border-radius: 4px;
+            border-radius: 5px;
             transition: width 0.8s ease-out;
         }
 
@@ -1592,18 +1476,19 @@
         .match-score-fill.low { background: linear-gradient(90deg, #9a3a3a, #ff6b6b); }
 
         .match-score-label {
-            font-size: 11px;
+            font-size: 12px;
             letter-spacing: 1px;
             color: #7dff7d;
         }
 
         .match-score-status {
             margin-left: auto;
-            padding: 6px 12px;
+            padding: 8px 14px;
             background: #1a1d25;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             letter-spacing: 1px;
+            font-weight: bold;
         }
 
         .match-score-status.high { color: #7dff7d; border: 1px solid #3a5a3a; }
@@ -1746,19 +1631,19 @@
         }
 
         .analysis-body {
-            padding: 12px;
+            padding: 16px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 10px;
-            max-height: 250px;
-            overflow-y: auto;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            max-height: none;
+            overflow-y: visible;
         }
 
         .analysis-section {
             background: #1a1d25;
-            border-radius: 4px;
-            padding: 10px 12px;
-            border-left: 3px solid;
+            border-radius: 6px;
+            padding: 14px 16px;
+            border-left: 4px solid;
         }
 
         .analysis-section.strengths { border-left-color: #7dff7d; }
@@ -1770,9 +1655,10 @@
         .analysis-section-header {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
-            font-size: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: bold;
             letter-spacing: 1px;
         }
 
@@ -1787,28 +1673,30 @@
             background: linear-gradient(180deg, #2a2a3a, #1a1a2a);
             border: 3px solid;
             border-color: #5a6070 #1a1d25 #1a1d25 #5a6070;
-            border-radius: 6px;
-            padding: 12px;
-            margin: 12px 0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
         }
 
         .verdict-label {
-            font-size: 10px;
+            font-size: 12px;
+            font-weight: bold;
             letter-spacing: 1px;
             color: #7dccff;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
         }
 
         .verdict-text {
-            font-size: 12px;
+            font-size: 14px;
             color: #e0e8f0;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .recruiter-analysis-container {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
+            padding: 8px;
         }
 
         .analysis-list {
@@ -1818,10 +1706,11 @@
         }
 
         .analysis-list li {
-            padding: 4px 0;
-            font-size: 11px;
-            color: #a0a8b0;
+            padding: 6px 0;
+            font-size: 13px;
+            color: #c0c8d0;
             border-bottom: 1px solid #2d333f;
+            line-height: 1.5;
         }
 
         .analysis-list li:last-child {
@@ -1830,33 +1719,34 @@
 
         .analysis-list li::before {
             content: '› ';
-            opacity: 0.5;
+            opacity: 0.6;
         }
 
         /* Cover Letter Hint - Retro */
         .cover-letter-section {
             background: #1a1d25;
             border: 2px solid #2d333f;
-            border-radius: 4px;
-            padding: 12px;
-            margin: 12px;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px;
             margin-top: 0;
         }
 
         .cover-letter-header {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
-            font-size: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: bold;
             letter-spacing: 1px;
             color: #4a9eff;
         }
 
         .cover-letter-text {
-            font-size: 11px;
-            color: #a0a8b0;
-            line-height: 1.5;
+            font-size: 14px;
+            color: #c0c8d0;
+            line-height: 1.6;
             font-style: italic;
         }
 
@@ -2053,7 +1943,293 @@
         
         .prompt-area::placeholder { color: #3a4250; }
         .prompt-area:focus { outline: none; border-color: #4a9eff; }
-        
+
+        /* Source selection buttons */
+        .source-option {
+            cursor: pointer;
+        }
+        .source-option input[type="radio"] {
+            display: none;
+        }
+        .source-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 2px solid #4a5565;
+            border-radius: 8px;
+            color: #7dff7d;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            transition: all 0.2s;
+        }
+        .source-option input[type="radio"]:checked + .source-btn {
+            background: linear-gradient(180deg, #2a5a4a, #1a4a3a);
+            border-color: #7dff7d;
+            box-shadow: 0 0 12px rgba(125, 255, 125, 0.3);
+        }
+        .source-btn:hover {
+            border-color: #7dff7d;
+            filter: brightness(1.1);
+        }
+
+        /* ============== MAIN NAVIGATION TABS ============== */
+        .main-nav {
+            display: flex;
+            gap: 4px;
+            padding: 12px 20px 0;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border-bottom: 2px solid #1a1d25;
+        }
+        .main-nav-tab {
+            padding: 12px 24px;
+            background: linear-gradient(180deg, #2d333f, #252932);
+            border: 2px solid #3a4250;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            color: #5a6a7a;
+            font-family: var(--font-main);
+            font-size: var(--font-size-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            top: 2px;
+        }
+        .main-nav-tab:hover {
+            color: #7dff7d;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+        }
+        .main-nav-tab.active {
+            background: linear-gradient(180deg, #2d333f, #252932);
+            border-color: #7dff7d;
+            color: #7dff7d;
+            text-shadow: 0 0 8px rgba(125, 255, 125, 0.5);
+        }
+        .main-nav-tab-icon {
+            margin-right: 8px;
+        }
+        .main-nav-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            margin-left: 8px;
+            background: #f69029;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #1a1d25;
+            font-weight: bold;
+        }
+
+        /* Tab content panels */
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Time range buttons */
+        .time-range-btn {
+            padding: 8px 12px;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 2px solid #4a5565;
+            border-radius: 6px;
+            color: #7dff7d;
+            font-family: var(--font-main);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .time-range-btn:hover {
+            border-color: #7dff7d;
+            filter: brightness(1.1);
+        }
+        .time-range-btn.active {
+            background: linear-gradient(180deg, #2a5a4a, #1a4a3a);
+            border-color: #7dff7d;
+            box-shadow: 0 0 8px rgba(125, 255, 125, 0.3);
+        }
+
+        /* Channel tag with remove button */
+        .channel-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: linear-gradient(180deg, #2a5a4a, #1a4a3a);
+            border: 1px solid #3a6050;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #7dff7d;
+        }
+        .channel-tag-remove {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .channel-tag-remove:hover {
+            opacity: 1;
+        }
+
+        /* Search mode tabs */
+        .search-mode-tab {
+            flex: 1;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, #2d333f, #252932);
+            border: none;
+            color: #5a6a7a;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .search-mode-tab:hover {
+            color: #7dff7d;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+        }
+        .search-mode-tab.active {
+            background: linear-gradient(180deg, #2a5a4a, #1a4a3a);
+            color: #7dff7d;
+            text-shadow: 0 0 8px rgba(125, 255, 125, 0.5);
+        }
+        .search-mode-panel {
+            display: none;
+        }
+        .search-mode-panel.active {
+            display: block;
+        }
+
+        /* Tracker filter buttons */
+        .tracker-filter {
+            padding: 8px 16px;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 2px solid #4a5565;
+            border-radius: 6px;
+            color: #7dff7d;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tracker-filter:hover {
+            border-color: #7dff7d;
+            filter: brightness(1.1);
+        }
+        .tracker-filter.active {
+            background: linear-gradient(180deg, #2a5a4a, #1a4a3a);
+            border-color: #7dff7d;
+            box-shadow: 0 0 12px rgba(125, 255, 125, 0.3);
+        }
+
+        /* Tracker list */
+        .tracker-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 16px;
+        }
+        .tracker-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(180deg, #2d333f, #252932);
+            border: 2px dashed #3a4250;
+            border-radius: 12px;
+        }
+
+        /* Tracker card */
+        .tracker-card {
+            background: linear-gradient(180deg, #2d333f, #252932);
+            border: 2px solid #3a4250;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .tracker-card.active {
+            border-color: #7dff7d;
+            box-shadow: 0 4px 20px rgba(125, 255, 125, 0.2);
+        }
+        .tracker-card:hover {
+            border-color: #4a9eff;
+            box-shadow: 0 4px 20px rgba(74, 158, 255, 0.2);
+        }
+        .tracker-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border-bottom: 2px solid #252932;
+        }
+        .tracker-card-source {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: var(--font-size-sm);
+            color: #7dff7d;
+        }
+        .tracker-card-status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .tracker-card-status.wishlist { background: #3a5070; color: #4a9eff; }
+        .tracker-card-status.applied { background: #4a5030; color: #a0c040; }
+        .tracker-card-status.interview { background: #5a4030; color: #f69029; }
+        .tracker-card-status.offer { background: #305030; color: #7dff7d; }
+        .tracker-card-status.rejected { background: #503030; color: #ff6060; }
+        .tracker-card-body {
+            padding: 16px;
+        }
+        .tracker-card-title {
+            font-size: var(--font-size-md);
+            color: #e0e8f0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .tracker-card-company {
+            font-size: var(--font-size-sm);
+            color: #7dff7d;
+            margin-bottom: 12px;
+        }
+
+        .tracker-card-summary {
+            font-size: var(--font-size-sm);
+            color: #a0b0c0;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 2px solid #4a6a8a;
+            border-radius: 0 4px 4px 0;
+            font-size: 11px;
+        }
+
+        .tracker-card-actions {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid #3a4250;
+        }
+        .tracker-card-actions select {
+            flex: 1;
+            padding: 8px 12px;
+            background: #1a1d25;
+            border: 2px solid #3a4250;
+            border-radius: 6px;
+            color: #7dff7d;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+        }
+        .tracker-card-actions select:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
         /* ============== LAYOUT ============== */
         .app-container {
             padding: 24px;
@@ -2113,7 +2289,151 @@
                             </div>
                         </div>
                     </div>
-                    
+
+                    <!-- Main Navigation Tabs -->
+                    <div class="main-nav">
+                        <button class="main-nav-tab" onclick="switchMainTab('home')">
+                            <span class="main-nav-tab-icon">🏠</span>HOME
+                        </button>
+                        <button class="main-nav-tab active" onclick="switchMainTab('search')">
+                            <span class="main-nav-tab-icon">🔍</span>SEARCH
+                        </button>
+                        <button class="main-nav-tab" onclick="switchMainTab('resume')">
+                            <span class="main-nav-tab-icon">📄</span>RESUMES
+                        </button>
+                        <button class="main-nav-tab" onclick="switchMainTab('tracker')">
+                            <span class="main-nav-tab-icon">📋</span>TRACKER
+                            <span class="main-nav-badge" id="trackerBadge" style="display: none;">0</span>
+                        </button>
+                    </div>
+
+                    <!-- HOME TAB -->
+                    <div class="tab-panel" id="tabHome">
+                        <div class="content-area" style="min-height: 400px; padding: 30px;">
+                            <!-- Main Stats Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;">
+
+                                <!-- Search Stats Panel -->
+                                <div class="lcd-panel">
+                                    <div class="lcd-screen" style="padding: 24px;">
+                                        <div class="lcd-title" style="font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 24px;">🔍</span> SEARCH STATISTICS
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                                            <div style="text-align: center; padding: 16px; background: rgba(125,255,125,0.08); border-radius: 8px; border: 1px solid #2a4040;">
+                                                <div style="font-size: 28px; color: #7dff7d; font-weight: bold;" id="homeStatFound">0</div>
+                                                <div style="color: #5a7a6a; font-size: 11px; margin-top: 4px;">FOUND</div>
+                                            </div>
+                                            <div style="text-align: center; padding: 16px; background: rgba(74,158,255,0.08); border-radius: 8px; border: 1px solid #2a4060;">
+                                                <div style="font-size: 28px; color: #4a9eff; font-weight: bold;" id="homeStatProcessed">0</div>
+                                                <div style="color: #5a6a8a; font-size: 11px; margin-top: 4px;">PROCESSED</div>
+                                            </div>
+                                            <div style="text-align: center; padding: 16px; background: rgba(255,96,96,0.08); border-radius: 8px; border: 1px solid #503030;">
+                                                <div style="font-size: 28px; color: #ff6060; font-weight: bold;" id="homeStatRejected">0</div>
+                                                <div style="color: #8a5a5a; font-size: 11px; margin-top: 4px;">REJECTED</div>
+                                            </div>
+                                            <div style="text-align: center; padding: 16px; background: rgba(125,255,125,0.12); border-radius: 8px; border: 1px solid #3a5050;">
+                                                <div style="font-size: 28px; color: #7dff7d; font-weight: bold;" id="homeStatSuitable">0</div>
+                                                <div style="color: #5a8a6a; font-size: 11px; margin-top: 4px;">SUITABLE</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tracker Stats Panel -->
+                                <div class="lcd-panel">
+                                    <div class="lcd-screen" style="padding: 24px;">
+                                        <div class="lcd-title" style="font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 24px;">📋</span> TRACKER PIPELINE
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                                            <div style="text-align: center; padding: 12px 8px; background: rgba(74,158,255,0.1); border-radius: 6px; border: 1px solid #3a5070;">
+                                                <div style="font-size: 24px; color: #4a9eff; font-weight: bold;" id="homeStatWishlist">0</div>
+                                                <div style="color: #5a6a8a; font-size: 10px; margin-top: 2px;">💭 WISHLIST</div>
+                                            </div>
+                                            <div style="text-align: center; padding: 12px 8px; background: rgba(246,144,41,0.1); border-radius: 6px; border: 1px solid #705030;">
+                                                <div style="font-size: 24px; color: #f69029; font-weight: bold;" id="homeStatApplied">0</div>
+                                                <div style="color: #8a6a4a; font-size: 10px; margin-top: 2px;">📤 APPLIED</div>
+                                            </div>
+                                            <div style="text-align: center; padding: 12px 8px; background: rgba(180,120,255,0.1); border-radius: 6px; border: 1px solid #504070;">
+                                                <div style="font-size: 24px; color: #b478ff; font-weight: bold;" id="homeStatInterview">0</div>
+                                                <div style="color: #7a5a9a; font-size: 10px; margin-top: 2px;">🎤 INTERVIEW</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                            <div style="text-align: center; padding: 12px 8px; background: rgba(125,255,125,0.12); border-radius: 6px; border: 1px solid #3a6050;">
+                                                <div style="font-size: 24px; color: #7dff7d; font-weight: bold;" id="homeStatOffer">0</div>
+                                                <div style="color: #5a8a6a; font-size: 10px; margin-top: 2px;">🎉 OFFER</div>
+                                            </div>
+                                            <div style="text-align: center; padding: 12px 8px; background: rgba(255,96,96,0.08); border-radius: 6px; border: 1px solid #503030;">
+                                                <div style="font-size: 24px; color: #ff6060; font-weight: bold;" id="homeStatTrackerRejected">0</div>
+                                                <div style="color: #8a5a5a; font-size: 10px; margin-top: 2px;">❌ REJECTED</div>
+                                            </div>
+                                        </div>
+                                        <!-- Pipeline Progress Bar -->
+                                        <div style="margin-top: 20px;">
+                                            <div style="color: #5a6a7a; font-size: 11px; margin-bottom: 8px;">PIPELINE PROGRESS</div>
+                                            <div style="display: flex; height: 24px; border-radius: 4px; overflow: hidden; background: #1a1d25; border: 1px solid #2a303a;">
+                                                <div id="pipelineWishlist" style="background: linear-gradient(180deg, #4a9eff, #3a7edf); transition: width 0.3s;"></div>
+                                                <div id="pipelineApplied" style="background: linear-gradient(180deg, #f69029, #d67009); transition: width 0.3s;"></div>
+                                                <div id="pipelineInterview" style="background: linear-gradient(180deg, #b478ff, #9458df); transition: width 0.3s;"></div>
+                                                <div id="pipelineOffer" style="background: linear-gradient(180deg, #7dff7d, #5ddf5d); transition: width 0.3s;"></div>
+                                                <div id="pipelineRejected" style="background: linear-gradient(180deg, #ff6060, #df4040); transition: width 0.3s;"></div>
+                                            </div>
+                                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; color: #4a5a6a;">
+                                                <span>Total: <span id="homeStatTrackerTotal" style="color: #7dff7d;">0</span></span>
+                                                <span>Success rate: <span id="homeStatSuccessRate" style="color: #7dff7d;">0%</span></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stats Chart Panel -->
+                                <div class="lcd-panel" style="grid-column: span 2;">
+                                    <div class="lcd-screen" style="padding: 24px;">
+                                        <div class="lcd-title" style="font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 24px;">📊</span> STATISTICS OVERVIEW
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: center;">
+                                            <!-- Pie Chart Canvas -->
+                                            <div style="display: flex; justify-content: center; align-items: center;">
+                                                <canvas id="statsChart" width="180" height="180" style="width: 180px; height: 180px;"></canvas>
+                                            </div>
+                                            <!-- Stats Summary -->
+                                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                                <div style="padding: 12px; background: rgba(125,255,125,0.05); border-radius: 6px; border: 1px solid #2a4040;">
+                                                    <div style="color: #5a7a6a; font-size: 11px; margin-bottom: 4px;">MATCH RATE</div>
+                                                    <div style="font-size: 20px; color: #7dff7d; font-weight: bold;" id="homeMatchRate">0%</div>
+                                                </div>
+                                                <div style="padding: 12px; background: rgba(74,158,255,0.05); border-radius: 6px; border: 1px solid #2a4060;">
+                                                    <div style="color: #5a6a8a; font-size: 11px; margin-bottom: 4px;">SUCCESS RATE</div>
+                                                    <div style="font-size: 20px; color: #4a9eff; font-weight: bold;" id="homeSuccessRate">0%</div>
+                                                </div>
+                                                <div style="padding: 12px; background: rgba(246,144,41,0.05); border-radius: 6px; border: 1px solid #504030;">
+                                                    <div style="color: #8a6a4a; font-size: 11px; margin-bottom: 4px;">APPLY RATE</div>
+                                                    <div style="font-size: 20px; color: #f69029; font-weight: bold;" id="homeApplyRate">0%</div>
+                                                </div>
+                                                <div style="padding: 12px; background: rgba(180,120,255,0.05); border-radius: 6px; border: 1px solid #403050;">
+                                                    <div style="color: #7a5a9a; font-size: 11px; margin-bottom: 4px;">INTERVIEW RATE</div>
+                                                    <div style="font-size: 20px; color: #b478ff; font-weight: bold;" id="homeInterviewRate">0%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #2a303a; color: #5a6a7a; font-size: 11px;">
+                                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                                                <div>Resume: <span id="homeResumeStatus" style="color: #7dff7d;">Not loaded</span></div>
+                                                <div>Channels: <span id="homeChannelsCount" style="color: #4a9eff;">0 configured</span></div>
+                                                <div>Search mode: <span id="homeSearchMode" style="color: #f69029;">Basic</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEARCH TAB (Current main content) -->
+                    <div class="tab-panel active" id="tabSearch">
                     <!-- Content -->
                     <div class="content-area">
                         <div class="main-grid">
@@ -2212,9 +2532,79 @@
                             
                             <!-- Right Column -->
                             <div class="right-column">
-                                <!-- Control Panel -->
+                                <!-- Search Mode Tabs -->
+                                <div class="control-panel" style="padding: 0;">
+                                    <div style="display: flex; border-bottom: 2px solid #1a1d25;">
+                                        <button class="search-mode-tab active" onclick="switchSearchMode('basic')" id="searchModeBasic">
+                                            📋 BASIC
+                                        </button>
+                                        <button class="search-mode-tab" onclick="switchSearchMode('advanced')" id="searchModeAdvanced">
+                                            🤖 AI SEARCH
+                                        </button>
+                                    </div>
+
+                                    <!-- BASIC SEARCH PANEL -->
+                                    <div id="basicSearchPanel" class="search-mode-panel active" style="padding: 16px;">
+                                        <!-- Channel Management -->
+                                        <div class="form-group" style="margin-bottom: 16px;">
+                                            <label class="form-label">TELEGRAM CHANNELS</label>
+                                            <div class="prompt-hint">Add channels to monitor for vacancies</div>
+                                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                                <input type="text" id="newChannelBasic" class="form-select" placeholder="channel_name" style="flex: 1;" onkeypress="if(event.key==='Enter') addChannelBasic()">
+                                                <button class="vacancy-btn" onclick="addChannelBasic()" style="padding: 8px 16px;">+ ADD</button>
+                                            </div>
+                                            <div id="channelTagsBasic" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;"></div>
+                                        </div>
+
+                                        <!-- Time Range -->
+                                        <div class="form-group" style="margin-bottom: 16px;">
+                                            <label class="form-label">TIME RANGE</label>
+                                            <div class="prompt-hint">How far back to search</div>
+                                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px;">
+                                                <button class="time-range-btn" data-days="1" onclick="setTimeRange(1)">24h</button>
+                                                <button class="time-range-btn" data-days="3" onclick="setTimeRange(3)">3 days</button>
+                                                <button class="time-range-btn active" data-days="7" onclick="setTimeRange(7)">7 days</button>
+                                                <button class="time-range-btn" data-days="14" onclick="setTimeRange(14)">14 days</button>
+                                            </div>
+                                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px;">
+                                                <button class="time-range-btn" data-days="30" onclick="setTimeRange(30)">30 days</button>
+                                                <button class="time-range-btn" data-days="60" onclick="setTimeRange(60)">60 days</button>
+                                                <button class="time-range-btn" data-days="90" onclick="setTimeRange(90)">90 days</button>
+                                            </div>
+                                            <input type="hidden" id="daysBackBasic" value="7">
+                                        </div>
+
+                                        <!-- Keyword Filter -->
+                                        <div class="form-group">
+                                            <label class="form-label">KEYWORD FILTER (optional)</label>
+                                            <div class="prompt-hint">Comma-separated keywords to filter results</div>
+                                            <input type="text" id="keywordFilter" class="form-select" placeholder="e.g. Unreal, Unity, C++, remote" style="width: 100%; margin-top: 8px;">
+                                        </div>
+                                    </div>
+
+                                    <!-- ADVANCED (AI) SEARCH PANEL -->
+                                    <div id="advancedSearchPanel" class="search-mode-panel" style="padding: 16px; display: none;">
+                                        <div class="form-group" style="margin-bottom: 16px;">
+                                            <label class="form-label">AI MODEL</label>
+                                            <select id="modelSelectSearch" class="form-select" style="width: 100%;">
+                                                <option value="mistral">Mistral (Local)</option>
+                                                <option value="gemini">Gemini (Cloud)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 16px;">
+                                            <label class="form-label">SEARCH PROMPT</label>
+                                            <div class="prompt-hint">Describe what you're looking for</div>
+                                            <textarea id="aiSearchPrompt" class="prompt-area" style="min-height: 120px;" placeholder="Example: Looking for Senior Unreal Engine Developer positions with C++ experience, remote or hybrid, salary from $80k..."></textarea>
+                                        </div>
+
+                                        <!-- Stage 2 is now triggered manually via Ask Recruiter button -->
+                                    </div>
+                                </div>
+
+                                <!-- Control Buttons -->
                                 <div class="control-panel">
-                                    <div class="panel-title">CONTROL PANEL</div>
+                                    <div class="panel-title">CONTROL</div>
                                     <div class="control-buttons">
                                         <button class="ctrl-btn" id="scanBtn" onclick="toggleScan()">
                                             <div class="ctrl-btn-leds">
@@ -2230,22 +2620,7 @@
                                             <div class="ctrl-btn-corner bl"></div>
                                             <div class="ctrl-btn-corner br"></div>
                                         </button>
-                                        
-                                        <button class="ctrl-btn" onclick="openSettings()">
-                                            <div class="ctrl-btn-leds">
-                                                <div class="ctrl-btn-led green"></div>
-                                                <div class="ctrl-btn-led orange"></div>
-                                            </div>
-                                            <div class="ctrl-btn-content">
-                                                <span class="ctrl-btn-icon">⚙</span>
-                                                <span>CONFIG</span>
-                                            </div>
-                                            <div class="ctrl-btn-corner tl"></div>
-                                            <div class="ctrl-btn-corner tr"></div>
-                                            <div class="ctrl-btn-corner bl"></div>
-                                            <div class="ctrl-btn-corner br"></div>
-                                        </button>
-                                        
+
                                         <button class="ctrl-btn danger" onclick="resetAll()">
                                             <div class="ctrl-btn-leds">
                                                 <div class="ctrl-btn-led green"></div>
@@ -2262,121 +2637,138 @@
                                         </button>
                                     </div>
                                 </div>
-                                
-                                <!-- Resume Disk Slot -->
-                                <div class="disk-slot-panel">
-                                    <div class="panel-title">RESUME DRIVE</div>
-                                    <div class="disk-slot">
-                                        <div class="disk-opening" onclick="triggerFileInput()">
-                                            <div class="disk-empty" id="diskEmpty">INSERT DISK</div>
-                                            <div class="disk-cassette" id="diskCassette">
-                                                <span class="cassette-icon">💾</span>
-                                                <div class="cassette-label">
-                                                    <div class="cassette-name" id="cassetteName">RESUME.DOC</div>
-                                                    <div class="cassette-size" id="cassetteSize">0 KB</div>
-                                                </div>
-                                                <span class="cassette-check">✓</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Resume Info Card -->
-                                        <div class="resume-info-card" id="resumeInfoCard">
-                                            <div class="resume-info-header">
-                                                <div class="resume-info-avatar">👤</div>
-                                                <div class="resume-info-name">
-                                                    <h4 id="resumeInfoName">Candidate</h4>
-                                                    <p id="resumeInfoLevel">LEVEL: — | EXP: —</p>
-                                                </div>
-                                            </div>
-                                            <div class="resume-info-stats">
-                                                <div class="resume-stat">
-                                                    <div class="resume-stat-value" id="resumeInfoExp">—</div>
-                                                    <div class="resume-stat-label">YEARS EXP</div>
-                                                </div>
-                                                <div class="resume-stat">
-                                                    <div class="resume-stat-value" id="resumeInfoSkillCount">—</div>
-                                                    <div class="resume-stat-label">SKILLS</div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <!-- END SEARCH TAB -->
+
+                    <!-- RESUMES TAB -->
+                    <div class="tab-panel" id="tabResume">
+                        <div class="content-area">
+                            <div class="main-grid">
+                                <div class="left-column">
+                                    <!-- Resume Disk Slot -->
+                                    <div class="disk-slot-panel">
+                                        <div class="panel-title">RESUME DRIVE</div>
+                                        <div class="disk-slot">
+                                            <div class="disk-opening" onclick="triggerFileInput()">
+                                                <div class="disk-empty" id="diskEmpty">INSERT DISK</div>
+                                                <div class="disk-cassette" id="diskCassette">
+                                                    <span class="cassette-icon">💾</span>
+                                                    <div class="cassette-label">
+                                                        <div class="cassette-name" id="cassetteName">RESUME.DOC</div>
+                                                        <div class="cassette-size" id="cassetteSize">0 KB</div>
+                                                    </div>
+                                                    <span class="cassette-check">✓</span>
                                                 </div>
                                             </div>
-                                            <div class="resume-skills" id="resumeInfoSkills"></div>
-                                        </div>
-                                        
-                                        <div class="disk-leds">
-                                            <div class="disk-led">
-                                                <div class="disk-led-dot" id="ledReady"></div>
-                                                <span class="disk-led-label green">READY</span>
+                                            
+                                            <!-- Resume Info Card -->
+                                            <div class="resume-info-card" id="resumeInfoCard">
+                                                <div class="resume-info-header">
+                                                    <div class="resume-info-avatar">👤</div>
+                                                    <div class="resume-info-name">
+                                                        <h4 id="resumeInfoName">Candidate</h4>
+                                                        <p id="resumeInfoLevel">LEVEL: — | EXP: —</p>
+                                                    </div>
+                                                </div>
+                                                <div class="resume-info-stats">
+                                                    <div class="resume-stat">
+                                                        <div class="resume-stat-value" id="resumeInfoExp">—</div>
+                                                        <div class="resume-stat-label">YEARS EXP</div>
+                                                    </div>
+                                                    <div class="resume-stat">
+                                                        <div class="resume-stat-value" id="resumeInfoSkillCount">—</div>
+                                                        <div class="resume-stat-label">SKILLS</div>
+                                                    </div>
+                                                </div>
+                                                <div class="resume-skills" id="resumeInfoSkills"></div>
                                             </div>
-                                            <div class="disk-led">
-                                                <div class="disk-led-dot" id="ledBusy"></div>
-                                                <span class="disk-led-label orange">BUSY</span>
+                                            
+                                            <div class="disk-leds">
+                                                <div class="disk-led">
+                                                    <div class="disk-led-dot" id="ledReady"></div>
+                                                    <span class="disk-led-label green">READY</span>
+                                                </div>
+                                                <div class="disk-led">
+                                                    <div class="disk-led-dot" id="ledBusy"></div>
+                                                    <span class="disk-led-label orange">BUSY</span>
+                                                </div>
                                             </div>
+                                            
+                                            <div class="disk-buttons">
+                                                <button class="disk-btn insert" id="insertBtn" onclick="triggerFileInput()">↑ INSERT</button>
+                                                <button class="disk-btn eject" id="ejectBtn" onclick="ejectDisk()" disabled>⏏ EJECT</button>
+                                            </div>
+                                            
+                                            <div class="disk-hint" id="diskHint">INSERT RESUME DISK</div>
                                         </div>
-                                        
-                                        <div class="disk-buttons">
-                                            <button class="disk-btn insert" id="insertBtn" onclick="triggerFileInput()">↑ INSERT</button>
-                                            <button class="disk-btn eject" id="ejectBtn" onclick="ejectDisk()" disabled>⏏ EJECT</button>
-                                        </div>
-                                        
-                                        <div class="disk-hint" id="diskHint">INSERT RESUME DISK</div>
+                                        <input type="file" class="hidden-input" id="fileInput" accept=".txt,.pdf,.docx,.html,.htm" onchange="uploadResume(this)">
                                     </div>
-                                    <input type="file" class="hidden-input" id="fileInput" accept=".txt,.pdf,.docx,.html,.htm" onchange="uploadResume(this)">
                                 </div>
 
-                                <!-- Resume Intel Panel -->
-                                <div class="resume-intel-panel" id="resumeIntelPanel">
-                                    <div class="resume-intel-header">
-                                        <div class="resume-intel-icon">🔬</div>
-                                        <div class="resume-intel-title">RESUME INTEL</div>
-                                    </div>
-                                    <div class="resume-intel-body" id="resumeIntelBody">
-                                        <div class="circuit-pattern"></div>
-                                        <div class="circuit-glow"></div>
-                                        <div class="circuit-glow"></div>
-
-                                        <!-- Default state - animated waveform -->
-                                        <div class="no-resume-state" id="noResumeState">
-                                            <div class="waveform">
-                                                <div class="wave-bar"></div>
-                                                <div class="wave-bar"></div>
-                                                <div class="wave-bar"></div>
-                                                <div class="wave-bar"></div>
-                                                <div class="wave-bar"></div>
-                                                <div class="wave-bar"></div>
-                                                <div class="wave-bar"></div>
-                                                <div class="wave-bar"></div>
-                                            </div>
-                                            <div class="no-resume-text">AWAITING RESUME DATA</div>
+                                <div class="right-column">
+                                    <div class="control-panel">
+                                        <div class="panel-title">RESUME LIBRARY</div>
+                                        <div class="prompt-hint" style="margin-bottom: 12px;">Store multiple resumes, choose the active one for analysis, re-activate previously uploaded files without re-uploading.</div>
+                                        <div id="resumeLibraryList" class="tracker-list" style="grid-template-columns: 1fr; gap: 12px;">
+                                            <!-- Filled by JS -->
                                         </div>
-
-                                        <!-- Stats shown when resume loaded -->
-                                        <div class="resume-stats" id="resumeStatsView" style="display: none;">
-                                            <div class="resume-stat">
-                                                <div class="resume-stat-value" id="resumeWords">0</div>
-                                                <div class="resume-stat-label">WORDS</div>
+                                        <button class="ctrl-btn danger" style="margin-top: 12px; width: 100%;" onclick="clearSavedResumes()">
+                                            <div class="ctrl-btn-content">
+                                                <span class="ctrl-btn-icon">🗑️</span>
+                                                <span>CLEAR LIBRARY</span>
                                             </div>
-                                            <div class="resume-stat">
-                                                <div class="resume-stat-value" id="resumeSkills">0</div>
-                                                <div class="resume-stat-label">SKILLS</div>
-                                            </div>
-                                            <div class="resume-stat">
-                                                <div class="resume-stat-value" id="resumeExp">0</div>
-                                                <div class="resume-stat-label">YRS EXP</div>
-                                            </div>
-                                            <div class="resume-stat">
-                                                <div class="resume-stat-value" id="resumeScore">-</div>
-                                                <div class="resume-stat-label">READY</div>
-                                            </div>
-                                        </div>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- TRACKER TAB -->
+                    <div class="tab-panel" id="tabTracker">
+                        <div class="content-area">
+                            <div style="max-width: 1400px; margin: 0 auto;">
+                                <!-- Tracker Header -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div class="vacancy-header-dot" style="background: #4a9eff;"></div>
+                                        <span class="vacancy-header-text">MY VACANCIES :: <span id="trackerCount">0</span> TRACKED</span>
+                                    </div>
+                                    <button class="ctrl-btn" onclick="openAddVacancyModal()" style="width: auto; padding: 8px 20px;">
+                                        <div class="ctrl-btn-content">
+                                            <span class="ctrl-btn-icon">+</span>
+                                            <span>ADD CUSTOM</span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Tracker Filters -->
+                                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                                    <button class="tracker-filter active" onclick="filterTracker('all')" data-filter="all">ALL</button>
+                                    <button class="tracker-filter" onclick="filterTracker('wishlist')" data-filter="wishlist">📌 WISHLIST</button>
+                                    <button class="tracker-filter" onclick="filterTracker('applied')" data-filter="applied">✉️ APPLIED</button>
+                                    <button class="tracker-filter" onclick="filterTracker('interview')" data-filter="interview">🎯 INTERVIEW</button>
+                                    <button class="tracker-filter" onclick="filterTracker('offer')" data-filter="offer">🎉 OFFER</button>
+                                    <button class="tracker-filter" onclick="filterTracker('rejected')" data-filter="rejected">❌ REJECTED</button>
+                                </div>
+
+                                <!-- Tracker List -->
+                                <div class="tracker-list" id="trackerList">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END TRACKER TAB -->
+
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Modal -->
     <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
         <div class="modal-window chrome-panel" onclick="event.stopPropagation()">
@@ -2422,9 +2814,9 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal-backdrop" id="settingsModal" onclick="closeSettingsModal(event)">
-        <div class="modal-window chrome-panel" onclick="event.stopPropagation()" style="max-width: 900px;">
+    <!-- Add Custom Vacancy Modal -->
+    <div class="modal-backdrop" id="addVacancyModal" onclick="closeAddVacancyModal(event)">
+        <div class="modal-window chrome-panel" onclick="event.stopPropagation()" style="max-width: 800px;">
             <div class="chrome-panel-middle">
                 <div class="chrome-panel-inner">
                     <div class="title-bar">
@@ -2434,83 +2826,89 @@
                                 <div class="led orange"></div>
                                 <div class="led blue"></div>
                             </div>
-                            <span class="title-text" style="margin-left: 12px;">⚙ CONFIGURATION</span>
+                            <span class="title-text" style="margin-left: 12px;">+ ADD CUSTOM VACANCY</span>
                             <div class="window-controls" style="margin-left: auto;">
-                                <button class="win-btn close" onclick="closeSettingsModal()">×</button>
+                                <button class="win-btn close" onclick="closeAddVacancyModal()">×</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-body" style="padding: 30px;">
-                        <!-- Model & Days -->
-                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
-                            <div class="form-group">
-                                <label class="form-label">AI MODEL</label>
-                                <select class="form-select" id="modelSelect">
-                                    <option value="mistral">Mistral 7B</option>
-                                    <option value="gemini">Gemini API</option>
-                                    <option value="ollama">Ollama</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">DAYS BACK</label>
-                                <select class="form-select" id="daysSelect">
-                                    <option value="1">1 day</option>
-                                    <option value="3">3 days</option>
-                                    <option value="7" selected>7 days</option>
-                                    <option value="14">14 days</option>
-                                    <option value="30">30 days</option>
-                                </select>
+                        <!-- Source Selection -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label class="form-label">SOURCE PLATFORM</label>
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+                                <label class="source-option">
+                                    <input type="radio" name="vacancySource" value="linkedin" checked>
+                                    <span class="source-btn">🔗 LinkedIn</span>
+                                </label>
+                                <label class="source-option">
+                                    <input type="radio" name="vacancySource" value="headhunter">
+                                    <span class="source-btn">🎯 HeadHunter</span>
+                                </label>
+                                <label class="source-option">
+                                    <input type="radio" name="vacancySource" value="habr">
+                                    <span class="source-btn">💼 Habr Career</span>
+                                </label>
+                                <label class="source-option">
+                                    <input type="radio" name="vacancySource" value="custom">
+                                    <span class="source-btn">📝 Other</span>
+                                </label>
                             </div>
                         </div>
 
-                        <!-- Filter Criteria -->
-                        <div style="margin-bottom: 24px;">
-                            <label class="form-label">FILTER CRITERIA</label>
-                            <div class="prompt-hint">💡 Empty = all vacancies accepted</div>
-                            <textarea class="prompt-area" id="searchPrompt" placeholder="Looking for:
-✅ Unreal Engine developer (junior, middle)
-✅ C++ developer in gamedev
-✅ Game programmer
-
-NOT suitable:
-❌ Senior positions (3+ years exp)
-❌ Unity-only without Unreal
-❌ Managers, HR, artists"></textarea>
+                        <!-- Job Title -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label class="form-label">JOB TITLE</label>
+                            <input type="text" id="customVacancyTitle" class="form-select" placeholder="e.g. Senior Unreal Engine Developer" style="width: 100%;">
                         </div>
 
-                        <!-- Telegram Channels -->
-                        <div>
-                            <label class="form-label">TELEGRAM CHANNELS</label>
-                            <div class="prompt-hint">📡 List of channels to monitor</div>
-
-                            <div id="channelsList" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                                <!-- Channels will be added dynamically -->
+                        <!-- Company -->
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label class="form-label">COMPANY</label>
+                                <input type="text" id="customVacancyCompany" class="form-select" placeholder="e.g. Epic Games" style="width: 100%;">
                             </div>
-
-                            <div style="margin-top: 12px; display: flex; gap: 8px;">
-                                <input
-                                    type="text"
-                                    id="newChannelInput"
-                                    class="form-select"
-                                    placeholder="@channel or t.me/channel or -100123456"
-                                    style="flex: 1;"
-                                    onkeypress="if(event.key==='Enter') addChannel()"
-                                >
-                                <button class="ctrl-btn" onclick="addChannel()" style="width: auto; padding: 0 20px;">
-                                    <div class="ctrl-btn-content">
-                                        <span class="ctrl-btn-icon">+</span>
-                                        <span>ADD</span>
-                                    </div>
-                                </button>
+                            <div class="form-group">
+                                <label class="form-label">LINK (optional)</label>
+                                <input type="text" id="customVacancyLink" class="form-select" placeholder="https://..." style="width: 100%;">
                             </div>
-                            <div class="prompt-hint" style="margin-top: 8px; color: #ff6060;">⚠️ If list is empty, scan won't start!</div>
+                        </div>
+
+                        <!-- Vacancy Text -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label class="form-label">VACANCY DESCRIPTION</label>
+                            <div class="prompt-hint">📋 Paste the full job description here</div>
+                            <textarea class="prompt-area" id="customVacancyText" placeholder="Paste the job description here...
+
+Requirements:
+- 3+ years of experience with Unreal Engine
+- Strong C++ skills
+- ...
+
+Responsibilities:
+- Develop gameplay systems
+- ...
+
+Benefits:
+- Competitive salary
+- ..." style="min-height: 250px;"></textarea>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="form-group">
+                            <label class="source-option" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="skipAnalysis">
+                                <span style="color: #7dff7d; font-size: 14px;">⚡ Skip AI analysis (add directly)</span>
+                            </label>
                         </div>
                     </div>
 
                     <div class="modal-actions">
-                        <button class="modal-btn" onclick="closeSettingsModal()">CANCEL</button>
-                        <button class="modal-btn primary" onclick="saveSettingsAndClose()">SAVE</button>
+                        <button class="modal-btn" onclick="closeAddVacancyModal()">CANCEL</button>
+                        <button class="modal-btn primary" onclick="submitCustomVacancy()" id="submitVacancyBtn">
+                            <span id="submitVacancyText">ADD VACANCY</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2524,20 +2922,625 @@ NOT suitable:
         let vacancies = [];
         let currentVacancy = null;
         let resumeData = null;
+        let savedResumes = [];
+        let activeResumeId = null;
         const improvementTasks = {};
-        
+
+        // Tracker state
+        let trackedVacancies = [];
+        let currentTrackerFilter = 'all';
+
+        // Stage 2 progress tracking
+        const stage2InProgress = new Set();
+
+        // Search mode state
+        let searchMode = 'basic'; // 'basic' or 'advanced'
+
+        // Channels state
+        let channels = [];
+
         // ============== INIT ==============
         document.addEventListener('DOMContentLoaded', () => {
             initVUMeter();
             updateClock();
             setInterval(updateClock, 1000);
             initSystemMonitor();
-            loadAvailableModels();  // Загружаем доступные модели
+            loadSavedResumes();
+            loadAvailableModels();
             restoreSession();
             loadVacancies();
+            loadTrackedVacancies();
             connectWS();
         });
+
+        // ============== MAIN TAB NAVIGATION ==============
+        function switchMainTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.main-nav-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.main-nav-tab[onclick="switchMainTab('${tabName}')"]`).classList.add('active');
+
+            // Update tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+
+            // Update home stats when switching to home
+            if (tabName === 'home') {
+                updateHomeStats();
+            }
+        }
+
+        function updateHomeStats() {
+            // Update basic stats
+            const totalEl = document.getElementById('homeStatTotal');
+            const trackedEl = document.getElementById('homeStatTracked');
+            if (totalEl) totalEl.textContent = vacancies.length;
+            if (trackedEl) trackedEl.textContent = trackedVacancies.length;
+
+            // Calculate tracker status counts from the actual trackedVacancies array
+            const wishlist = trackedVacancies.filter(v => v.tracker_status === 'wishlist').length;
+            const applied = trackedVacancies.filter(v => v.tracker_status === 'applied').length;
+            const interview = trackedVacancies.filter(v => v.tracker_status === 'interview').length;
+            const offer = trackedVacancies.filter(v => v.tracker_status === 'offer').length;
+            const rejected = trackedVacancies.filter(v => v.tracker_status === 'rejected').length;
+
+            // Update the stats display elements with safety checks
+            const wishlistEl = document.getElementById('homeStatWishlist');
+            const appliedEl = document.getElementById('homeStatApplied');
+            const interviewEl = document.getElementById('homeStatInterview');
+            const offerEl = document.getElementById('homeStatOffer');
+            const rejectedEl = document.getElementById('homeStatTrackerRejected');
+
+            if (wishlistEl) wishlistEl.textContent = wishlist;
+            if (appliedEl) appliedEl.textContent = applied;
+            if (interviewEl) interviewEl.textContent = interview;
+            if (offerEl) offerEl.textContent = offer;
+            if (rejectedEl) rejectedEl.textContent = rejected;
+
+            // Update tracker pipeline stats
+            const totalTracked = trackedVacancies.length;
+            // Use the values calculated earlier to avoid duplicate variable declarations
+            const wishlistCount = trackedVacancies.filter(v => v.tracker_status === 'wishlist').length;
+            const appliedCount = trackedVacancies.filter(v => v.tracker_status === 'applied').length;
+            const interviewCount = trackedVacancies.filter(v => v.tracker_status === 'interview').length;
+            const offerCount = trackedVacancies.filter(v => v.tracker_status === 'offer').length;
+            const rejectedCount = trackedVacancies.filter(v => v.tracker_status === 'rejected').length;
+
+            // Update tracker pipeline display
+            const trackerTotalEl = document.getElementById('homeStatTrackerTotal');
+            const successRate = totalTracked > 0 ? Math.round((offerCount / totalTracked) * 100) : 0;
+            const successRateEl = document.getElementById('homeStatSuccessRate');
+
+            if (trackerTotalEl) trackerTotalEl.textContent = totalTracked;
+            if (successRateEl) successRateEl.textContent = successRate + '%';
+
+            // Update pipeline progress bars
+            updatePipelineProgress(wishlistCount, appliedCount, interviewCount, offerCount, rejectedCount, totalTracked);
+
+            // Update chart statistics
+            updateChartStats();
+        }
+
+        function updatePipelineProgress(wishlistCount, appliedCount, interviewCount, offerCount, rejectedCount, total) {
+            if (total === 0) {
+                // Set all to 0 if no tracked items
+                ['pipelineWishlist', 'pipelineApplied', 'pipelineInterview', 'pipelineOffer', 'pipelineRejected'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.width = '0%';
+                });
+                return;
+            }
+
+            const wishlistPercent = (wishlistCount / total) * 100;
+            const appliedPercent = (appliedCount / total) * 100;
+            const interviewPercent = (interviewCount / total) * 100;
+            const offerPercent = (offerCount / total) * 100;
+            const rejectedPercent = (rejectedCount / total) * 100;
+
+            const wishlistEl = document.getElementById('pipelineWishlist');
+            const appliedEl = document.getElementById('pipelineApplied');
+            const interviewEl = document.getElementById('pipelineInterview');
+            const offerEl = document.getElementById('pipelineOffer');
+            const rejectedEl = document.getElementById('pipelineRejected');
+
+            if (wishlistEl) wishlistEl.style.width = wishlistPercent + '%';
+            if (appliedEl) appliedEl.style.width = appliedPercent + '%';
+            if (interviewEl) interviewEl.style.width = interviewPercent + '%';
+            if (offerEl) offerEl.style.width = offerPercent + '%';
+            if (rejectedEl) rejectedEl.style.width = rejectedPercent + '%';
+        }
+
+        function updateChartStats() {
+            // Get base stats from LCD display with safety checks
+            const lcdFoundEl = document.getElementById('lcdFound');
+            const lcdSuitableEl = document.getElementById('lcdSuitable');
+            const found = lcdFoundEl ? parseInt(lcdFoundEl.textContent) || 0 : 0;
+            const suitable = lcdSuitableEl ? parseInt(lcdSuitableEl.textContent) || 0 : 0;
+
+            // Calculate match rate: suitable / found
+            const matchRate = found > 0 ? Math.round((suitable / found) * 100) : 0;
+            const homeMatchRateEl = document.getElementById('homeMatchRate');
+            if (homeMatchRateEl) homeMatchRateEl.textContent = matchRate + '%';
+
+            // Get tracker stats from the home stat elements (which are now updated from actual data)
+            const offer = parseInt(document.getElementById('homeStatOffer')?.textContent || '0');
+            const applied = parseInt(document.getElementById('homeStatApplied')?.textContent || '0');
+            const rejected = parseInt(document.getElementById('homeStatTrackerRejected')?.textContent || '0');
+            const wishlist = parseInt(document.getElementById('homeStatWishlist')?.textContent || '0');
+            const interview = parseInt(document.getElementById('homeStatInterview')?.textContent || '0');
+
+            // Calculate success rate: offer / (applied + offer + rejected)
+            const successRate = (applied + offer + rejected) > 0 ? Math.round((offer / (applied + offer + rejected)) * 100) : 0;
+            const homeSuccessRateEl = document.getElementById('homeSuccessRate');
+            if (homeSuccessRateEl) homeSuccessRateEl.textContent = successRate + '%';
+
+            // Calculate apply rate: applied / wishlist
+            const applyRate = wishlist > 0 ? Math.round((applied / wishlist) * 100) : 0;
+            const homeApplyRateEl = document.getElementById('homeApplyRate');
+            if (homeApplyRateEl) homeApplyRateEl.textContent = applyRate + '%';
+
+            // Calculate interview rate: interview / applied
+            const interviewRate = applied > 0 ? Math.round((interview / applied) * 100) : 0;
+            const homeInterviewRateEl = document.getElementById('homeInterviewRate');
+            if (homeInterviewRateEl) homeInterviewRateEl.textContent = interviewRate + '%';
+
+            // Draw the chart with actual tracker data
+            drawStatsChart(found, suitable, applied, interview, offer, rejected);
+        }
+
+        function drawStatsChart(found, suitable, applied, interview, offer, rejected) {
+            const canvas = document.getElementById('statsChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 80;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw outer circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#2a303a';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+
+            // Calculate values for chart
+            const total = suitable + applied + interview + offer + rejected;
+            if (total === 0) return;
+
+            let startAngle = -Math.PI / 2;
+            const colors = ['#7dff7d', '#4a9eff', '#f69029', '#b478ff', '#ff6060']; // green, blue, orange, purple, red
+            const values = [suitable, applied, interview, offer, rejected];
+            const labels = ['Suitable', 'Applied', 'Interview', 'Offer', 'Rejected'];
+
+            // Draw each segment
+            for (let i = 0; i < values.length; i++) {
+                if (values[i] === 0) continue;
+
+                const sliceAngle = (values[i] / total) * 2 * Math.PI;
+
+                // Draw arc
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+                ctx.strokeStyle = colors[i];
+                ctx.lineWidth = 8;
+                ctx.stroke();
+
+                // Draw inner arc to create doughnut effect
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius - 4, startAngle + sliceAngle, startAngle, true);
+                ctx.strokeStyle = '#1a1d25';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                startAngle += sliceAngle;
+            }
+
+            // Draw center text
+            ctx.fillStyle = '#7dff7d';
+            ctx.font = 'bold 18px "Share Tech Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(total.toString(), centerX, centerY);
+
+            ctx.fillStyle = '#5a6a7a';
+            ctx.font = '12px "Share Tech Mono", monospace';
+            ctx.fillText('TOTAL', centerX, centerY + 20);
+        }
+
+        // ============== TRACKER ==============
+        async function loadTrackedVacancies() {
+            try {
+                const response = await fetch('/api/tracker');
+                const data = await response.json();
+                trackedVacancies = data.vacancies || [];
+                renderTrackerList();
+                updateTrackerBadge();
+            } catch (error) {
+                console.error('Error loading tracker:', error);
+            }
+        }
+
+        function isInTracker(vacancyId) {
+            return trackedVacancies.some(v => v.id === vacancyId);
+        }
+
+        async function addToTracker(vacancyId) {
+            const vacancy = vacancies.find(v => v.id === vacancyId);
+            if (!vacancy || isInTracker(vacancyId)) return;
+
+            const trackedVacancy = {
+                ...vacancy,
+                tracker_status: 'wishlist',
+                tracked_at: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch('/api/tracker/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vacancy: trackedVacancy })
+                });
+                const result = await response.json();
+
+                if (result.status === 'added') {
+                    trackedVacancies.unshift(trackedVacancy);
+                    renderTrackerList();
+                    updateTrackerBadge();
+                    updateHomeStats();
+
+                    // Update button on search card
+                    const btn = document.getElementById('trackBtn_' + vacancyId);
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                        btn.innerHTML = '📌 TRACKED';
+                    }
+                }
+            } catch (error) {
+                console.error('Error adding to tracker:', error);
+            }
+        }
+
+        async function updateTrackerStatus(vacancyId, newStatus) {
+            try {
+                const response = await fetch('/api/tracker/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vacancy_id: vacancyId, status: newStatus })
+                });
+                const result = await response.json();
+
+                if (result.status === 'updated') {
+                    const idx = trackedVacancies.findIndex(v => v.id === vacancyId);
+                    if (idx >= 0) {
+                        trackedVacancies[idx].tracker_status = newStatus;
+                        renderTrackerList();
+                        updateHomeStats();
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating tracker status:', error);
+            }
+        }
+
+        async function removeFromTracker(vacancyId) {
+            try {
+                const response = await fetch('/api/tracker/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vacancy_id: vacancyId })
+                });
+                const result = await response.json();
+
+                if (result.status === 'removed') {
+                    // Remove from local array
+                    trackedVacancies = trackedVacancies.filter(v => v.id !== vacancyId);
+
+                    // Re-render the list
+                    renderTrackerList();
+                    updateTrackerBadge();
+                    updateHomeStats();
+
+                    // Update button on search card
+                    const btn = document.getElementById('trackBtn_' + vacancyId);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.innerHTML = '📌 TRACK';
+                    }
+                }
+            } catch (error) {
+                console.error('Error removing from tracker:', error);
+            }
+        }
+
+        function updateTrackerBadge() {
+            const badge = document.getElementById('trackerBadge');
+            const count = trackedVacancies.length;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-flex';
+            } else {
+                badge.style.display = 'none';
+            }
+            document.getElementById('trackerCount').textContent = count;
+        }
+
+        function filterTracker(filter) {
+            currentTrackerFilter = filter;
+            document.querySelectorAll('.tracker-filter').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            renderTrackerList();
+        }
+
+        function renderTrackerList() {
+            const container = document.getElementById('trackerList');
+
+            let filtered = trackedVacancies;
+            if (currentTrackerFilter !== 'all') {
+                filtered = trackedVacancies.filter(v => v.tracker_status === currentTrackerFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="tracker-empty">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div style="font-size: 18px; color: #7dff7d; margin-bottom: 8px;">NO TRACKED VACANCIES</div>
+                        <div style="color: #5a6a7a; font-size: 14px;">Add vacancies from Search or create custom ones</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const sourceIcons = {
+                'telegram': '📱',
+                'linkedin': '🔗',
+                'headhunter': '🎯',
+                'habr': '💼',
+                'custom': '📝'
+            };
+
+            container.innerHTML = filtered.map(v => {
+                const sourceIcon = sourceIcons[v.source] || '📱';
+                const firstLine = (v.text || '').split('\n').find(l => l.trim()) || '';
+                const shortTitle = v.title || firstLine.substring(0, 60) || 'Vacancy';
+
+                // Match Rate from recruiter analysis or comparison
+                const hasRecruiterScore = v.recruiter_analysis && typeof v.recruiter_analysis.match_score === 'number' && v.recruiter_analysis.match_score > 0;
+                const hasComparisonScore = v.comparison && typeof v.comparison.match_score === 'number' && v.comparison.match_score > 0;
+                const match = hasRecruiterScore ? v.recruiter_analysis.match_score : (hasComparisonScore ? v.comparison.match_score : null);
+                const matchClass = match !== null ? (match >= 70 ? 'high' : match >= 50 ? 'medium' : 'low') : 'none';
+
+                const matchMeterHTML = match !== null ? `
+                    <div class="match-meter" style="margin: 12px 0;">
+                        <div class="match-meter-header">
+                            <div class="match-meter-label">
+                                <span class="match-meter-icon">📈</span>
+                                <span>MATCH RATE</span>
+                            </div>
+                            <span class="match-meter-value ${matchClass}">${match}%</span>
+                        </div>
+                        <div class="match-meter-bar">
+                            <div class="match-meter-fill ${matchClass}" style="width: ${match}%;"></div>
+                        </div>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="vacancy-card" id="tracker_${v.id}">
+                        <div class="vacancy-card-header">
+                            <div class="vacancy-card-id">
+                                <div class="vacancy-card-led ${v.tracker_status === 'offer' ? 'active' : v.tracker_status === 'rejected' ? 'archived' : 'pending'}"></div>
+                                <span class="vacancy-card-code">${sourceIcon}</span>
+                            </div>
+                            <span class="vacancy-card-source" title="${escapeHtml(v.channel || 'Unknown')}">${escapeHtml(v.channel || 'Unknown')}</span>
+                            <span class="vacancy-card-status" style="color: ${getStatusColor(v.tracker_status)}">${(v.tracker_status || 'wishlist').toUpperCase()}</span>
+                        </div>
+                        <div class="vacancy-card-body">
+                            <div class="vacancy-card-title">${escapeHtml(shortTitle)}</div>
+                            ${matchMeterHTML}
+                            <div class="vacancy-card-actions" style="grid-template-columns: 1fr auto auto;">
+                                <select onchange="updateTrackerStatus('${v.id}', this.value)" class="tracker-status-select">
+                                    <option value="wishlist" ${v.tracker_status === 'wishlist' ? 'selected' : ''}>📌 Wishlist</option>
+                                    <option value="applied" ${v.tracker_status === 'applied' ? 'selected' : ''}>✉️ Applied</option>
+                                    <option value="interview" ${v.tracker_status === 'interview' ? 'selected' : ''}>🎯 Interview</option>
+                                    <option value="offer" ${v.tracker_status === 'offer' ? 'selected' : ''}>🎉 Offer</option>
+                                    <option value="rejected" ${v.tracker_status === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
+                                </select>
+                                <button class="vacancy-btn details" onclick="showTrackedDetails('${v.id}')">📋 DETAILS</button>
+                                <button class="vacancy-btn" onclick="event.stopPropagation(); removeFromTracker('${v.id}')" style="color: #ff6060; padding: 8px 12px;">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="vacancy-card-footer"></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showTrackedDetails(id) {
+            try {
+                // Find vacancy in tracker array
+                currentVacancy = trackedVacancies.find(v => v.id === id);
+                if (!currentVacancy) {
+                    console.error('Vacancy not found:', id);
+                    return;
+                }
+
+                // Show modal with full details
+                const modalTitle = document.getElementById('modalTitle');
+                const tabDetails = document.getElementById('tabDetails');
+                const tabAnalysis = document.getElementById('tabAnalysis');
+                const resumeTab = document.getElementById('resumeTab');
+                const modal = document.getElementById('modal');
+
+                if (!modalTitle || !tabDetails || !tabAnalysis || !modal) {
+                    console.error('Modal elements not found');
+                    return;
+                }
+
+                modalTitle.textContent = 'VACANCY :: ' + (currentVacancy.channel || '').substring(0, 20);
+
+                // Details tab
+                tabDetails.innerHTML = `
+                    <div style="font-family: var(--font-main); font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.7; white-space: pre-wrap;">
+                        ${escapeHtml(currentVacancy.text || 'No description')}
+                    </div>
+                `;
+
+                // Analysis tab
+                let analysisContent = '';
+                if (currentVacancy.analysis) {
+                    analysisContent += `
+                        <div style="padding: 16px; background: linear-gradient(180deg, #1a2a2a, #0a1a1a); border: 2px solid #3a5050; border-radius: 8px; margin-bottom: 16px;">
+                            <div style="font-size: var(--font-size-sm); color: #7dff7d; letter-spacing: 1px; margin-bottom: 12px;">🔍 STAGE 1: FILTER ANALYSIS</div>
+                            <div style="font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.6;">${formatAnalysis(currentVacancy.analysis)}</div>
+                        </div>
+                    `;
+                }
+
+                if (currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0) {
+                    analysisContent += `
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px; padding: 0 16px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                            ${renderRecruiterAnalysis(currentVacancy.recruiter_analysis)}
+                        </div>
+                    `;
+                }
+
+                tabAnalysis.innerHTML = analysisContent || '<div style="color: #5a6070;">No analysis available</div>';
+
+                // Resume+ tab
+                if (resumeTab) {
+                    resumeTab.style.display = resumeData ? 'block' : 'none';
+                }
+
+                const streamImprove = document.getElementById('streamImprove');
+                if (streamImprove) streamImprove.classList.remove('active');
+
+                const resumeComparison = document.getElementById('resumeComparison');
+                const improveBtn = document.getElementById('improveBtn');
+
+                if (currentVacancy.comparison && currentVacancy.comparison.improved_resume) {
+                    if (resumeComparison) resumeComparison.innerHTML = renderComparisonResult(currentVacancy.comparison);
+                    if (improveBtn) improveBtn.style.display = 'none';
+                } else {
+                    if (resumeComparison) resumeComparison.innerHTML = '';
+                    if (improveBtn) {
+                        improveBtn.style.display = 'block';
+                        improveBtn.innerHTML = `
+                            <div class="ctrl-btn-content">
+                                <span class="ctrl-btn-icon">✨</span>
+                                <span>GENERATE IMPROVED RESUME</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                const applyBtn = document.getElementById('applyBtn');
+                if (applyBtn && currentVacancy.link) {
+                    applyBtn.onclick = () => window.open(currentVacancy.link, '_blank');
+                }
+
+                switchTab('details');
+                modal.classList.add('active');
+            } catch (error) {
+                console.error('Error showing tracked details:', error);
+            }
+        }
         
+        // ============== SEARCH MODE ==============
+        let selectedDaysBack = 7;
+
+        function switchSearchMode(mode) {
+            searchMode = mode;
+
+            // Update tabs
+            document.getElementById('searchModeBasic').classList.toggle('active', mode === 'basic');
+            document.getElementById('searchModeAdvanced').classList.toggle('active', mode === 'advanced');
+
+            // Update panels
+            document.getElementById('basicSearchPanel').classList.toggle('active', mode === 'basic');
+            document.getElementById('basicSearchPanel').style.display = mode === 'basic' ? 'block' : 'none';
+            document.getElementById('advancedSearchPanel').classList.toggle('active', mode === 'advanced');
+            document.getElementById('advancedSearchPanel').style.display = mode === 'advanced' ? 'block' : 'none';
+        }
+
+        function setTimeRange(days) {
+            selectedDaysBack = days;
+            document.getElementById('daysBackBasic').value = days;
+
+            // Update button states
+            document.querySelectorAll('.time-range-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.days) === days);
+            });
+        }
+
+        function addChannelBasic() {
+            const input = document.getElementById('newChannelBasic');
+            const channelName = input.value.trim().replace('@', '');
+
+            if (!channelName) return;
+
+            if (channels.includes(channelName)) {
+                input.value = '';
+                return;
+            }
+
+            channels.push(channelName);
+            input.value = '';
+            updateChannelTagsBasic();
+            saveChannelsToServer();
+        }
+
+        function removeChannelBasic(channelName) {
+            channels = channels.filter(ch => ch !== channelName);
+            updateChannelTagsBasic();
+            saveChannelsToServer();
+        }
+
+        async function saveChannelsToServer() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+                settings.channels = channels;
+
+                await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+            } catch (error) {
+                console.error('Error saving channels:', error);
+            }
+        }
+
+        function updateChannelTagsBasic() {
+            const container = document.getElementById('channelTagsBasic');
+            if (!container) return;
+
+            if (channels.length === 0) {
+                container.innerHTML = '<span style="color: #5a6a7a; font-size: 12px;">No channels added. Add Telegram channels to monitor.</span>';
+                return;
+            }
+
+            container.innerHTML = channels.map(ch => `
+                <span class="channel-tag">
+                    <span>📱 ${escapeHtml(ch)}</span>
+                    <span class="channel-tag-remove" onclick="removeChannelBasic('${escapeHtml(ch)}')" title="Remove">×</span>
+                </span>
+            `).join('');
+        }
+
+        // toggleStage2Setting removed - Stage 2 is now triggered manually via Ask Recruiter button
+
         function updateClock() {
             const now = new Date();
             document.getElementById('lcdTime').textContent = now.toLocaleTimeString('en-US', { hour12: false });
@@ -2699,23 +3702,25 @@ NOT suitable:
                 const data = await res.json();
 
                 if (data.models && data.models.length > 0) {
-                    const modelSelect = document.getElementById('modelSelect');
-                    const currentValue = modelSelect.value;
+                    const modelSelectSearch = document.getElementById('modelSelectSearch');
+                    if (!modelSelectSearch) return; // Safely handle missing element
+
+                    const currentValue = modelSelectSearch.value;
 
                     // Очищаем текущие опции
-                    modelSelect.innerHTML = '';
+                    modelSelectSearch.innerHTML = '';
 
                     // Добавляем найденные модели
                     data.models.forEach(model => {
                         const option = document.createElement('option');
                         option.value = model.name;
                         option.textContent = model.display_name;
-                        modelSelect.appendChild(option);
+                        modelSelectSearch.appendChild(option);
                     });
 
                     // Восстанавливаем выбранную модель если она есть
-                    if (currentValue && Array.from(modelSelect.options).some(opt => opt.value === currentValue)) {
-                        modelSelect.value = currentValue;
+                    if (currentValue && Array.from(modelSelectSearch.options).some(opt => opt.value === currentValue)) {
+                        modelSelectSearch.value = currentValue;
                     }
 
                     console.log(`✓ Loaded ${data.models.length} models:`, data.models.map(m => m.name));
@@ -2733,29 +3738,40 @@ NOT suitable:
                 const data = await res.json();
                 
                 if (data.settings) {
-                    document.getElementById('modelSelect').value = data.settings.model_type || 'mistral';
-                    document.getElementById('daysSelect').value = data.settings.days_back || 7;
-                    if (data.settings.custom_prompt) {
-                        document.getElementById('searchPrompt').value = data.settings.custom_prompt;
+                    const modelSelectSearch = document.getElementById('modelSelectSearch');
+                    if (modelSelectSearch) modelSelectSearch.value = data.settings.model_type || 'mistral';
+                    const daysBackBasic = document.getElementById('daysBackBasic');
+                    if (daysBackBasic) daysBackBasic.value = data.settings.days_back || 7;
+                    const aiSearchPrompt = document.getElementById('aiSearchPrompt');
+                    if (data.settings.custom_prompt && aiSearchPrompt) {
+                        aiSearchPrompt.value = data.settings.custom_prompt;
                     }
                     if (data.settings.channels && data.settings.channels.length > 0) {
                         channels = data.settings.channels;
+                        updateChannelTagsBasic();
                     }
+
+                    // Stage 2 toggle removed - now triggered manually via Ask Recruiter button
                 }
                 
                 if (data.resume_data) {
                     resumeData = data.resume_data;
                     showResumeInserted(data.resume_data, false); // без анимации при восстановлении
+                    ensureResumeStoredFromSession();
                 }
                 
                 if (data.stats) {
                     updateStatsDisplay(data.stats);
                 }
-                
+
                 if (data.is_monitoring) {
                     isScanning = true;
                     updateScanButton(true);
                 }
+
+                // Load tracked vacancies to sync with UI
+                await loadTrackedVacancies();
+                updateHomeStats();
             } catch (e) {
                 console.error('Session restore error:', e);
             }
@@ -2767,6 +3783,7 @@ NOT suitable:
                 const data = await res.json();
                 if (data.vacancies && data.vacancies.length) {
                     data.vacancies.forEach(v => addVacancy(v, false));
+                    updateHomeStats();
                 }
             } catch (e) {
                 console.error('Load vacancies error:', e);
@@ -2852,6 +3869,18 @@ NOT suitable:
                 case 'system_monitor':
                     handleSystemMonitor(data);
                     break;
+                case 'stage2_started':
+                    handleStage2Started(data);
+                    break;
+                case 'stage2_progress':
+                    handleStage2Progress(data);
+                    break;
+                case 'stage2_completed':
+                    handleStage2Completed(data);
+                    break;
+                case 'stage2_error':
+                    handleStage2Error(data);
+                    break;
             }
         }
         
@@ -2872,8 +3901,11 @@ NOT suitable:
                 const el = document.getElementById('lcdSuitable');
                 if (el) el.textContent = String(stats.suitable).padStart(3, '0');
             }
+
+            // Update chart as well
+            updateChartStats();
         }
-        
+
         // ============== RESUME ==============
         function triggerFileInput() {
             document.getElementById('fileInput').click();
@@ -2892,7 +3924,7 @@ NOT suitable:
 
                 // Читаем файл как ArrayBuffer для бинарных форматов (PDF, DOCX)
                 const fileData = await file.arrayBuffer();
-                const model = document.getElementById('modelSelect').value;
+                const model = document.getElementById('modelSelectSearch').value;
 
                 const res = await fetch(`/api/upload-resume?model_type=${model}&file_ext=${fileExt}`, {
                     method: 'POST',
@@ -2912,6 +3944,7 @@ NOT suitable:
                         resumeData.raw_text = result.raw_text;
                     }
                     showResumeInserted(result, true);
+                    rememberResume(result, fileName, file.size || fileData.byteLength || 0);
                 }
             } catch (e) {
                 console.error('Upload failed:', e);
@@ -2942,14 +3975,20 @@ NOT suitable:
             cassette.classList.remove('inserting', 'inserted');
         }
         
-        function showResumeInserted(data, animate = true) {
+        function showResumeInserted(data, animate = true, fileName = null, fileSize = null) {
             document.getElementById('diskEmpty').style.display = 'none';
             document.getElementById('ledReady').classList.add('active', 'green');
             document.getElementById('ledBusy').classList.remove('active', 'orange');
             document.getElementById('insertBtn').disabled = true;
             document.getElementById('ejectBtn').disabled = false;
             document.getElementById('diskHint').textContent = 'DISK LOADED OK';
-            
+
+            // Update cassette name and size
+            const name = fileName || data.name || 'RESUME.DOC';
+            const size = fileSize || (data.raw_text ? data.raw_text.length : 0);
+            document.getElementById('cassetteName').textContent = name.substring(0, 20);
+            document.getElementById('cassetteSize').textContent = formatFileSize(size);
+
             // Кассета
             const cassette = document.getElementById('diskCassette');
             cassette.classList.remove('inserting', 'ejecting');
@@ -2961,20 +4000,20 @@ NOT suitable:
             } else {
                 cassette.classList.add('inserted');
             }
-            
+
             // Информация о резюме
             const infoCard = document.getElementById('resumeInfoCard');
             infoCard.classList.add('active');
-            
+
             // Заполняем данные
             document.getElementById('resumeInfoName').textContent = data.name || 'Candidate';
-            document.getElementById('resumeInfoLevel').textContent = 
+            document.getElementById('resumeInfoLevel').textContent =
                 `LEVEL: ${(data.level || '—').toUpperCase()} | EXP: ${data.experience_years || '—'}y`;
             document.getElementById('resumeInfoExp').textContent = data.experience_years || '—';
-            
+
             const skills = data.key_skills || [];
             document.getElementById('resumeInfoSkillCount').textContent = skills.length;
-            
+
             const skillsContainer = document.getElementById('resumeInfoSkills');
             skillsContainer.innerHTML = '';
             skills.slice(0, 6).forEach(skill => {
@@ -2984,33 +4023,8 @@ NOT suitable:
                 skillsContainer.appendChild(tag);
             });
 
-            // Update Resume Intel panel
-            updateResumeIntel(data);
         }
 
-        function updateResumeIntel(data) {
-            const noResumeState = document.getElementById('noResumeState');
-            const resumeStatsView = document.getElementById('resumeStatsView');
-
-            if (data) {
-                noResumeState.style.display = 'none';
-                resumeStatsView.style.display = 'grid';
-
-                // Calculate stats
-                const rawText = data.raw_text || '';
-                const wordCount = rawText.split(/\s+/).filter(w => w.length > 0).length;
-                const skills = data.key_skills || [];
-                const expYears = data.experience_years || 0;
-
-                document.getElementById('resumeWords').textContent = wordCount;
-                document.getElementById('resumeSkills').textContent = skills.length;
-                document.getElementById('resumeExp').textContent = expYears || '—';
-                document.getElementById('resumeScore').textContent = '✓';
-            } else {
-                noResumeState.style.display = 'flex';
-                resumeStatsView.style.display = 'none';
-            }
-        }
         
         function ejectDisk() {
             const cassette = document.getElementById('diskCassette');
@@ -3027,9 +4041,6 @@ NOT suitable:
                 document.getElementById('ejectBtn').disabled = true;
                 document.getElementById('resumeInfoCard').classList.remove('active');
                 document.getElementById('diskHint').textContent = 'INSERT RESUME DISK';
-
-                // Reset Resume Intel panel
-                updateResumeIntel(null);
             }, 600);
         }
         
@@ -3037,6 +4048,210 @@ NOT suitable:
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // ============== RESUME LIBRARY ==============
+        function persistSavedResumes() {
+            try {
+                localStorage.setItem('savedResumes', JSON.stringify({
+                    items: savedResumes,
+                    active: activeResumeId
+                }));
+            } catch (e) {
+                console.warn('persistSavedResumes failed', e);
+            }
+        }
+
+        function loadSavedResumes() {
+            try {
+                const raw = localStorage.getItem('savedResumes');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    savedResumes = parsed.items || [];
+                    activeResumeId = parsed.active || null;
+                }
+            } catch (e) {
+                savedResumes = [];
+                activeResumeId = null;
+            }
+            renderSavedResumes();
+            if (activeResumeId) {
+                setActiveResume(activeResumeId, true).catch(err => console.warn('setActiveResume failed', err));
+            }
+        }
+
+        function renderSavedResumes() {
+            const container = document.getElementById('resumeLibraryList');
+            if (!container) return;
+
+            if (!savedResumes.length) {
+                container.innerHTML = `
+                    <div class="tracker-empty">
+                        <div style="font-size: 36px; margin-bottom: 8px;">💾</div>
+                        <div style="color: #7dff7d;">No resumes stored. Upload one to start.</div>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = savedResumes.map(r => {
+                const skills = (r.data?.key_skills || []).length;
+                const exp = r.data?.experience_years || '—';
+                const uploaded = r.uploaded_at ? formatDate(r.uploaded_at) : '';
+                const isActive = r.id === activeResumeId;
+                return `
+                    <div class="tracker-card ${isActive ? 'active' : ''}">
+                        <div class="tracker-card-header">
+                            <div class="tracker-card-source">
+                                <span>💾</span>
+                                <span>${escapeHtml(r.name || 'Resume')}</span>
+                            </div>
+                            <span class="tracker-card-status ${isActive ? 'offer' : 'wishlist'}">${isActive ? 'ACTIVE' : 'READY'}</span>
+                        </div>
+                        <div class="tracker-card-body">
+                            <div class="tracker-card-title">${escapeHtml(r.data?.level || 'unknown').toUpperCase()}</div>
+                            <div class="tracker-card-company">EXP: ${exp}y • SKILLS: ${skills}</div>
+                            <div style="font-size: 12px; color: #5a6a7a;">Stored ${uploaded}</div>
+                        </div>
+                        <div class="tracker-card-actions">
+                            <button class="vacancy-btn details" onclick="setActiveResume('${r.id}')">📌 ${isActive ? 'ACTIVE' : 'ACTIVATE'}</button>
+                            <button class="vacancy-btn" onclick="removeSavedResume('${r.id}')" style="padding: 8px 12px; color: #ff6060;">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function rememberResume(data, fileName = 'RESUME', fileSize = 0) {
+            if (!data) return;
+            const entry = {
+                id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+                name: fileName,
+                size: fileSize,
+                uploaded_at: new Date().toISOString(),
+                data
+            };
+            savedResumes = [entry, ...savedResumes];
+            activeResumeId = entry.id;
+            persistSavedResumes();
+            renderSavedResumes();
+        }
+
+        async function setActiveResume(resumeId, syncServer = true) {
+            const entry = savedResumes.find(r => r.id === resumeId);
+            if (!entry) return;
+
+            resumeData = entry.data;
+            activeResumeId = entry.id;
+            showResumeInserted(entry.data, false, entry.name, entry.size);
+            persistSavedResumes();
+            renderSavedResumes();
+
+            if (syncServer) {
+                await syncActiveResumeWithServer(entry.data);
+            }
+        }
+
+        async function syncActiveResumeWithServer(data) {
+            try {
+                await fetch('/api/resume/set', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({resume_data: data})
+                });
+            } catch (e) {
+                console.error('Failed to sync resume with server', e);
+            }
+        }
+
+        function removeSavedResume(resumeId) {
+            const wasActive = activeResumeId === resumeId;
+            savedResumes = savedResumes.filter(r => r.id !== resumeId);
+
+            if (wasActive) {
+                activeResumeId = savedResumes[0]?.id || null;
+                if (activeResumeId) {
+                    setActiveResume(activeResumeId);
+                } else {
+                    // Trigger eject animation when deleting active resume with no replacement
+                    resumeData = null;
+                    const cassette = document.getElementById('diskCassette');
+                    if (cassette && cassette.classList.contains('inserted')) {
+                        cassette.classList.remove('inserted', 'inserting');
+                        cassette.classList.add('ejecting');
+
+                        setTimeout(() => {
+                            cassette.classList.remove('ejecting');
+                            const diskEmpty = document.getElementById('diskEmpty');
+                            if (diskEmpty) diskEmpty.style.display = 'flex';
+                            const ledReady = document.getElementById('ledReady');
+                            if (ledReady) ledReady.classList.remove('active', 'green');
+                            const insertBtn = document.getElementById('insertBtn');
+                            if (insertBtn) insertBtn.disabled = false;
+                            const ejectBtn = document.getElementById('ejectBtn');
+                            if (ejectBtn) ejectBtn.disabled = true;
+                            const resumeInfoCard = document.getElementById('resumeInfoCard');
+                            if (resumeInfoCard) resumeInfoCard.classList.remove('active');
+                            const diskHint = document.getElementById('diskHint');
+                            if (diskHint) diskHint.textContent = 'INSERT RESUME DISK';
+                        }, 600);
+                    } else {
+
+                    }
+                }
+            }
+            persistSavedResumes();
+            renderSavedResumes();
+        }
+
+        function clearSavedResumes() {
+            savedResumes = [];
+            activeResumeId = null;
+            resumeData = null;
+
+            const cassette = document.getElementById('diskCassette');
+            if (cassette && cassette.classList.contains('inserted')) {
+                // Trigger eject animation
+                cassette.classList.remove('inserted', 'inserting');
+                cassette.classList.add('ejecting');
+
+                setTimeout(() => {
+                    cassette.classList.remove('ejecting');
+                    const diskEmpty = document.getElementById('diskEmpty');
+                    if (diskEmpty) diskEmpty.style.display = 'flex';
+                    const ledReady = document.getElementById('ledReady');
+                    if (ledReady) ledReady.classList.remove('active', 'green');
+                    const insertBtn = document.getElementById('insertBtn');
+                    if (insertBtn) insertBtn.disabled = false;
+                    const ejectBtn = document.getElementById('ejectBtn');
+                    if (ejectBtn) ejectBtn.disabled = true;
+                    const resumeInfoCard = document.getElementById('resumeInfoCard');
+                    if (resumeInfoCard) resumeInfoCard.classList.remove('active');
+                    const diskHint = document.getElementById('diskHint');
+                    if (diskHint) diskHint.textContent = 'INSERT RESUME DISK';
+                }, 600);
+            } else {
+
+                const insertBtn = document.getElementById('insertBtn');
+                if (insertBtn) insertBtn.disabled = false;
+                const ejectBtn = document.getElementById('ejectBtn');
+                if (ejectBtn) ejectBtn.disabled = true;
+                const diskHint = document.getElementById('diskHint');
+                if (diskHint) diskHint.textContent = 'INSERT RESUME DISK';
+                const diskEmpty = document.getElementById('diskEmpty');
+                if (diskEmpty) diskEmpty.style.display = 'flex';
+            }
+
+            persistSavedResumes();
+            renderSavedResumes();
+        }
+
+        function ensureResumeStoredFromSession() {
+            if (!resumeData) return;
+            const already = savedResumes.some(r => r.data && r.data.raw_text === resumeData.raw_text);
+            if (already) return;
+            if (savedResumes.length === 0) {
+                rememberResume(resumeData, resumeData.name || 'Session resume', (resumeData.raw_text || '').length);
+            }
         }
         
         // ============== SCANNING ==============
@@ -3082,12 +4297,36 @@ NOT suitable:
         }
         
         async function saveSettings() {
-            const settings = {
-                model_type: document.getElementById('modelSelect').value,
-                days_back: parseInt(document.getElementById('daysSelect').value),
-                custom_prompt: document.getElementById('searchPrompt').value,
-                channels: channels  // Используем глобальный массив каналов
-            };
+            let settings;
+
+            if (searchMode === 'basic') {
+                // Basic mode: use simple filters, no AI prompt
+                const daysBackBasic = document.getElementById('daysBackBasic');
+                const keywordFilter = document.getElementById('keywordFilter');
+
+                const modelSelectSearch = document.getElementById('modelSelectSearch');
+                settings = {
+                    model_type: modelSelectSearch?.value || 'mistral',
+                    days_back: parseInt(daysBackBasic?.value || 7),
+                    custom_prompt: '',  // No AI filter in basic mode
+                    keyword_filter: keywordFilter?.value || '',
+                    channels: channels,
+                    search_mode: 'basic'
+                };
+            } else {
+                // Advanced (AI) mode
+                const modelSelectSearch = document.getElementById('modelSelectSearch');
+                const aiSearchPrompt = document.getElementById('aiSearchPrompt');
+                const daysBackBasic = document.getElementById('daysBackBasic');
+
+                settings = {
+                    model_type: modelSelectSearch?.value || 'mistral',
+                    days_back: parseInt(daysBackBasic?.value || 7),
+                    custom_prompt: aiSearchPrompt?.value || '',
+                    channels: channels,
+                    search_mode: 'advanced'
+                };
+            }
 
             await fetch('/api/settings', {
                 method: 'POST',
@@ -3096,86 +4335,88 @@ NOT suitable:
             });
         }
         
-        function openSettings() {
-            document.getElementById('settingsModal').classList.add('active');
-            renderChannelsList();
+        // ============== ADD CUSTOM VACANCY MODAL ==============
+        function openAddVacancyModal() {
+            // Reset form
+            document.getElementById('customVacancyTitle').value = '';
+            document.getElementById('customVacancyCompany').value = '';
+            document.getElementById('customVacancyLink').value = '';
+            document.getElementById('customVacancyText').value = '';
+            document.getElementById('skipAnalysis').checked = false;
+            document.querySelector('input[name="vacancySource"][value="linkedin"]').checked = true;
+            document.getElementById('submitVacancyText').textContent = 'ADD VACANCY';
+            document.getElementById('submitVacancyBtn').disabled = false;
+
+            document.getElementById('addVacancyModal').classList.add('active');
         }
 
-        function closeSettingsModal(event) {
+        function closeAddVacancyModal(event) {
             if (event && event.target !== event.currentTarget) return;
-            document.getElementById('settingsModal').classList.remove('active');
+            document.getElementById('addVacancyModal').classList.remove('active');
         }
 
-        async function saveSettingsAndClose() {
-            await saveSettings();
-            closeSettingsModal();
-        }
+        async function submitCustomVacancy() {
+            const text = document.getElementById('customVacancyText').value.trim();
+            const title = document.getElementById('customVacancyTitle').value.trim();
+            const company = document.getElementById('customVacancyCompany').value.trim();
+            const link = document.getElementById('customVacancyLink').value.trim();
+            const skipAnalysis = document.getElementById('skipAnalysis').checked;
+            const source = document.querySelector('input[name="vacancySource"]:checked').value;
 
-        // Управление каналами
-        let channels = [];
-
-        function addChannel() {
-            const input = document.getElementById('newChannelInput');
-            let channel = input.value.trim();
-
-            if (!channel) return;
-
-            // Очищаем от префиксов
-            channel = channel.replace(/^@/, '');
-            channel = channel.replace(/^https?:\/\/t\.me\//, '');
-            channel = channel.replace(/^t\.me\//, '');
-            channel = channel.trim();
-
-            if (!channel) return;
-
-            // Проверяем дубликаты
-            if (channels.includes(channel)) {
-                alert('This channel is already added');
+            if (text.length < 30) {
+                alert('Please enter at least 30 characters of vacancy description');
                 return;
             }
 
-            channels.push(channel);
-            input.value = '';
-            renderChannelsList();
-        }
+            const btn = document.getElementById('submitVacancyBtn');
+            const btnText = document.getElementById('submitVacancyText');
+            btn.disabled = true;
+            btnText.textContent = skipAnalysis ? 'ADDING...' : 'ANALYZING...';
 
-        function removeChannel(index) {
-            channels.splice(index, 1);
-            renderChannelsList();
-        }
+            try {
+                const response = await fetch('/api/vacancies/custom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        title: title || null,
+                        company: company || null,
+                        link: link || null,
+                        source: source,
+                        skip_analysis: skipAnalysis
+                    })
+                });
 
-        function renderChannelsList() {
-            const container = document.getElementById('channelsList');
-            if (!container) return;
+                const result = await response.json();
 
-            if (channels.length === 0) {
-                container.innerHTML = '<div class="prompt-hint" style="text-align: center; padding: 20px; opacity: 0.5;">List is empty. Add channels below.</div>';
-                return;
+                if (result.status === 'added') {
+                    btnText.textContent = '✓ ADDED!';
+
+                    // Server already added to tracker, just update local state
+                    if (result.vacancy) {
+                        trackedVacancies.unshift(result.vacancy);
+                        renderTrackerList();
+                        updateTrackerBadge();
+                    }
+
+                    setTimeout(() => {
+                        closeAddVacancyModal();
+                        // Switch to tracker tab to show the new vacancy
+                        switchMainTab('tracker');
+                    }, 1000);
+                } else if (result.status === 'error') {
+                    alert('Error: ' + (result.error || 'Unknown error'));
+                    btn.disabled = false;
+                    btnText.textContent = 'ADD VACANCY';
+                }
+            } catch (error) {
+                console.error('Error adding vacancy:', error);
+                alert('Failed to add vacancy: ' + error.message);
+                btn.disabled = false;
+                btnText.textContent = 'ADD VACANCY';
             }
-
-            container.innerHTML = channels.map((ch, idx) => `
-                <div style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(26, 26, 32, 0.5); border: 2px solid var(--border-dark); border-radius: 8px;">
-                    <span style="flex: 1; font-family: 'Share Tech Mono', monospace; color: #7dff7d;">
-                        ${ch.startsWith('-') ? ch : '@' + ch}
-                    </span>
-                    <button onclick="removeChannel(${idx})" style="
-                        background: linear-gradient(180deg, #8a4040, #6a3030);
-                        border: 2px solid;
-                        border-color: #9a5050 #5a2020 #5a2020 #9a5050;
-                        border-radius: 6px;
-                        color: #ff6060;
-                        cursor: pointer;
-                        padding: 6px 12px;
-                        font-family: 'Share Tech Mono', monospace;
-                        font-size: 12px;
-                        font-weight: bold;
-                    ">
-                        ×
-                    </button>
-                </div>
-            `).join('');
         }
-        
+
         async function resetAll() {
             if (!confirm('Reset all data?')) return;
             await fetch('/api/reset', {method: 'POST'});
@@ -3204,8 +4445,24 @@ NOT suitable:
 
             document.getElementById('vacancyCount').textContent = vacancies.length;
 
+            // Update numbering for all cards in the grid
+            updateCardNumbering();
+
             // Stage 2 запускается асинхронно в бэкенде
             // Результат придёт через vacancy_update
+        }
+
+        function updateCardNumbering() {
+            const grid = document.getElementById('vacanciesGrid');
+            const cards = grid.querySelectorAll('.vacancy-card');
+
+            cards.forEach((card, index) => {
+                const position = (index + 1).toString().padStart(3, '0'); // Order: 1, 2, 3... from top to bottom
+                const codeElement = card.querySelector('.vacancy-card-code');
+                if (codeElement) {
+                    codeElement.innerHTML = codeElement.innerHTML.replace(/#\?\?\?|#\d{3}/, '#' + position);
+                }
+            });
         }
 
         function handleVacancyUpdate(data) {
@@ -3279,19 +4536,40 @@ NOT suitable:
             }
 
             // Этап 2: Анализ рекрутера
+            const isStage2InProgressRefresh = stage2InProgress.has(currentVacancy.id);
+
             if (currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0) {
+                // Stage 2 completed - show results
                 analysisContent += `
                     <div style="margin-bottom: 16px;">
                         <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px; padding: 0 16px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
                         ${renderRecruiterAnalysis(currentVacancy.recruiter_analysis)}
                     </div>
                 `;
-            } else {
-                // Stage 2 ещё выполняется
+            } else if (isStage2InProgressRefresh) {
+                // Stage 2 in progress - show loading
                 analysisContent += `
-                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px;">
-                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
-                        <div style="color: #6a7a8a; margin-top: 8px;">⏳ Analyzing your resume...</div>
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        <div style="display: flex; align-items: center; gap: 12px; color: #6a8aaa;">
+                            <div class="stage2-spinner"></div>
+                            <span>Analyzing your resume match...</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Stage 2 not started - show button
+                const hasResumeRefresh = !!resumeData;
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        <button class="ctrl-btn stage2-btn" id="askRecruiterBtn" onclick="startStage2Analysis()" ${!hasResumeRefresh ? 'disabled' : ''} style="width: 100%; ${!hasResumeRefresh ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                            <div class="ctrl-btn-content">
+                                <span class="ctrl-btn-icon">🎯</span>
+                                <span>ASK RECRUITER</span>
+                            </div>
+                        </button>
+                        ${!hasResumeRefresh ? '<div style="color: #ff6b6b; font-size: 12px; margin-top: 8px; text-align: center;">⚠️ Upload resume first to enable analysis</div>' : ''}
                     </div>
                 `;
             }
@@ -3303,17 +4581,18 @@ NOT suitable:
             const card = document.createElement('div');
             card.className = 'vacancy-card';
             card.id = 'card_' + v.id;
-            
-            const info = extractInfo(v);
-            
-            // Match Rate логика:
-            // - Если есть comparison (после улучшения резюме) -> показываем реальный score
-            // - Если нет comparison -> скрываем или показываем N/A
-            const hasComparison = v.comparison && typeof v.comparison.match_score === 'number';
-            const match = hasComparison ? v.comparison.match_score : null;
-            const matchClass = match !== null ? (match >= 90 ? 'high' : match >= 70 ? 'medium' : 'low') : 'none';
-            
-            // Match meter HTML - показываем только если есть данные
+
+            // Extract short title from first line of text
+            const firstLine = (v.text || '').split('\n').find(l => l.trim()) || '';
+            const shortTitle = v.title || firstLine.substring(0, 60) || 'Vacancy';
+
+            // Match Rate - show from recruiter_analysis (Stage 2) or comparison (Stage 3)
+            const hasRecruiterScore = v.recruiter_analysis && typeof v.recruiter_analysis.match_score === 'number' && v.recruiter_analysis.match_score > 0;
+            const hasComparisonScore = v.comparison && typeof v.comparison.match_score === 'number' && v.comparison.match_score > 0;
+            const match = hasRecruiterScore ? v.recruiter_analysis.match_score : (hasComparisonScore ? v.comparison.match_score : null);
+            const matchClass = match !== null ? (match >= 70 ? 'high' : match >= 50 ? 'medium' : 'low') : 'none';
+
+            // Match meter HTML
             const matchMeterHTML = match !== null ? `
                 <div class="match-meter">
                     <div class="match-meter-header">
@@ -3336,47 +4615,67 @@ NOT suitable:
                         </div>
                         <span class="match-meter-value none">—</span>
                     </div>
-                    <div class="match-meter-hint">Click RESUME+ to analyze</div>
                 </div>
             `;
-            
+
+            // Source icon mapping
+            const sourceIcons = {
+                'telegram': '📱',
+                'linkedin': '🔗',
+                'headhunter': '🎯',
+                'habr': '💼',
+                'custom': '📝'
+            };
+            const sourceIcon = sourceIcons[v.source] || '📱';
+
             card.innerHTML = `
                 <div class="vacancy-card-header">
                     <div class="vacancy-card-id">
                         <div class="vacancy-card-led active"></div>
-                        <span class="vacancy-card-code">${escapeHtml(v.channel?.substring(0, 15) || 'VAC')}</span>
+                        <span class="vacancy-card-code">${sourceIcon} #???</span>
                     </div>
+                    <span class="vacancy-card-source" title="${escapeHtml(v.channel || 'Unknown')}">${escapeHtml(v.channel || 'Unknown')}</span>
                     <span class="vacancy-card-status">ACTIVE</span>
                 </div>
                 <div class="vacancy-card-body">
-                    <div class="vacancy-card-title">${escapeHtml(info.position || 'Vacancy')}</div>
-                    <div class="vacancy-card-company">${escapeHtml(v.channel || '')}</div>
-                    <div class="vacancy-card-details">
-                        ${info.conditions ? `<div class="vacancy-card-detail"><span class="vacancy-card-detail-icon">💰</span><span class="vacancy-card-detail-text">${escapeHtml(info.conditions)}</span></div>` : ''}
-                        <div class="vacancy-card-detail"><span class="vacancy-card-detail-icon">📅</span><span class="vacancy-card-detail-text">${formatDate(v.date)}</span></div>
-                    </div>
+                    <div class="vacancy-card-title">${escapeHtml(shortTitle)}</div>
                     ${matchMeterHTML}
                     <div class="vacancy-card-actions">
-                        <button class="vacancy-btn details" onclick="showDetails('${v.id}')">📋 DETAILS</button>
-                        ${v.link ? `<a class="vacancy-btn open" href="${v.link}" target="_blank">🔗 OPEN</a>` : `<button class="vacancy-btn open" disabled>🔗 OPEN</button>`}
+                        <button class="vacancy-btn details" onclick="showDetails('${v.id}')" title="View details">📋 DETAILS</button>
+                        <button class="vacancy-btn track" onclick="addToTracker('${v.id}')" id="trackBtn_${v.id}" ${isInTracker(v.id) ? 'disabled style="opacity:0.5"' : ''} title="${isInTracker(v.id) ? 'Already tracked' : 'Add to tracker'}">📌 TRACK</button>
+                        ${v.link ? `<a class="vacancy-btn open" href="${v.link}" target="_blank" title="Open original">🔗</a>` : `<button class="vacancy-btn open" disabled title="No link">🔗</button>`}
                     </div>
                 </div>
                 <div class="vacancy-card-footer"></div>
             `;
-            
+
             return card;
         }
         
         function extractInfo(v) {
             const text = v.text || '';
-            const info = {position: '', conditions: ''};
-            
+            const info = {position: '', conditions: '', summary: ''};
+
             const lines = text.split('\n').filter(l => l.trim());
             if (lines.length) info.position = lines[0].substring(0, 50);
-            
+
             const cond = text.match(/(от\s*\d+|до\s*\d+|\d+\s*(руб|usd|eur|k)|удаленн|офис|гибрид)/gi);
             if (cond) info.conditions = cond.slice(0, 2).join(' • ');
-            
+
+            // Extract first meaningful sentences for summary (up to 2 sentences)
+            if (text.length > 0) {
+                // Split by sentence endings and clean up
+                const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 10);
+                if (sentences.length > 0) {
+                    // Take first 1-2 sentences up to ~150 chars
+                    let summary = sentences[0];
+                    if (sentences.length > 1 && summary.length < 100) {
+                        summary += ' ' + sentences[1];
+                    }
+                    info.summary = summary.substring(0, 150) + (summary.length > 150 ? '...' : '');
+                }
+            }
+
             return info;
         }
         
@@ -3384,7 +4683,13 @@ NOT suitable:
         function showDetails(id) {
             currentVacancy = vacancies.find(v => v.id === id);
             if (!currentVacancy) return;
-            
+
+            // Mark card as viewed
+            const card = document.getElementById('card_' + id);
+            if (card) {
+                card.classList.add('viewed');
+            }
+
             document.getElementById('modalTitle').textContent = 'VACANCY :: ' + (currentVacancy.channel || '').substring(0, 20);
             
             document.getElementById('tabDetails').innerHTML = `
@@ -3407,36 +4712,89 @@ NOT suitable:
             }
 
             // Этап 2: Анализ рекрутера
+            const isStage2InProgress = stage2InProgress.has(currentVacancy.id);
+
             if (currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0) {
+                // Stage 2 completed - show results
                 analysisContent += `
                     <div style="margin-bottom: 16px;">
                         <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px; padding: 0 16px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
                         ${renderRecruiterAnalysis(currentVacancy.recruiter_analysis)}
                     </div>
                 `;
+            } else if (isStage2InProgress) {
+                // Stage 2 in progress - show loading
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        <div style="display: flex; align-items: center; gap: 12px; color: #6a8aaa;">
+                            <div class="stage2-spinner"></div>
+                            <span>Analyzing your resume match...</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Stage 2 not started - show button
+                const hasResume = !!resumeData;
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        <button class="ctrl-btn stage2-btn" id="askRecruiterBtn" onclick="startStage2Analysis()" ${!hasResume ? 'disabled' : ''} style="width: 100%; ${!hasResume ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                            <div class="ctrl-btn-content">
+                                <span class="ctrl-btn-icon">🎯</span>
+                                <span>ASK RECRUITER</span>
+                            </div>
+                        </button>
+                        ${!hasResume ? '<div style="color: #ff6b6b; font-size: 12px; margin-top: 8px; text-align: center;">⚠️ Upload resume first to enable analysis</div>' : ''}
+                    </div>
+                `;
             }
 
             document.getElementById('tabAnalysis').innerHTML = analysisContent || '<div style="color: #5a6070;">No analysis available</div>';
             
+            // Resume+ tab visibility: requires active resume
             document.getElementById('resumeTab').style.display = resumeData ? 'block' : 'none';
             document.getElementById('streamImprove').classList.remove('active');
 
             // Вкладка RESUME+ показывает ТОЛЬКО Stage 3 (улучшенное резюме)
             // Анализ рекрутера (Stage 2) показывается на вкладке ANALYSIS
+            const hasStage2Completed = currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0;
+            const canGenerateResume = hasStage2Completed && resumeData;
+
             if (currentVacancy.comparison && currentVacancy.comparison.improved_resume) {
                 // Stage 3 completed - показываем улучшенное резюме
                 document.getElementById('resumeComparison').innerHTML = renderComparisonResult(currentVacancy.comparison);
                 document.getElementById('improveBtn').style.display = 'none';
             } else {
-                // Stage 3 не выполнен - показываем кнопку генерации
+                // Stage 3 не выполнен - показываем кнопку генерации (условия: Stage 2 завершен + резюме)
                 document.getElementById('resumeComparison').innerHTML = '';
                 document.getElementById('improveBtn').style.display = 'block';
-                document.getElementById('improveBtn').innerHTML = `
-                    <div class="ctrl-btn-content">
-                        <span class="ctrl-btn-icon">✨</span>
-                        <span>GENERATE IMPROVED RESUME</span>
-                    </div>
-                `;
+
+                if (canGenerateResume) {
+                    document.getElementById('improveBtn').disabled = false;
+                    document.getElementById('improveBtn').style.opacity = '1';
+                    document.getElementById('improveBtn').style.cursor = 'pointer';
+                    document.getElementById('improveBtn').innerHTML = `
+                        <div class="ctrl-btn-content">
+                            <span class="ctrl-btn-icon">✨</span>
+                            <span>GENERATE IMPROVED RESUME</span>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('improveBtn').disabled = true;
+                    document.getElementById('improveBtn').style.opacity = '0.5';
+                    document.getElementById('improveBtn').style.cursor = 'not-allowed';
+                    const missingItems = [];
+                    if (!hasStage2Completed) missingItems.push('Complete Stage 2 analysis first');
+                    if (!resumeData) missingItems.push('Upload resume first');
+                    document.getElementById('improveBtn').innerHTML = `
+                        <div class="ctrl-btn-content">
+                            <span class="ctrl-btn-icon">✨</span>
+                            <span>GENERATE IMPROVED RESUME</span>
+                        </div>
+                        <div style="font-size: 11px; color: #ff6b6b; margin-top: 8px;">⚠️ ${missingItems.join(' & ')}</div>
+                    `;
+                }
             }
             
             if (currentVacancy.link) {
@@ -3520,7 +4878,250 @@ NOT suitable:
                 btn.style.display = 'block';
             }
         }
-        
+
+        async function startStage2Analysis() {
+            if (!currentVacancy || !resumeData) {
+                console.error('startStage2Analysis: Missing data', {
+                    currentVacancy: !!currentVacancy,
+                    resumeData: !!resumeData
+                });
+                return;
+            }
+
+            const vacancyId = currentVacancy.id;
+
+            // Already in progress
+            if (stage2InProgress.has(vacancyId)) {
+                console.log('Stage 2 already in progress for', vacancyId);
+                return;
+            }
+
+            console.log('startStage2Analysis: Starting for vacancy:', vacancyId);
+
+            try {
+                const res = await fetch('/api/stage2/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        vacancy_id: vacancyId,
+                        vacancy_text: currentVacancy.text,
+                        vacancy_title: currentVacancy.channel || currentVacancy.title || ''
+                    })
+                });
+
+                const result = await res.json();
+                console.log('startStage2Analysis: Response:', result);
+
+                if (result.status === 'started' || result.status === 'in_progress') {
+                    stage2InProgress.add(vacancyId);
+                    // Refresh only the Analysis tab content to show spinner (don't switch tabs)
+                    refreshAnalysisTabContent();
+                    // Update card indicator
+                    updateCardStage2Indicator(vacancyId, 'in_progress');
+                } else if (result.status === 'error') {
+                    alert('Error: ' + result.error);
+                }
+            } catch (e) {
+                console.error('startStage2Analysis: Error:', e);
+                alert('Failed to start analysis: ' + e.message);
+            }
+        }
+
+        function updateCardStage2Indicator(vacancyId, status) {
+            const card = document.getElementById('card_' + vacancyId);
+            if (!card) return;
+
+            const statusEl = card.querySelector('.vacancy-card-status');
+            if (!statusEl) return;
+
+            if (status === 'in_progress') {
+                statusEl.innerHTML = '<span class="stage2-indicator analyzing">ANALYZING</span>';
+                statusEl.classList.add('analyzing');
+            } else if (status === 'completed') {
+                statusEl.innerHTML = 'ACTIVE';
+                statusEl.classList.remove('analyzing');
+            }
+        }
+
+        function handleStage2Started(data) {
+            console.log('Stage 2 started for:', data.vacancy_id);
+            stage2InProgress.add(data.vacancy_id);
+            updateCardStage2Indicator(data.vacancy_id, 'in_progress');
+        }
+
+        function handleStage2Progress(data) {
+            console.log('Stage 2 progress for:', data.vacancy_id, data.status);
+            // Could update UI with more detailed progress if needed
+        }
+
+        function handleStage2Completed(data) {
+            console.log('Stage 2 completed for:', data.vacancy_id, data.recruiter_analysis);
+            stage2InProgress.delete(data.vacancy_id);
+            updateCardStage2Indicator(data.vacancy_id, 'completed');
+
+            // Update vacancy in local state
+            const vacancy = vacancies.find(v => v.id === data.vacancy_id);
+            if (vacancy) {
+                vacancy.recruiter_analysis = data.recruiter_analysis;
+                // Also update comparison match_score for card display
+                if (!vacancy.comparison) vacancy.comparison = {};
+                vacancy.comparison.match_score = data.recruiter_analysis.match_score;
+            }
+
+            // If this vacancy is currently open in modal, refresh only the Analysis tab content
+            // WITHOUT switching tabs or reopening the modal
+            if (currentVacancy && currentVacancy.id === data.vacancy_id) {
+                currentVacancy.recruiter_analysis = data.recruiter_analysis;
+                if (!currentVacancy.comparison) currentVacancy.comparison = {};
+                currentVacancy.comparison.match_score = data.recruiter_analysis.match_score;
+                // Only refresh Analysis tab content, don't switch tabs or reopen modal
+                refreshAnalysisTabContent();
+                refreshResumeTabContent();
+            }
+
+            // Update card to show new match score
+            updateVacancyCardMatchScore(data.vacancy_id, data.recruiter_analysis.match_score);
+        }
+
+        function handleStage2Error(data) {
+            console.error('Stage 2 error for:', data.vacancy_id, data.error);
+            stage2InProgress.delete(data.vacancy_id);
+            updateCardStage2Indicator(data.vacancy_id, 'completed');
+
+            // If this vacancy is currently open in modal, refresh only the Analysis tab content
+            // WITHOUT switching tabs or reopening the modal
+            if (currentVacancy && currentVacancy.id === data.vacancy_id) {
+                refreshAnalysisTabContent();
+            }
+
+            // Optionally show error to user
+            alert('Stage 2 analysis failed: ' + data.error);
+        }
+
+        // Refresh only the Analysis tab content without switching tabs or opening modal
+        function refreshAnalysisTabContent() {
+            if (!currentVacancy) return;
+
+            let analysisContent = '';
+
+            // Stage 1: Filter analysis
+            if (currentVacancy.analysis) {
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a2a, #0a1a1a); border: 2px solid #3a5050; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #7dff7d; letter-spacing: 1px; margin-bottom: 12px;">🔍 STAGE 1: FILTER ANALYSIS</div>
+                        <div style="font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.6;">${formatAnalysis(currentVacancy.analysis)}</div>
+                    </div>
+                `;
+            }
+
+            // Stage 2: Recruiter analysis
+            const isStage2InProgress = stage2InProgress.has(currentVacancy.id);
+
+            if (currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0) {
+                // Stage 2 completed - show results
+                analysisContent += `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px; padding: 0 16px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        ${renderRecruiterAnalysis(currentVacancy.recruiter_analysis)}
+                    </div>
+                `;
+            } else if (isStage2InProgress) {
+                // Stage 2 in progress - show loading
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        <div style="display: flex; align-items: center; gap: 12px; color: #6a8aaa;">
+                            <div class="stage2-spinner"></div>
+                            <span>Analyzing your resume match...</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Stage 2 not started - show button
+                const hasResume = !!resumeData;
+                analysisContent += `
+                    <div style="padding: 16px; background: linear-gradient(180deg, #1a2a3a, #0a1a2a); border: 2px solid #3a4a6a; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-size: var(--font-size-sm); color: #4a9eff; letter-spacing: 1px; margin-bottom: 12px;">🎯 STAGE 2: RECRUITER ANALYSIS</div>
+                        <button class="ctrl-btn stage2-btn" id="askRecruiterBtn" onclick="startStage2Analysis()" ${!hasResume ? 'disabled' : ''} style="width: 100%; ${!hasResume ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                            <div class="ctrl-btn-content">
+                                <span class="ctrl-btn-icon">🎯</span>
+                                <span>ASK RECRUITER</span>
+                            </div>
+                        </button>
+                        ${!hasResume ? '<div style="color: #ff6b6b; font-size: 12px; margin-top: 8px; text-align: center;">⚠️ Upload resume first to enable analysis</div>' : ''}
+                    </div>
+                `;
+            }
+
+            document.getElementById('tabAnalysis').innerHTML = analysisContent || '<div style="color: #5a6070;">No analysis available</div>';
+        }
+
+        // Refresh Resume+ tab content (Stage 3 button state) without switching tabs
+        function refreshResumeTabContent() {
+            if (!currentVacancy) return;
+
+            // Resume+ tab visibility: requires active resume
+            document.getElementById('resumeTab').style.display = resumeData ? 'block' : 'none';
+
+            const hasStage2Completed = currentVacancy.recruiter_analysis && currentVacancy.recruiter_analysis.match_score > 0;
+            const canGenerateResume = hasStage2Completed && resumeData;
+
+            if (currentVacancy.comparison && currentVacancy.comparison.improved_resume) {
+                // Stage 3 completed - show improved resume
+                document.getElementById('resumeComparison').innerHTML = renderComparisonResult(currentVacancy.comparison);
+                document.getElementById('improveBtn').style.display = 'none';
+            } else {
+                // Stage 3 not done - show generate button
+                document.getElementById('resumeComparison').innerHTML = '';
+                document.getElementById('improveBtn').style.display = 'block';
+
+                if (canGenerateResume) {
+                    document.getElementById('improveBtn').disabled = false;
+                    document.getElementById('improveBtn').style.opacity = '1';
+                    document.getElementById('improveBtn').style.cursor = 'pointer';
+                    document.getElementById('improveBtn').innerHTML = `
+                        <div class="ctrl-btn-content">
+                            <span class="ctrl-btn-icon">✨</span>
+                            <span>GENERATE IMPROVED RESUME</span>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('improveBtn').disabled = true;
+                    document.getElementById('improveBtn').style.opacity = '0.5';
+                    document.getElementById('improveBtn').style.cursor = 'not-allowed';
+                    document.getElementById('improveBtn').innerHTML = `
+                        <div class="ctrl-btn-content">
+                            <span class="ctrl-btn-icon">⏳</span>
+                            <span>COMPLETE STAGE 2 FIRST</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function updateVacancyCardMatchScore(vacancyId, matchScore) {
+            const card = document.getElementById('card_' + vacancyId);
+            if (!card) return;
+
+            const matchMeter = card.querySelector('.match-meter');
+            if (!matchMeter) return;
+
+            const matchClass = matchScore >= 90 ? 'high' : matchScore >= 70 ? 'medium' : 'low';
+            matchMeter.classList.remove('pending');
+            matchMeter.innerHTML = `
+                <div class="match-meter-header">
+                    <div class="match-meter-label">
+                        <span class="match-meter-icon">📈</span>
+                        <span>MATCH RATE</span>
+                    </div>
+                    <span class="match-meter-value ${matchClass}">${matchScore}%</span>
+                </div>
+                <div class="match-meter-bar">
+                    <div class="match-meter-fill ${matchClass}" style="width: ${matchScore}%;"></div>
+                </div>
+            `;
+        }
+
         function handleStream(data) {
             // Обработка streaming для разных этапов пайплайна
             const el = document.getElementById('streamImprove');
@@ -3881,6 +5482,17 @@ NOT suitable:
         }
 
         // ============== UTILS ==============
+        function getStatusColor(status) {
+            const colors = {
+                'wishlist': '#4a9eff',
+                'applied': '#a0c040',
+                'interview': '#f69029',
+                'offer': '#7dff7d',
+                'rejected': '#ff6060'
+            };
+            return colors[status] || '#4a9eff';
+        }
+
         function escapeHtml(t) {
             if (!t) return '';
             const d = document.createElement('div');

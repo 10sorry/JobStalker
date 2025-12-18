@@ -1,50 +1,54 @@
+"""
+ML Filter Module - AI-powered vacancy filtering and resume analysis
+
+Provides:
+- Stage 1: Quick vacancy filtering
+- Stage 2: Recruiter analysis
+- Stage 3: Resume optimization
+"""
 import asyncio
 import re
 import os
 import logging
 import json
 from datetime import datetime
-from typing import Dict, Optional, Callable, AsyncGenerator, List
-import aiohttp
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
+from typing import Dict, Optional, Callable, List
 from dataclasses import dataclass, field
 
+from .ai_client import AIClientFactory, OllamaClient, GeminiClient
+
 log = logging.getLogger("ml_filter")
-console = Console()
 
-# URL для Ollama API (локальный)
-OLLAMA_API_URL = "http://localhost:11434/api/generate"
-
-# Импортируем API ключ из config
+# Import API key from config
 try:
     from .config import GEMINI_API_KEY
 except ImportError:
     GEMINI_API_KEY = None
 
-# Глобальная переменная для хранения данных резюме
+# Global resume data storage (with lock for thread safety)
 RESUME_DATA: Optional[Dict] = None
+_resume_lock = asyncio.Lock()
 
-# Output directory для PDF
+# Output directory for PDF
 OUTPUT_DIR = "./output"
 
 
 @dataclass
 class RecruiterAnalysis:
-    """Этап 2: Результат анализа резюме рекрутером относительно вакансии"""
+    """Stage 2: Recruiter analysis result"""
     match_score: int = 0
     strong_sides: List[str] = field(default_factory=list)
     weak_sides: List[str] = field(default_factory=list)
     missing_skills: List[str] = field(default_factory=list)
     recommendations: List[str] = field(default_factory=list)
     risks: List[str] = field(default_factory=list)
-    verdict: str = ""  # Краткий вердикт рекрутера
+    verdict: str = ""
     cover_letter_hint: str = ""
+
 
 @dataclass
 class ResumeComparison:
-    """Этап 3: Результат улучшения резюме (включает анализ из Этапа 2)"""
+    """Stage 3: Resume improvement result"""
     match_score: int = 0
     strong_sides: List[str] = field(default_factory=list)
     weak_sides: List[str] = field(default_factory=list)
@@ -53,21 +57,47 @@ class ResumeComparison:
     improved_resume: str = ""
     cover_letter_hint: str = ""
 
+
 @dataclass
 class VacancyAnalysis:
-    """Результат анализа вакансии (Этап 1 + опционально Этап 2)"""
+    """Vacancy analysis result (Stage 1 + optional Stage 2)"""
     suitable: bool
-    analysis: str = ""  # Результат фильтрации (Этап 1)
-    match_score: int = 0  # Match score из анализа рекрутера (0-100)
-    recruiter_analysis: Optional[RecruiterAnalysis] = None  # Этап 2: анализ рекрутера
-    comparison: Optional[ResumeComparison] = None  # Этап 3: улучшенное резюме (deprecated, для совместимости)
+    analysis: str = ""
+    match_score: int = 0
+    recruiter_analysis: Optional[RecruiterAnalysis] = None
+    comparison: Optional[ResumeComparison] = None
 
     def __bool__(self):
         return self.suitable
 
 
+# Stream callback for real-time updates
+_stream_callback: Optional[Callable] = None
 
-# Дефолтный пример промпта для UI (пользователь может его редактировать)
+
+def set_stream_callback(callback: Optional[Callable]):
+    """Set callback for streaming responses"""
+    global _stream_callback
+    _stream_callback = callback
+    # Also set on AI clients
+    ollama = AIClientFactory.get_ollama_client()
+    ollama.set_stream_callback(callback)
+
+
+async def notify_stream(chunk: str, stream_type: str = "analysis"):
+    """Send chunk via callback"""
+    if _stream_callback:
+        try:
+            await _stream_callback({
+                "type": "stream",
+                "stream_type": stream_type,
+                "chunk": chunk
+            })
+        except Exception as e:
+            log.warning(f"Stream callback error: {e}")
+
+
+# Default filter prompt example
 DEFAULT_FILTER_PROMPT_EXAMPLE = """Ищу позиции:
 ✅ Unreal Engine разработчик (junior, junior+, middle)
 ✅ C++ разработчик в геймдеве
@@ -83,19 +113,10 @@ DEFAULT_FILTER_PROMPT_EXAMPLE = """Ищу позиции:
 
 
 def get_filter_prompt(custom_prompt: str = "", resume_summary: str = "") -> str:
-    """
-    Генерирует промпт для фильтрации вакансий.
-    
-    Логика:
-    - Если custom_prompt пустой -> все вакансии подходят (suitable: true)
-    - Если custom_prompt заполнен -> LLM фильтрует по критериям
-    """
-    
-    # Если промпт пустой - не нужен LLM анализ, все подходят
+    """Generate vacancy filter prompt"""
     if not custom_prompt or not custom_prompt.strip():
         return ""
-    
-    # Базовый промпт с критериями пользователя
+
     base = f"""Ты AI-ассистент для фильтрации вакансий. Проанализируй вакансию согласно критериям пользователя.
 
 КРИТЕРИИ ПОЛЬЗОВАТЕЛЯ:
@@ -127,13 +148,13 @@ def get_filter_prompt(custom_prompt: str = "", resume_summary: str = "") -> str:
     return base
 
 
-# Для обратной совместимости
 def get_default_prompt(resume_summary: str = "") -> str:
+    """For backward compatibility"""
     return get_filter_prompt(DEFAULT_FILTER_PROMPT_EXAMPLE, resume_summary)
 
 
 def get_comparison_prompt(vacancy_text: str, resume_text: str) -> str:
-    """Промпт для сравнения вакансии с резюме"""
+    """Prompt for resume-vacancy comparison"""
     return f"""Ты — опытный карьерный ассистент и эксперт по оптимизации резюме под системы отслеживания кандидатов (ATS).
 
 Задача:
@@ -193,139 +214,24 @@ soft skills
 
 JSON:"""
 
-_stream_callback: Optional[Callable] = None
-
-def set_stream_callback(callback: Optional[Callable]):
-    """Устанавливает callback для streaming"""
-    global _stream_callback
-    _stream_callback = callback
-
-async def notify_stream(chunk: str, stream_type: str = "analysis"):
-    """Отправляет чанк через callback"""
-    if _stream_callback:
-        try:
-            await _stream_callback({
-                "type": "stream",
-                "stream_type": stream_type,
-                "chunk": chunk
-            })
-        except Exception as e:
-            log.warning(f"Stream callback error: {e}")
-
-async def ollama_stream(prompt: str, model: str = "mistral7", num_predict: int = 2048) -> AsyncGenerator[str, None]:
-    """Streaming генерация через Ollama API"""
-    payload = {
-        "model": model,
-        "prompt": prompt,
-        "stream": True,
-        "options": {
-            "num_predict": num_predict,  # Максимальное количество токенов для генерации
-            "temperature": 0.7
-        }
-    }
-    
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                OLLAMA_API_URL, 
-                json=payload,
-                timeout=aiohttp.ClientTimeout(total=300)
-            ) as response:
-                if response.status != 200:
-                    error = await response.text()
-                    log.error(f"Ollama API error: {error}")
-                    yield f"[ERROR: {response.status}]"
-                    return
-                
-                async for line in response.content:
-                    if line:
-                        try:
-                            data = json.loads(line.decode('utf-8'))
-                            chunk = data.get('response', '')
-                            if chunk:
-                                yield chunk
-                            if data.get('done', False):
-                                break
-                        except json.JSONDecodeError:
-                            continue
-    except aiohttp.ClientError as e:
-        log.error(f"Ollama connection error: {e}")
-        yield f"[ERROR: {e}]"
-    except Exception as e:
-        log.error(f"Ollama stream error: {e}")
-        yield f"[ERROR: {e}]"
-
-async def ollama_generate(prompt: str, model: str = "mistral7", stream_type: str = None, num_predict: int = 2048) -> str:
-    """Генерация с опциональным streaming"""
-    full_response = ""
-
-    if stream_type:
-        await notify_stream("[START]", stream_type)
-
-    async for chunk in ollama_stream(prompt, model, num_predict):
-        full_response += chunk
-        if stream_type:
-            await notify_stream(chunk, stream_type)
-            await asyncio.sleep(0.005)  # Уменьшил задержку
-
-    if stream_type:
-        await notify_stream("[END]", stream_type)
-
-    return full_response
-
-
-async def get_available_ollama_models() -> List[Dict[str, str]]:
-    """Получает список доступных моделей из Ollama"""
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "http://localhost:11434/api/tags",
-                timeout=aiohttp.ClientTimeout(total=10)
-            ) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    models = []
-                    for model_info in data.get("models", []):
-                        model_name = model_info.get("name", "")
-                        # Извлекаем короткое имя модели (без тегов версий если не указаны явно)
-                        display_name = model_name
-                        models.append({
-                            "name": model_name,
-                            "display_name": display_name,
-                            "size": model_info.get("size", 0)
-                        })
-
-                    log.info(f"📋 Found {len(models)} Ollama models: {[m['name'] for m in models]}")
-                    return models
-                else:
-                    log.warning(f"Failed to get Ollama models: HTTP {response.status}")
-                    return []
-    except Exception as e:
-        log.warning(f"Could not connect to Ollama: {e}")
-        # Возвращаем дефолтные модели если Ollama недоступна
-        return [
-            {"name": "mistral7", "display_name": "mistral7", "size": 0},
-            {"name": "llama3.2:3b", "display_name": "llama3.2:3b", "size": 0}
-        ]
-
 
 def extract_json_safely(text: str) -> dict:
-    """Безопасное извлечение JSON из текста AI"""
+    """Safe JSON extraction from AI output"""
     original_text = text
 
-    # Удаляем markdown code blocks
+    # Remove markdown code blocks
     text = text.replace('```json', '').replace('```', '').strip()
 
-    # Удаляем "JSON:" в начале если есть
+    # Remove "JSON:" prefix if present
     if text.startswith('JSON:'):
         text = text[5:].strip()
 
-    # ИСПРАВЛЕНИЕ: Убираем escaped underscores (\_) которые генерирует модель
+    # Fix escaped underscores
     text = text.replace('\\_', '_')
 
-    log.debug(f"🔍 extract_json_safely: input length={len(text)}, first 200 chars={text[:200]}")
+    log.debug(f"extract_json_safely: input length={len(text)}")
 
-    # Метод 1: Сбалансированные скобки (рекурсивный поиск)
+    # Method 1: Balanced braces (recursive search)
     depth = 0
     start = -1
     for i, char in enumerate(text):
@@ -339,14 +245,12 @@ def extract_json_safely(text: str) -> dict:
                 json_str = text[start:i+1]
                 try:
                     parsed = json.loads(json_str)
-                    log.info(f"✅ JSON parsed successfully (method 1), keys: {list(parsed.keys())}")
+                    log.info(f"JSON parsed (method 1), keys: {list(parsed.keys())}")
                     return parsed
-                except json.JSONDecodeError as e:
-                    log.warning(f"⚠️ Method 1 failed: {e}")
+                except json.JSONDecodeError:
                     continue
 
-    # Метод 2: Поиск самого длинного валидного JSON
-    # Ищем все возможные { ... }
+    # Method 2: Find longest valid JSON
     all_matches = []
     depth = 0
     start = -1
@@ -361,108 +265,88 @@ def extract_json_safely(text: str) -> dict:
                 all_matches.append((start, i+1, text[start:i+1]))
                 start = -1
 
-    # Пробуем от самых длинных к коротким
     all_matches.sort(key=lambda x: len(x[2]), reverse=True)
     for start_idx, end_idx, json_str in all_matches:
         try:
             parsed = json.loads(json_str)
-            log.info(f"✅ JSON parsed successfully (method 2), keys: {list(parsed.keys())}")
+            log.info(f"JSON parsed (method 2), keys: {list(parsed.keys())}")
             return parsed
-        except:
+        except Exception:
             continue
 
-    # Метод 2.5: Попытка объединить несколько JSON объектов
-    # Иногда модель генерирует два отдельных JSON: первый с полями, второй с improved_resume
+    # Method 2.5: Merge multiple JSON objects
     if len(all_matches) >= 2:
-        log.info(f"🔍 Found {len(all_matches)} JSON objects, trying to merge...")
+        log.info(f"Found {len(all_matches)} JSON objects, trying to merge...")
         try:
             merged = {}
             for start_idx, end_idx, json_str in all_matches:
                 try:
                     obj = json.loads(json_str)
                     merged.update(obj)
-                except:
+                except Exception:
                     continue
             if merged:
-                log.info(f"✅ JSON merged successfully (method 2.5), keys: {list(merged.keys())}")
+                log.info(f"JSON merged (method 2.5), keys: {list(merged.keys())}")
                 return merged
         except Exception as e:
-            log.warning(f"⚠️ Method 2.5 failed: {e}")
+            log.warning(f"Method 2.5 failed: {e}")
 
-    # Метод 3: Greedy regex
+    # Method 3: Greedy regex
     json_match = re.search(r'\{.*\}', text, re.DOTALL)
     if json_match:
         try:
             parsed = json.loads(json_match.group(0))
-            log.info(f"✅ JSON parsed successfully (method 3), keys: {list(parsed.keys())}")
+            log.info(f"JSON parsed (method 3), keys: {list(parsed.keys())}")
             return parsed
         except Exception as e:
-            log.warning(f"⚠️ Method 3 failed: {e}")
+            log.warning(f"Method 3 failed: {e}")
 
-    # Метод 4: Специальная обработка для improved_resume
-    # Иногда модель генерирует improved_resume отдельно вне основного JSON
-    log.warning("⚠️ Standard methods failed, trying special improved_resume extraction...")
-
-    # Ищем "improved_resume": "..." в тексте
+    # Method 4: Special handling for improved_resume
+    log.warning("Standard methods failed, trying special improved_resume extraction...")
     improved_match = re.search(r'"improved_resume"\s*:\s*"([^"]*(?:\\"[^"]*)*)"', text, re.DOTALL)
     if improved_match:
-        improved_text = improved_match.group(1)
-        # Убираем escaped quotes
-        improved_text = improved_text.replace('\\"', '"')
-
-        # Ищем любой валидный JSON и добавляем к нему improved_resume
+        improved_text = improved_match.group(1).replace('\\"', '"')
         for start_idx, end_idx, json_str in all_matches:
             try:
                 parsed = json.loads(json_str)
                 parsed['improved_resume'] = improved_text
-                log.info(f"✅ JSON parsed with special improved_resume extraction, keys: {list(parsed.keys())}")
+                log.info(f"JSON parsed with special extraction, keys: {list(parsed.keys())}")
                 return parsed
-            except:
+            except Exception:
                 continue
 
-    # Метод 5: Попытка автоматического исправления JSON
-    log.warning("⚠️ Trying auto-fix for incomplete JSON...")
-
-    # Проверяем есть ли хотя бы открывающая скобка
+    # Method 5: Auto-fix incomplete JSON
+    log.warning("Trying auto-fix for incomplete JSON...")
     if '{' in text:
-        # Находим последнюю закрывающую скобку или добавляем её
         start_idx = text.find('{')
-
-        # Берем текст от { до конца
         json_part = text[start_idx:]
 
-        # Считаем баланс скобок
         depth = 0
-        for i, char in enumerate(json_part):
+        for char in json_part:
             if char == '{':
                 depth += 1
             elif char == '}':
                 depth -= 1
 
-        # Если скобок не хватает, добавляем
         if depth > 0:
             json_part += '}' * depth
-            log.info(f"🔧 Added {depth} closing braces")
+            log.info(f"Added {depth} closing braces")
 
             try:
                 parsed = json.loads(json_part)
-                log.info(f"✅ JSON auto-fixed successfully, keys: {list(parsed.keys())}")
+                log.info(f"JSON auto-fixed, keys: {list(parsed.keys())}")
                 return parsed
             except Exception as e:
-                log.warning(f"⚠️ Auto-fix failed: {e}")
+                log.warning(f"Auto-fix failed: {e}")
 
-    log.error(f"❌ All JSON extraction methods failed!")
-    log.error(f"❌ Full original text length: {len(original_text)}")
-    log.error(f"❌ Original text (first 1500 chars): {original_text[:1500]}")
-    log.error(f"❌ Original text (last 500 chars): {original_text[-500:]}")
+    log.error(f"All JSON extraction methods failed! Text length: {len(original_text)}")
     return {}
 
 
-
 def normalize_resume_data(data: dict) -> dict:
-    """Нормализует данные резюме"""
+    """Normalize resume data structure"""
     normalized = {}
-    
+
     # Experience
     if 'experience_years' in data:
         normalized['experience_years'] = data['experience_years']
@@ -481,7 +365,7 @@ def normalize_resume_data(data: dict) -> dict:
                 normalized['projects'] = projects
         elif isinstance(exp, (int, float)):
             normalized['experience_years'] = exp
-    
+
     # Level
     if 'level' in data:
         normalized['level'] = data['level']
@@ -489,7 +373,7 @@ def normalize_resume_data(data: dict) -> dict:
         years = normalized.get('experience_years', 0)
         if isinstance(years, (int, float)):
             normalized['level'] = 'junior' if years <= 2 else 'middle' if years <= 5 else 'senior'
-    
+
     # Skills
     skills = []
     if 'key_skills' in data:
@@ -503,32 +387,32 @@ def normalize_resume_data(data: dict) -> dict:
                 if isinstance(items, list):
                     skills.extend(items)
     normalized['key_skills'] = skills[:10]
-    
+
     if 'projects' not in normalized:
         normalized['projects'] = data.get('projects', [])
     normalized['summary'] = data.get('summary', '')
     if 'name' in data:
         normalized['name'] = data['name']
-    
+
     return normalized
 
 
 async def load_resume(file_path: str, model_type: str = "mistral") -> dict:
-    """Загрузка и анализ резюме"""
+    """Load and analyze resume"""
     global RESUME_DATA
-    
-    log.info(f"🚀 load_resume: model={model_type}, file={file_path}")
-    
+
+    log.info(f"load_resume: model={model_type}, file={file_path}")
+
     if not os.path.exists(file_path):
         return {"error": "File not found"}
-    
+
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             resume_text = f.read()
-        log.info(f"📄 Resume: {len(resume_text)} chars")
+        log.info(f"Resume: {len(resume_text)} chars")
     except Exception as e:
         return {"error": f"Read error: {e}"}
-    
+
     prompt = f"""Анализируй резюме. Верни JSON:
 {{
   "experience_years": число,
@@ -542,57 +426,65 @@ async def load_resume(file_path: str, model_type: str = "mistral") -> dict:
 {resume_text[:2000]}
 
 JSON:"""
-    
+
     try:
-        if model_type == "gemini" and GEMINI_API_KEY:
-            output = await _call_gemini(prompt)
-        elif model_type == "mistral":
-            output = await ollama_generate(prompt, "mistral7", "resume_analysis")
-        else:
-            output = await ollama_generate(prompt, "llama3.2:3b", "resume_analysis")
-        
-        raw_data = extract_json_safely(output)
-        RESUME_DATA = normalize_resume_data(raw_data)
-        RESUME_DATA['raw_text'] = resume_text
-        
-        log.info(f"✅ Resume: level={RESUME_DATA.get('level')}, exp={RESUME_DATA.get('experience_years')}")
-        
+        client = AIClientFactory.get_client(model_type, GEMINI_API_KEY, _stream_callback)
+        response = await client.generate_with_retry(
+            prompt,
+            stream_type="resume_analysis",
+            num_predict=1024
+        )
+
+        if not response.success:
+            return {"error": response.error}
+
+        raw_data = extract_json_safely(response.text)
+
+        async with _resume_lock:
+            RESUME_DATA = normalize_resume_data(raw_data)
+            RESUME_DATA['raw_text'] = resume_text
+
+        log.info(f"Resume: level={RESUME_DATA.get('level')}, exp={RESUME_DATA.get('experience_years')}")
         return RESUME_DATA
-        
+
     except Exception as e:
         log.error(f"Resume analysis error: {e}")
         return {"error": str(e)}
 
 
-async def _call_gemini(prompt: str) -> str:
-    """Вызов Gemini API"""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-    
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.3, "maxOutputTokens": 1000}
-    }
-    
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=payload, timeout=aiohttp.ClientTimeout(total=30)) as response:
-            if response.status != 200:
-                raise Exception(f"Gemini API error {response.status}")
-            data = await response.json()
-    
-    return data['candidates'][0]['content']['parts'][0]['text'].strip()
+async def set_resume_data(resume_data: dict) -> dict:
+    """Set active resume data from pre-parsed payload (no re-analysis)."""
+    global RESUME_DATA
 
+    if not resume_data:
+        return {"error": "Empty resume data"}
+
+    try:
+        normalized = normalize_resume_data(resume_data)
+        # Preserve raw text if provided
+        if resume_data.get("raw_text"):
+            normalized["raw_text"] = resume_data["raw_text"]
+
+        async with _resume_lock:
+            RESUME_DATA = normalized
+
+        save_session()
+        log.info(f"Resume restored: level={normalized.get('level')}, exp={normalized.get('experience_years')}")
+        return normalized
+    except Exception as e:
+        log.error(f"set_resume_data error: {e}")
+        return {"error": str(e)}
+
+
+async def get_available_ollama_models() -> List[Dict[str, str]]:
+    """Get list of available Ollama models"""
+    client = AIClientFactory.get_ollama_client()
+    return await client.list_models()
 
 
 async def recruiter_analysis(vacancy_text: str, resume_text: str, enable_stream: bool = False) -> RecruiterAnalysis:
     """
-    ЭТАП 2: Глубокий анализ резюме строгим IT-рекрутером относительно конкретной вакансии.
-
-    Роль модели: строгий, опытный, но справедливый IT-рекрутер.
-    Возвращает: структурированный отчёт (RecruiterAnalysis)
-
-    Args:
-        enable_stream: если True - показывать streaming в UI (для интерактивного режима)
-                       если False - работать в фоне без streaming (по умолчанию)
+    Stage 2: Deep recruiter analysis of resume vs vacancy.
     """
     prompt = f"""Ты — строгий, опытный, но справедливый IT-рекрутер с 10+ годами опыта найма.
 
@@ -634,30 +526,32 @@ async def recruiter_analysis(vacancy_text: str, resume_text: str, enable_stream:
 JSON:"""
 
     try:
-        log.info("🎯 Stage 2: Running recruiter analysis...")
+        log.info("Stage 2: Running recruiter analysis...")
 
-        # Генерация с достаточным количеством токенов для развернутого ответа
-        # stream_type только если enable_stream=True (интерактивный режим)
+        client = AIClientFactory.get_ollama_client()
         stream_type = "recruiter_analysis" if enable_stream else None
-        output = await ollama_generate(prompt, "mistral7", stream_type, num_predict=1024)
+        response = await client.generate_with_retry(
+            prompt,
+            stream_type=stream_type,
+            num_predict=1024
+        )
 
-        # Убираем escape символы
-        output = output.replace('\\_', '_')
+        if not response.success:
+            log.error(f"Recruiter analysis failed: {response.error}")
+            return RecruiterAnalysis(verdict="Analysis failed")
 
+        output = response.text.replace('\\_', '_')
         data = extract_json_safely(output)
 
         if not data:
-            log.error(f"❌ Recruiter analysis JSON parsing failed")
-            return RecruiterAnalysis(
-                verdict="Не удалось выполнить анализ"
-            )
+            log.error("Recruiter analysis JSON parsing failed")
+            return RecruiterAnalysis(verdict="Could not complete analysis")
 
-        # Нормализуем match_score
         match_score = data.get('match_score', 0)
         if isinstance(match_score, str):
             try:
                 match_score = int(match_score)
-            except:
+            except Exception:
                 match_score = 0
 
         result = RecruiterAnalysis(
@@ -671,20 +565,16 @@ JSON:"""
             cover_letter_hint=data.get('cover_letter_hint', '')
         )
 
-        log.info(f"✅ Recruiter analysis done: match_score={match_score}, verdict={result.verdict[:50]}...")
-
+        log.info(f"Recruiter analysis done: match_score={match_score}")
         return result
 
     except Exception as e:
         log.error(f"Recruiter analysis error: {e}")
-        return RecruiterAnalysis(
-            verdict=f"Ошибка анализа: {str(e)}"
-        )
+        return RecruiterAnalysis(verdict=f"Error: {str(e)}")
 
 
-# Алиас для обратной совместимости
 async def quick_resume_analysis(vacancy_text: str, resume_text: str) -> dict:
-    """Deprecated: используйте recruiter_analysis()"""
+    """Deprecated: use recruiter_analysis()"""
     result = await recruiter_analysis(vacancy_text, resume_text)
     return {
         "match_score": result.match_score,
@@ -702,16 +592,8 @@ async def generate_improved_resume(
     analysis: Optional[RecruiterAnalysis] = None
 ) -> str:
     """
-    ЭТАП 3: Генерация улучшенного резюме на основе вакансии + анализа рекрутера.
-
-    Входы:
-    - vacancy_text: текст вакансии
-    - resume_text: исходное резюме
-    - analysis: результат анализа рекрутера (Этап 2)
-
-    Возвращает: улучшенное резюме в markdown формате
+    Stage 3: Generate improved resume based on vacancy + recruiter analysis.
     """
-    # Формируем контекст из анализа рекрутера
     analysis_context = ""
     if analysis and analysis.match_score > 0:
         analysis_context = f"""
@@ -772,15 +654,21 @@ async def generate_improved_resume(
 Верни ТОЛЬКО текст улучшенного резюме (минимум 500 символов):"""
 
     try:
-        log.info("📝 Stage 3: Generating improved resume...")
+        log.info("Stage 3: Generating improved resume...")
 
-        # Генерация с streaming для визуального прогресса
-        output = await ollama_generate(prompt, "mistral7", "improved_resume", num_predict=3072)
+        client = AIClientFactory.get_ollama_client()
+        response = await client.generate_with_retry(
+            prompt,
+            stream_type="improved_resume",
+            num_predict=3072
+        )
 
-        # Очищаем от артефактов
-        output = output.strip()
+        if not response.success:
+            return "# Error\n\nFailed to generate improved resume."
 
-        # Убираем markdown code blocks если модель их добавила
+        output = response.text.strip()
+
+        # Clean markdown code blocks if added
         if output.startswith('```markdown'):
             output = output[11:]
         if output.startswith('```'):
@@ -789,19 +677,17 @@ async def generate_improved_resume(
             output = output[:-3]
 
         output = output.strip()
-
-        log.info(f"✅ Improved resume generated: {len(output)} chars")
+        log.info(f"Improved resume generated: {len(output)} chars")
 
         return output
 
     except Exception as e:
         log.error(f"Resume generation error: {e}")
-        return "# Ошибка генерации\n\nНе удалось сгенерировать улучшенное резюме."
+        return "# Error\n\nFailed to generate improved resume."
 
 
-# Алиас для обратной совместимости
 async def generate_improved_resume_markdown(vacancy_text: str, resume_text: str) -> str:
-    """Deprecated: используйте generate_improved_resume()"""
+    """Deprecated: use generate_improved_resume()"""
     return await generate_improved_resume(vacancy_text, resume_text, None)
 
 
@@ -811,30 +697,29 @@ async def compare_with_resume(
     existing_analysis: Optional[RecruiterAnalysis] = None
 ) -> ResumeComparison:
     """
-    ЭТАП 3: Генерация улучшенного резюме.
+    Stage 3: Generate improved resume.
 
-    Если existing_analysis передан - использует его.
-    Если нет - сначала запускает Этап 2 (recruiter_analysis).
+    Uses existing_analysis if provided, otherwise runs Stage 2 first.
     """
     if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
         log.warning("No resume for comparison")
         return ResumeComparison()
 
     resume_text = RESUME_DATA['raw_text']
-    log.info(f"📝 Resume text length: {len(resume_text)}")
-    log.info(f"📝 Vacancy text length: {len(vacancy_text)}")
+    log.info(f"Resume text length: {len(resume_text)}")
+    log.info(f"Vacancy text length: {len(vacancy_text)}")
 
     try:
-        # Если анализ уже есть - используем его, иначе запускаем Этап 2
+        # Use existing analysis or run Stage 2
         if existing_analysis and existing_analysis.match_score > 0:
-            log.info("🔄 Using existing recruiter analysis...")
+            log.info("Using existing recruiter analysis...")
             analysis = existing_analysis
         else:
-            log.info("🔄 Stage 2: Running recruiter analysis...")
+            log.info("Stage 2: Running recruiter analysis...")
             analysis = await recruiter_analysis(vacancy_text, resume_text)
 
-        # ЭТАП 3: Генерация улучшенного резюме (30-60 секунд)
-        log.info("🔄 Stage 3: Generating improved resume...")
+        # Stage 3: Generate improved resume
+        log.info("Stage 3: Generating improved resume...")
         improved_resume = await generate_improved_resume(vacancy_text, resume_text, analysis)
 
         result = ResumeComparison(
@@ -847,7 +732,7 @@ async def compare_with_resume(
             cover_letter_hint=analysis.cover_letter_hint
         )
 
-        log.info(f"✅ Stage 3 done: score={result.match_score}, improved_len={len(result.improved_resume)}")
+        log.info(f"Stage 3 done: score={result.match_score}, improved_len={len(result.improved_resume)}")
         return result
 
     except Exception as e:
@@ -855,77 +740,64 @@ async def compare_with_resume(
         return ResumeComparison()
 
 
-
 async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnalysis:
     """
-    Анализ вакансии - БЕЗ comparison.
-    
-    Логика:
-    - Если custom_prompt пустой -> вакансия автоматически подходит
-    - Если custom_prompt заполнен -> LLM фильтрует по критериям
+    Analyze vacancy - WITHOUT comparison.
+
+    Logic:
+    - If custom_prompt is empty -> vacancy auto-approved
+    - If custom_prompt is set -> LLM filters by criteria
     """
     if len(text.strip()) < 20:
-        return VacancyAnalysis(False, "Текст слишком короткий")
-    
+        return VacancyAnalysis(False, "Text too short")
+
     try:
         from .web_ui import get_current_settings
         settings = get_current_settings()
         custom_prompt = settings.get("custom_prompt", "")
         resume_summary = settings.get("resume_summary", "")
-        log.info(f"📋 Loaded custom_prompt length: {len(custom_prompt)} chars")
-        log.info(f"📋 First 100 chars of custom_prompt: {custom_prompt[:100]}")
+        log.info(f"Loaded custom_prompt length: {len(custom_prompt)} chars")
     except Exception as e:
-        log.error(f"⚠️ Failed to load settings: {e}")
+        log.error(f"Failed to load settings: {e}")
         custom_prompt = ""
         resume_summary = ""
 
-    # НОВАЯ ЛОГИКА: если промпт пустой - все вакансии подходят
-    # Stage 2 запускается асинхронно в main.py после показа карточки
+    # If prompt empty -> all vacancies pass
     if not custom_prompt or not custom_prompt.strip():
-        log.info("📋 Filter prompt empty - vacancy auto-approved")
+        log.info("Filter prompt empty - vacancy auto-approved")
         return VacancyAnalysis(
             suitable=True,
-            analysis="✅ Фильтр не настроен — вакансия добавлена автоматически.\n\n💡 Настройте критерии в Settings → Search Filter Prompt",
+            analysis="Filter not configured - vacancy added automatically.\n\nConfigure criteria in Settings -> Search Filter Prompt",
             match_score=0,
             recruiter_analysis=None
         )
 
-    # Генерируем промпт с критериями пользователя
+    # Generate prompt with user criteria
     filter_prompt = get_filter_prompt(custom_prompt, resume_summary)
-    log.info(f"📋 Generated filter_prompt length: {len(filter_prompt)} chars")
-
     vacancy_text_short = text.strip()[:1500]
     full_prompt = f"{filter_prompt}\n\nВАКАНСИЯ:\n{vacancy_text_short}\n\nJSON:"
 
-    log.info(f"📊 Analyzing with {model_type.upper()}...")
-    log.info(f"📄 Vacancy text (first 200 chars): {text.strip()[:200]}")
-    
+    log.info(f"Analyzing with {model_type.upper()}...")
+
     try:
-        if model_type == "mistral":
-            output = await ollama_generate(full_prompt, "mistral7")
-        elif model_type == "gemini" and GEMINI_API_KEY:
-            output = await _call_gemini(full_prompt)
-        else:
-            output = await ollama_generate(full_prompt, "llama3.2:3b")
-        
-        data = extract_json_safely(output)
+        client = AIClientFactory.get_client(model_type, GEMINI_API_KEY)
+        response = await client.generate_with_retry(full_prompt, num_predict=2048)
+
+        if not response.success:
+            return VacancyAnalysis(False, f"Error: {response.error}")
+
+        data = extract_json_safely(response.text)
 
         suitable = data.get('suitable', False)
         if isinstance(suitable, str):
             suitable = suitable.lower() in ('true', 'yes', 'да', '1')
 
-        # Проверка position_type (если указан)
         position_type = data.get('position_type', '').lower()
 
-        # Логируем результат анализа
-        log.info(f"🤖 LLM Response: suitable={suitable}, position_type={position_type}")
-        log.info(f"📝 LLM summary: {data.get('summary', 'N/A')[:150]}")
+        log.info(f"LLM Response: suitable={suitable}, position_type={position_type}")
 
-        # ЗАЩИТА ОТ ПРОТИВОРЕЧИЙ LLM
-        # Если LLM вернул suitable=True, но position_type упоминается в критериях пользователя
-        # в негативном контексте (отбросить, не подходит, исключить и т.д.) - это ошибка LLM
+        # Contradiction protection
         if suitable and position_type:
-            # Словарь переводов ролей (английский -> русские варианты)
             role_translations = {
                 'artist': ['художник', 'артист'],
                 'designer': ['дизайнер', 'design'],
@@ -938,108 +810,94 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
                 'hr': ['рекрутер', 'hr специалист']
             }
 
-            # Собираем все возможные варианты названий для этой роли
             role_variants = [position_type.lower()]
             for eng, rus_list in role_translations.items():
                 if eng in position_type.lower():
                     role_variants.extend(rus_list)
 
-            # Ищем упоминание этой роли в негативном контексте в промпте пользователя
             negative_markers = ['не подходит', 'не хочу', 'отбрасывать', 'исключить', 'отбросить',
                               'не твоего направления', 'не по профилю', 'без', 'кроме',
                               '❌', 'NOT suitable', 'exclude', 'не относится']
 
-            # Проверяем каждый маркер
             for marker in negative_markers:
                 if marker.lower() in custom_prompt.lower():
-                    # Ищем упоминание position_type рядом с негативным маркером
-                    # Разбиваем промпт на части по негативным маркерам
                     parts = custom_prompt.lower().split(marker.lower())
-                    for part in parts[1:]:  # Проверяем текст ПОСЛЕ негативного маркера
-                        # Берем следующие 500 символов после маркера
+                    for part in parts[1:]:
                         context = part[:500]
-                        # Проверяем есть ли там упоминание любого варианта роли
                         for variant in role_variants:
                             if variant in context:
-                                log.warning(f"⚠️ CONTRADICTION: position_type='{position_type}' (variant: '{variant}') found in negative context near '{marker}'")
-                                log.warning(f"   LLM said suitable=True but this role is explicitly excluded. Overriding to suitable=False")
+                                log.warning(f"CONTRADICTION: position_type='{position_type}' found in negative context")
                                 suitable = False
-                                # Добавляем причину отклонения
                                 if not data.get('reasons_reject'):
                                     data['reasons_reject'] = []
                                 if isinstance(data['reasons_reject'], str):
                                     data['reasons_reject'] = [data['reasons_reject']]
-                                data['reasons_reject'].append(f"Роль '{position_type}' явно исключена в критериях пользователя")
+                                data['reasons_reject'].append(f"Role '{position_type}' explicitly excluded")
                                 break
-                        if not suitable:  # Если уже исправили - выходим
+                        if not suitable:
                             break
-                    if not suitable:  # Если уже исправили - выходим
+                    if not suitable:
                         break
 
-        # Формируем анализ
+        # Format analysis
         analysis_parts = []
-
         reasons_fit = data.get('reasons_fit', [])
         reasons_reject = data.get('reasons_reject', data.get('reasons_lack', []))
         summary = data.get('summary', '')
-        
+
         if isinstance(reasons_fit, str):
             reasons_fit = [reasons_fit]
         if isinstance(reasons_reject, str):
             reasons_reject = [reasons_reject]
-        
-        if reasons_fit:
-            analysis_parts.append("✅ **Подходит:**\n" + "\n".join(f"  • {r}" for r in reasons_fit))
-        if reasons_reject:
-            analysis_parts.append("❌ **Не подходит:**\n" + "\n".join(f"  • {r}" for r in reasons_reject))
-        if summary:
-            analysis_parts.append(f"📋 **Вывод:** {summary}")
-        if position_type:
-            analysis_parts.append(f"🏷️ **Тип:** {position_type}")
-        
-        analysis_text = "\n\n".join(analysis_parts) if analysis_parts else output[:500]
 
-        # Извлекаем match_score
+        if reasons_fit:
+            analysis_parts.append("**Fits:**\n" + "\n".join(f"  - {r}" for r in reasons_fit))
+        if reasons_reject:
+            analysis_parts.append("**Doesn't fit:**\n" + "\n".join(f"  - {r}" for r in reasons_reject))
+        if summary:
+            analysis_parts.append(f"**Summary:** {summary}")
+        if position_type:
+            analysis_parts.append(f"**Type:** {position_type}")
+
+        analysis_text = "\n\n".join(analysis_parts) if analysis_parts else response.text[:500]
+
         match_score = data.get('match_score', 0)
         if isinstance(match_score, str):
             try:
                 match_score = int(match_score)
-            except:
+            except Exception:
                 match_score = 0
 
-        log.info(f"📊 Match score: {match_score}")
-
-        # Stage 2 (recruiter analysis) запускается асинхронно в main.py
-        # после того как карточка уже показана пользователю
         return VacancyAnalysis(
             suitable=suitable,
             analysis=analysis_text,
             match_score=match_score,
-            recruiter_analysis=None  # Будет заполнено асинхронно
+            recruiter_analysis=None
         )
 
     except Exception as e:
         log.error(f"Vacancy analysis error: {e}")
-        return VacancyAnalysis(False, f"⚠️ Ошибка: {e}")
+        return VacancyAnalysis(False, f"Error: {e}")
 
 
 async def ml_interesting_async(text: str) -> VacancyAnalysis:
-    """Главная функция анализа"""
+    """Main analysis function"""
     try:
         from .web_ui import get_current_settings
         settings = get_current_settings()
         model_type = settings.get("model_type", "mistral")
-    except:
+    except Exception:
         model_type = "mistral"
-    
+
     return await analyze_vacancy(text, model_type)
 
 
-
+# Session persistence
 SESSION_FILE = "./data/session.json"
 
+
 def save_session():
-    """Сохраняет сессию"""
+    """Save session to file"""
     if RESUME_DATA:
         os.makedirs("./data", exist_ok=True)
         session = {
@@ -1052,8 +910,9 @@ def save_session():
         except Exception as e:
             log.error(f"Session save error: {e}")
 
+
 def load_session():
-    """Загружает сессию"""
+    """Load session from file"""
     global RESUME_DATA
     try:
         if os.path.exists(SESSION_FILE):
@@ -1061,11 +920,12 @@ def load_session():
                 session = json.load(f)
             RESUME_DATA = session.get('resume_data')
             if RESUME_DATA:
-                log.info(f"📂 Session loaded")
+                log.info("Session loaded")
                 return True
     except Exception as e:
         log.error(f"Session load error: {e}")
     return False
 
-# Загружаем при импорте
+
+# Load on import
 load_session()

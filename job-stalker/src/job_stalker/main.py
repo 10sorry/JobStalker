@@ -1,5 +1,8 @@
 """
 Vacancy Monitor Bot - Main Module
+
+Handles Telegram channel monitoring and vacancy processing.
+Uses centralized state management for thread-safety.
 """
 import asyncio
 import os
@@ -13,8 +16,9 @@ from .config import API_ID, API_HASH, SESSION_NAME
 from .db import init_db, is_forwarded, mark_forwarded
 from .ml_filter import ml_interesting_async, recruiter_analysis, RESUME_DATA
 from .vacancy_storage import update_vacancy
+from .state import get_state
 
-# Логирование
+# Logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
@@ -22,17 +26,19 @@ logging.basicConfig(
 )
 log = logging.getLogger("main")
 
-# Импорты web_ui
-from .web_ui import (broadcast_vacancy, broadcast_status, broadcast_progress,
-                    update_stats, get_current_settings, broadcast_message)
+# Web UI imports
+from .web_ui import (
+    broadcast_vacancy, broadcast_status, broadcast_progress,
+    update_stats, get_current_settings, broadcast_message
+)
 
-# Семафор для параллельного анализа
+# Semaphore for parallel analysis
 CONCURRENT_ANALYSIS = 3
 analysis_semaphore = asyncio.Semaphore(CONCURRENT_ANALYSIS)
 
 
 def is_message_recent(message_date, days_back: int) -> bool:
-    """Проверка актуальности"""
+    """Check if message is within the time window"""
     if not message_date:
         return True
     cutoff = datetime.now() - timedelta(days=days_back)
@@ -40,13 +46,13 @@ def is_message_recent(message_date, days_back: int) -> bool:
 
 
 class Stats:
-    """Счётчики статистики"""
+    """Statistics counter"""
     def __init__(self):
         self.processed = 0
         self.rejected = 0
         self.suitable = 0
         self.found = 0
-    
+
     def reset(self):
         self.processed = 0
         self.rejected = 0
@@ -58,13 +64,18 @@ stats = Stats()
 
 
 async def run_stage2_async(vacancy_id: str, vacancy_text: str):
-    """Stage 2: Асинхронный анализ рекрутера (не блокирует поиск)"""
+    """Stage 2: Async recruiter analysis (non-blocking)
+
+    DEPRECATED: Stage 2 is now triggered manually via the "Ask Recruiter" button in the UI.
+    This function is kept for backwards compatibility but is no longer called from the scan process.
+    See /api/stage2/start in web_ui.py for the new implementation.
+    """
     try:
         if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
-            log.info(f"⏭️ Stage 2 skipped for {vacancy_id[:8]}: no resume loaded")
+            log.info(f"Stage 2 skipped for {vacancy_id[:8]}: no resume loaded")
             return
 
-        log.info(f"🎯 Stage 2: Starting async recruiter analysis for {vacancy_id[:8]}...")
+        log.info(f"Stage 2: Starting async recruiter analysis for {vacancy_id[:8]}...")
 
         ra = await recruiter_analysis(vacancy_text, RESUME_DATA['raw_text'])
 
@@ -80,29 +91,48 @@ async def run_stage2_async(vacancy_id: str, vacancy_text: str):
                 "cover_letter_hint": ra.cover_letter_hint
             }
 
-            # Сохраняем в файл
+            # Save to file
             update_vacancy(vacancy_id, {
                 "recruiter_analysis": recruiter_data,
                 "comparison": {"match_score": ra.match_score}
             })
 
-            # Отправляем обновление в UI
+            # Send update to UI
             update_msg = {
                 "type": "vacancy_update",
                 "vacancy_id": vacancy_id,
                 "recruiter_analysis": recruiter_data
             }
             await broadcast_message(update_msg)
-            log.info(f"✅ Stage 2 done for {vacancy_id[:8]}: match_score={ra.match_score}")
+            log.info(f"Stage 2 done for {vacancy_id[:8]}: match_score={ra.match_score}")
         else:
-            log.warning(f"⚠️ Stage 2 returned empty result for {vacancy_id[:8]}")
+            log.warning(f"Stage 2 returned empty result for {vacancy_id[:8]}")
 
+    except asyncio.CancelledError:
+        log.info(f"Stage 2 cancelled for {vacancy_id[:8]}")
+        raise
     except Exception as e:
-        log.error(f"❌ Stage 2 error for {vacancy_id[:8]}: {e}")
+        log.error(f"Stage 2 error for {vacancy_id[:8]}: {e}")
+
+
+def keyword_filter_check(text: str, keyword_filter: str) -> bool:
+    """Check if message matches keyword filter (case-insensitive)"""
+    if not keyword_filter.strip():
+        return True  # No keyword filter = accept all
+
+    keywords = [kw.strip().lower() for kw in keyword_filter.split(',') if kw.strip()]
+    text_lower = text.lower()
+
+    # At least one keyword should be present in the text
+    for keyword in keywords:
+        if keyword in text_lower:
+            return True
+
+    return False
 
 
 async def process_message(message, channel_title: str) -> bool:
-    """Обработка одного сообщения"""
+    """Process single message"""
     async with analysis_semaphore:
         chat_id = message.chat.id
         msg_id = message.id
@@ -115,19 +145,40 @@ async def process_message(message, channel_title: str) -> bool:
         update_stats(found=stats.found)
 
         try:
-            # Stage 1: Быстрая фильтрация
-            result = await ml_interesting_async(text)
+            # Get current settings to determine search mode
+            settings = get_current_settings()
+            search_mode = settings.get("search_mode", "basic")
+            keyword_filter = settings.get("keyword_filter", "")
+
+            # Apply filtering based on search mode
+            if search_mode == "basic":
+                # Basic mode: keyword filtering only
+                if not keyword_filter_check(text, keyword_filter):
+                    stats.rejected += 1
+                    update_stats(rejected=stats.rejected)
+                    log.info(f"Keyword filtered: {chat_id}:{msg_id}")
+                    return False
+
+                # If keyword filter passes, create vacancy with basic analysis
+                result_suitable = True
+                analysis_text = f"Matched keyword filter: {keyword_filter}" if keyword_filter else "Basic mode: accepted"
+
+            else:
+                # Advanced mode: AI-based filtering
+                result = await ml_interesting_async(text)
+                result_suitable = result.suitable
+                analysis_text = result.analysis
 
             stats.processed += 1
             update_stats(processed=stats.processed)
 
-            if not result.suitable:
+            if not result_suitable:
                 stats.rejected += 1
                 update_stats(rejected=stats.rejected)
-                log.info(f"❌ Отклонено: {chat_id}:{msg_id}")
+                log.info(f"Rejected: {chat_id}:{msg_id}")
                 return False
 
-            # Подходит! Показываем карточку СРАЗУ
+            # Suitable! Show card immediately
             stats.suitable += 1
             update_stats(suitable=stats.suitable)
 
@@ -140,47 +191,48 @@ async def process_message(message, channel_title: str) -> bool:
                 "text": text,
                 "date": str(message.date),
                 "link": link,
-                "analysis": result.analysis,
+                "analysis": analysis_text,
                 "is_new": True
             }
 
-            log.info(f"✅ Найдено: {channel_title}")
+            log.info(f"Found: {channel_title}")
 
-            # Отправляем карточку в UI СРАЗУ (без ожидания Stage 2)
+            # Send card to UI immediately (without waiting for Stage 2)
             await broadcast_vacancy(vacancy)
 
-            # Помечаем обработанным
+            # Mark as processed
             await mark_forwarded(chat_id, msg_id)
 
-            # Stage 2: Запускаем АСИНХРОННО (не блокирует поиск следующих вакансий)
-            asyncio.create_task(run_stage2_async(vacancy_id, text))
+            # Stage 2 is now triggered manually via "Ask Recruiter" button in the UI
+            # Auto-stage2 removed from scan process
 
             return True
 
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
-            log.error(f"Ошибка: {e}")
+            log.error(f"Error: {e}")
             return False
 
 
 async def start_bot():
-    """Основная функция бота"""
-    # Импортируем здесь чтобы избежать circular import
-    from . import web_ui
+    """Main bot function"""
     from .telegram_auth import is_authorized
     from .config import validate_config
+    state = get_state()
 
-    # Проверяем конфигурацию
+    # Validate configuration
     try:
         validate_config()
     except RuntimeError as e:
-        log.error(f"❌ Ошибка конфигурации: {e}")
-        await broadcast_status(f"❌ {e}", "⚠️")
+        log.error(f"Configuration error: {e}")
+        await broadcast_status(f"Error: {e}", "Warning")
         return
 
-    # Проверяем авторизацию перед запуском
+    # Check authorization before starting
     if not await is_authorized():
-        log.warning("❌ Не авторизован! Откройте веб-интерфейс для авторизации")
-        await broadcast_status("❌ Требуется авторизация в Telegram", "⚠️")
+        log.warning("Not authorized! Open web interface for authorization")
+        await broadcast_status("Telegram authorization required", "Warning")
         return
 
     await init_db()
@@ -190,103 +242,106 @@ async def start_bot():
     days_back = settings.get("days_back", 7)
     channels = settings.get("channels", [])
 
-    # Проверяем что каналы заданы
+    # Check that channels are configured
     if not channels or len(channels) == 0:
-        log.error("❌ Каналы не заданы в настройках!")
-        await broadcast_status("❌ Укажите каналы в настройках", "⚠️")
+        log.error("No channels configured!")
+        await broadcast_status("Configure channels in settings", "Warning")
         return
 
-    log.info(f"🔍 Поиск за {days_back} дней в {len(channels)} каналах")
-    await broadcast_status(f"🔍 Поиск за {days_back} дней", "🔍")
+    log.info(f"Searching {days_back} days back in {len(channels)} channels")
+    await broadcast_status(f"Searching {days_back} days back", "Search")
 
     stats.reset()
 
     app = Client(SESSION_NAME, api_id=API_ID, api_hash=API_HASH, workdir="./data")
 
     async with app:
-        log.info("🚀 Бот запущен")
-        await broadcast_status("🚀 Подключение...", "🔄")
+        log.info("Bot started")
+        await broadcast_status("Connecting...", "Loading")
 
         total_channels = len(channels)
 
         for idx, channel in enumerate(channels):
-            # Проверяем флаг ВНУТРИ web_ui
-            if not web_ui.monitoring_active:
-                log.info("❌ Остановлено")
+            # Check monitoring flag
+            if not state.monitoring_active:
+                log.info("Stopped")
                 break
-            
+
             try:
                 chat = await app.get_chat(channel)
-                log.info(f"📡 [{idx+1}/{total_channels}] {chat.title}")
-                await broadcast_status(f"📡 {chat.title}", "📡")
-                
+                log.info(f"[{idx+1}/{total_channels}] {chat.title}")
+                await broadcast_status(f"{chat.title}", "Channel")
+
                 progress = int((idx / total_channels) * 100)
                 await broadcast_progress(progress, total_channels - idx)
-                
-                # Собираем сообщения
+
+                # Collect messages
                 messages = []
                 async for message in app.get_chat_history(chat.id, limit=100):
-                    if not web_ui.monitoring_active:
+                    if not state.monitoring_active:
                         break
                     if not is_message_recent(message.date, days_back):
                         continue
                     if await is_forwarded(message.chat.id, message.id):
                         continue
                     messages.append((message, chat.title))
-                
-                # Параллельная обработка
+
+                # Parallel processing
                 if messages:
-                    await broadcast_status(f"🤖 Анализ {len(messages)} сообщений...", "🤖")
-                    
+                    await broadcast_status(f"Analyzing {len(messages)} messages...", "Robot")
+
                     tasks = [process_message(m, t) for m, t in messages]
-                    
-                    # Обрабатываем пакетами
+
+                    # Process in batches
                     for i in range(0, len(tasks), 5):
-                        if not web_ui.monitoring_active:
+                        if not state.monitoring_active:
                             break
                         batch = tasks[i:i+5]
                         await asyncio.gather(*batch, return_exceptions=True)
                         await asyncio.sleep(0.1)
-                
+
+            except asyncio.CancelledError:
+                log.info("Cancelled")
+                raise
             except Exception as e:
-                log.error(f"Ошибка канала {channel}: {e}")
+                log.error(f"Channel error {channel}: {e}")
                 continue
-        
+
         await broadcast_progress(100, 0)
-        await broadcast_status(f"✅ Найдено {stats.suitable} вакансий", "✅")
-        
-        # Real-time мониторинг
-        if web_ui.monitoring_active:
-            log.info("👀 Мониторинг...")
-            await broadcast_status("👀 Мониторинг новых...", "👀")
-            
+        await broadcast_status(f"Found {stats.suitable} vacancies", "Done")
+
+        # Real-time monitoring
+        if state.monitoring_active:
+            log.info("Monitoring...")
+            await broadcast_status("Monitoring for new...", "Eyes")
+
             @app.on_message(filters.channel)
             async def on_new_message(client, message):
-                if not web_ui.monitoring_active:
+                if not state.monitoring_active:
                     return
-                
+
                 chat_id = str(message.chat.id)
                 chat_username = message.chat.username
-                
-                # Получаем актуальный список каналов из настроек
+
+                # Get current channel list from settings
                 settings = get_current_settings()
                 current_channels = settings.get("channels", [])
 
-                # Проверяем что это наш канал
+                # Check if this is our channel
                 is_our_channel = False
                 for ch in current_channels:
                     if str(ch) == chat_id or ch == chat_username:
                         is_our_channel = True
                         break
-                
+
                 if is_our_channel:
                     await process_message(message, message.chat.title)
-            
-            # Ждём пока active
-            while web_ui.monitoring_active:
+
+            # Wait while active
+            while state.monitoring_active:
                 await asyncio.sleep(1)
-        
-        log.info("🛑 Бот остановлен")
+
+        log.info("Bot stopped")
 
 
 async def main():
