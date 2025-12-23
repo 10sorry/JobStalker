@@ -1,34 +1,43 @@
-"""
-Web UI Module - FastAPI application for JobStalker
-
-Provides REST API and WebSocket endpoints for the web interface.
-Uses centralized state management for thread-safety.
-"""
 from __future__ import annotations
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Any, Dict, List, Optional
 import asyncio
 import json
 import os
 import logging
+from pathlib import Path
 import psutil
 
+
 from .vacancy_storage import (
-    save_vacancy, load_all_vacancies,
-    mark_all_as_old, clear_all_vacancies,
-    load_tracked_vacancies, save_tracked_vacancies,
-    add_to_tracker, remove_from_tracker,
-    update_tracker_status, update_tracked_vacancy,
-    get_tracked_vacancy, is_in_tracker
+    save_vacancy,
+    load_all_vacancies,
+    mark_all_as_old,
+    clear_all_vacancies,
+    load_tracked_vacancies,
+    save_tracked_vacancies,
+    add_to_tracker,
+    remove_from_tracker,
+    update_tracker_status,
+    update_tracked_vacancy,
+    get_tracked_vacancy,
+    is_in_tracker,
 )
 from .telegram_auth import (
-    get_auth_status, start_qr_auth, start_phone_auth,
-    submit_code, submit_password, logout, get_user_info,
-    set_status_callback, is_authorized
+    get_auth_status,
+    start_qr_auth,
+    start_phone_auth,
+    submit_code,
+    submit_password,
+    logout,
+    get_user_info,
+    set_status_callback,
+    is_authorized,
 )
 from .state import get_state, AppState
 from .gpu_monitor import get_gpu_info, has_gpu, get_gpu_detector
@@ -55,28 +64,36 @@ from .exceptions import (
 
 log = logging.getLogger("web_ui")
 
-# Import Gemini API key from config
 try:
-    from .config import GEMINI_API_KEY
+    from .config import GEMINI_API_KEY, GROQ_API_KEY
 except ImportError:
     GEMINI_API_KEY = None
+    GROQ_API_KEY = None
 
-# Initialize GPU detector on module load
 _gpu_detector = get_gpu_detector()
 log.info(f"GPU detection: type={_gpu_detector.gpu_type}, name={_gpu_detector.gpu_name}")
 
 app = FastAPI()
 
-# Package paths
-BASE_DIR = os.path.dirname(__file__)
-static_dir = os.path.join(BASE_DIR, "static-files")
-templates_dir = os.path.join(BASE_DIR, "templates-html")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-templates = Jinja2Templates(directory=templates_dir)
+# Package paths
+BASE_DIR = Path(__file__).parent
+static_dir = BASE_DIR / "static-files"
+templates_dir = BASE_DIR / "templates-html"
+
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+templates = Jinja2Templates(directory=str(templates_dir))
 
 # Settings persistence file
-SETTINGS_FILE = "data/settings.json"
+DATA_DIR = Path("data")
+SETTINGS_FILE = DATA_DIR / "settings.json"
 
 
 # Use AppSettings from models (backward compatible alias)
@@ -84,13 +101,11 @@ Settings = AppSettings
 
 
 def load_settings():
-    """Load settings from file"""
     state = get_state()
     try:
-        if os.path.exists(SETTINGS_FILE):
-            with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
+        if SETTINGS_FILE.exists():
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 loaded = json.load(f)
-                # Use synchronous update since this runs at startup
                 state._settings.update(loaded)
                 log.info(f"Settings loaded from {SETTINGS_FILE}")
                 log.info(f"  - custom_prompt: {len(loaded.get('custom_prompt', ''))} chars")
@@ -102,11 +117,10 @@ def load_settings():
 
 
 def save_settings_to_file():
-    """Save settings to file"""
     state = get_state()
     try:
-        os.makedirs("data", exist_ok=True)
-        with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
             json.dump(state.settings, f, ensure_ascii=False, indent=2)
     except Exception as e:
         log.error(f"Settings save error: {e}")
@@ -116,27 +130,18 @@ def save_settings_to_file():
 load_settings()
 
 
-# ============== COMPATIBILITY LAYER ==============
-# These properties/functions maintain backward compatibility with existing code
-
 @property
 def monitoring_active() -> bool:
-    """Backward compatible monitoring_active property"""
     return get_state().monitoring_active
 
 
 def get_current_settings():
-    """Backward compatible get_current_settings function"""
     return get_state().settings
 
 
 def update_stats(
-    found: int = None,
-    processed: int = None,
-    rejected: int = None,
-    suitable: int = None
+    found: int = None, processed: int = None, rejected: int = None, suitable: int = None
 ):
-    """Backward compatible update_stats function (sync wrapper)"""
     state = get_state()
     if found is not None:
         state._stats.found = found
@@ -151,8 +156,6 @@ def update_stats(
     asyncio.create_task(broadcast_stats())
 
 
-# ============== API ENDPOINTS ==============
-
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -166,10 +169,10 @@ async def get_vacancies():
 
 @app.post("/api/vacancies/custom")
 async def add_custom_vacancy(request: CustomVacancyRequest):
-    """Add a custom vacancy directly to tracker (not to search results)"""
     import uuid
     from datetime import datetime
     from .ml_filter import ml_interesting_async
+
     state = get_state()
     settings = state.settings
 
@@ -193,12 +196,9 @@ async def add_custom_vacancy(request: CustomVacancyRequest):
     if request.skip_analysis:
         vacancy["analysis"] = "Добавлено вручную без анализа"
         add_to_tracker(vacancy)
-        return JSONResponse({
-            "status": "added",
-            "vacancy_id": vacancy_id,
-            "vacancy": vacancy,
-            "analyzed": False
-        })
+        return JSONResponse(
+            {"status": "added", "vacancy_id": vacancy_id, "vacancy": vacancy, "analyzed": False}
+        )
 
     # Run Stage 1 analysis
     try:
@@ -209,52 +209,43 @@ async def add_custom_vacancy(request: CustomVacancyRequest):
             vacancy["match_score"] = analysis_result.match_score
             vacancy["suitable"] = analysis_result.suitable
 
-            # Add to tracker only
             add_to_tracker(vacancy)
 
             # Stage 2 is now triggered manually via "Ask Recruiter" button
 
-            return JSONResponse({
-                "status": "added",
-                "vacancy_id": vacancy_id,
-                "vacancy": vacancy,
-                "analyzed": True,
-                "suitable": analysis_result.suitable,
-                "match_score": analysis_result.match_score
-            })
+            return JSONResponse(
+                {
+                    "status": "added",
+                    "vacancy_id": vacancy_id,
+                    "vacancy": vacancy,
+                    "analyzed": True,
+                    "suitable": analysis_result.suitable,
+                    "match_score": analysis_result.match_score,
+                }
+            )
         else:
             vacancy["analysis"] = "Ошибка анализа"
             add_to_tracker(vacancy)
-            return JSONResponse({
-                "status": "added",
-                "vacancy_id": vacancy_id,
-                "vacancy": vacancy,
-                "analyzed": False,
-                "error": "Analysis failed"
-            })
+            return JSONResponse(
+                {
+                    "status": "added",
+                    "vacancy_id": vacancy_id,
+                    "vacancy": vacancy,
+                    "analyzed": False,
+                    "error": "Analysis failed",
+                }
+            )
 
     except Exception as e:
         log.error(f"Error adding custom vacancy: {e}", exc_info=True)
-        return JSONResponse({
-            "status": "error",
-            "error": str(e)
-        }, status_code=500)
+        return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
 
 
-# DEPRECATED: run_stage2_for_tracked_vacancy removed
-# Stage 2 is now triggered manually via the "Ask Recruiter" button
-# Use /api/stage2/start endpoint instead
-
-
-# ============== STAGE 2 MANUAL API ==============
-
-# Track which vacancies are currently being analyzed
 _stage2_in_progress: set[str] = set()
 
 
 @app.post("/api/stage2/start")
 async def api_start_stage2(request: Request):
-    """Manually start Stage 2 recruiter analysis for a vacancy"""
     from .ml_filter import recruiter_analysis
 
     data = await request.json()
@@ -263,71 +254,67 @@ async def api_start_stage2(request: Request):
     vacancy_title = data.get("vacancy_title", "")
 
     if not vacancy_id or not vacancy_text:
-        return JSONResponse({"status": "error", "error": "Missing vacancy_id or vacancy_text"}, status_code=400)
+        return JSONResponse(
+            {"status": "error", "error": "Missing vacancy_id or vacancy_text"}, status_code=400
+        )
 
-    # Check if resume is loaded (RESUME_DATA is set when resume is uploaded)
     from .ml_filter import RESUME_DATA
-    if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
+
+    if not RESUME_DATA or "raw_text" not in RESUME_DATA:
         return JSONResponse({"status": "error", "error": "No resume loaded"}, status_code=400)
 
     state = get_state()
 
-    # Check if already in progress
     if vacancy_id in _stage2_in_progress:
-        return JSONResponse({"status": "in_progress", "message": "Stage 2 already running for this vacancy"})
+        return JSONResponse(
+            {"status": "in_progress", "message": "Stage 2 already running for this vacancy"}
+        )
 
-    # Mark as in progress
     _stage2_in_progress.add(vacancy_id)
 
-    # Broadcast start event
-    await broadcast_message({
-        "type": "stage2_started",
-        "vacancy_id": vacancy_id
-    })
+    await broadcast_message({"type": "stage2_started", "vacancy_id": vacancy_id})
 
     async def run_stage2():
         try:
             log.info(f"Stage 2: Starting manual analysis for {vacancy_id[:8]}")
 
-            # Broadcast progress
-            await broadcast_message({
-                "type": "stage2_progress",
-                "vacancy_id": vacancy_id,
-                "status": "analyzing"
-            })
+            await broadcast_message(
+                {"type": "stage2_progress", "vacancy_id": vacancy_id, "status": "analyzing"}
+            )
 
             result = await recruiter_analysis(vacancy_text, vacancy_title)
 
             if result:
                 # Update vacancy in storage
                 from .vacancy_storage import update_vacancy
+
                 update_vacancy(vacancy_id, {"recruiter_analysis": result.__dict__})
 
-                # Broadcast completion
-                await broadcast_message({
-                    "type": "stage2_completed",
-                    "vacancy_id": vacancy_id,
-                    "recruiter_analysis": result.__dict__
-                })
+                await broadcast_message(
+                    {
+                        "type": "stage2_completed",
+                        "vacancy_id": vacancy_id,
+                        "recruiter_analysis": result.__dict__,
+                    }
+                )
                 log.info(f"Stage 2: Completed for {vacancy_id[:8]}, score={result.match_score}")
             else:
-                await broadcast_message({
-                    "type": "stage2_error",
-                    "vacancy_id": vacancy_id,
-                    "error": "Analysis returned no result"
-                })
+                await broadcast_message(
+                    {
+                        "type": "stage2_error",
+                        "vacancy_id": vacancy_id,
+                        "error": "Analysis returned no result",
+                    }
+                )
 
         except Exception as e:
             log.error(f"Stage 2 error for {vacancy_id[:8]}: {e}")
-            await broadcast_message({
-                "type": "stage2_error",
-                "vacancy_id": vacancy_id,
-                "error": str(e)
-            })
+            await broadcast_message(
+                {"type": "stage2_error", "vacancy_id": vacancy_id, "error": str(e)}
+            )
         finally:
             _stage2_in_progress.discard(vacancy_id)
 
-    # Run in background
     task = asyncio.create_task(run_stage2())
     state.track_stage2_task(task)
 
@@ -336,25 +323,19 @@ async def api_start_stage2(request: Request):
 
 @app.get("/api/stage2/status/{vacancy_id}")
 async def api_stage2_status(vacancy_id: str):
-    """Check if Stage 2 is in progress for a vacancy"""
-    return JSONResponse({
-        "vacancy_id": vacancy_id,
-        "in_progress": vacancy_id in _stage2_in_progress
-    })
+    return JSONResponse(
+        {"vacancy_id": vacancy_id, "in_progress": vacancy_id in _stage2_in_progress}
+    )
 
-
-# ============== TRACKER API ==============
 
 @app.get("/api/tracker")
 async def get_tracker():
-    """Get all tracked vacancies"""
     vacancies = load_tracked_vacancies()
     return JSONResponse({"vacancies": vacancies})
 
 
 @app.post("/api/tracker/add")
 async def api_add_to_tracker(request: Request):
-    """Add a vacancy to tracker"""
     data = await request.json()
     vacancy = data.get("vacancy")
     if not vacancy:
@@ -369,7 +350,6 @@ async def api_add_to_tracker(request: Request):
 
 @app.post("/api/tracker/remove")
 async def api_remove_from_tracker(request: Request):
-    """Remove a vacancy from tracker"""
     data = await request.json()
     vacancy_id = data.get("vacancy_id")
     if not vacancy_id:
@@ -381,13 +361,14 @@ async def api_remove_from_tracker(request: Request):
 
 @app.post("/api/tracker/status")
 async def api_update_tracker_status(request: Request):
-    """Update tracker status for a vacancy"""
     data = await request.json()
     vacancy_id = data.get("vacancy_id")
     status = data.get("status")
 
     if not vacancy_id or not status:
-        return JSONResponse({"status": "error", "error": "Missing vacancy_id or status"}, status_code=400)
+        return JSONResponse(
+            {"status": "error", "error": "Missing vacancy_id or status"}, status_code=400
+        )
 
     success = update_tracker_status(vacancy_id, status)
     return JSONResponse({"status": "updated" if success else "not_found"})
@@ -395,32 +376,55 @@ async def api_update_tracker_status(request: Request):
 
 @app.get("/api/tracker/{vacancy_id}")
 async def get_tracked_vacancy_api(vacancy_id: str):
-    """Get a single tracked vacancy by ID"""
     vacancy = get_tracked_vacancy(vacancy_id)
     if vacancy:
         return JSONResponse({"vacancy": vacancy})
     return JSONResponse({"status": "not_found"}, status_code=404)
 
 
+@app.post("/api/parse-vacancy")
+async def parse_vacancy_text(request: Request):
+    try:
+        body = await request.json()
+        text = body.get("text", "")
+
+        if not text or len(text.strip()) < 20:
+            return JSONResponse({"status": "error", "error": "Text too short"}, status_code=400)
+
+        from .vacancy_parser import parse_vacancy
+        from .vacancy_parser.parser import format_for_display
+
+        parsed = parse_vacancy(text)
+        display_data = format_for_display(parsed)
+
+        return JSONResponse({"status": "ok", "parsed": display_data})
+
+    except Exception as e:
+        log.error(f"Parse vacancy error: {e}")
+        return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
+
+
 @app.get("/api/session")
 async def get_session():
-    """Full session state for UI recovery"""
     state = get_state()
     resume_data = None
     try:
         from .ml_filter import RESUME_DATA
+
         if RESUME_DATA:
-            resume_data = {k: v for k, v in RESUME_DATA.items() if k != '_original'}
-            resume_data['has_raw_text'] = 'raw_text' in RESUME_DATA
+            resume_data = {k: v for k, v in RESUME_DATA.items() if k != "_original"}
+            resume_data["has_raw_text"] = "raw_text" in RESUME_DATA
     except Exception:
         pass
 
-    return JSONResponse({
-        "settings": state.settings,
-        "stats": state.get_stats_dict(),
-        "resume_data": resume_data,
-        "is_monitoring": state.monitoring_active
-    })
+    return JSONResponse(
+        {
+            "settings": state.settings,
+            "stats": state.get_stats_dict(),
+            "resume_data": resume_data,
+            "is_monitoring": state.monitoring_active,
+        }
+    )
 
 
 @app.post("/api/start")
@@ -430,11 +434,11 @@ async def start_monitoring():
     if state.monitoring_active:
         return JSONResponse({"status": "already_running"})
 
-    # Reset stats
     await state.reset_stats()
     mark_all_as_old()
 
     from .main import start_bot
+
     task = asyncio.create_task(start_bot())
 
     if await state.start_monitoring(task):
@@ -467,12 +471,11 @@ async def stop_monitoring():
 async def reset_all():
     state = get_state()
 
-    # Clear vacancies
     clear_all_vacancies()
 
-    # Reset forwarded DB
     try:
         from .db import reset_db
+
         await reset_db()
     except Exception as e:
         log.warning(f"Could not reset forwarded DB: {e}")
@@ -491,56 +494,55 @@ async def upload_resume(request: Request, model_type: str = "mistral", file_ext:
 
     # Parse file based on extension
     try:
-        if file_ext.lower() == '.pdf':
+        if file_ext.lower() == ".pdf":
             from pypdf import PdfReader
-            import io
 
-            temp_path = tempfile.mktemp(suffix=".pdf")
-            with open(temp_path, 'wb') as f:
-                f.write(body)
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                tmp.write(body)
+                tmp_name = tmp.name
 
-            reader = PdfReader(temp_path)
+            reader = PdfReader(tmp_name)
             text = ""
             for page in reader.pages:
                 text += page.extract_text() + "\n"
 
-            os.unlink(temp_path)
+            Path(tmp_name).unlink(missing_ok=True)
 
-        elif file_ext.lower() in ['.docx', '.doc']:
+        elif file_ext.lower() in [".docx", ".doc"]:
             from docx import Document
 
-            temp_path = tempfile.mktemp(suffix=".docx")
-            with open(temp_path, 'wb') as f:
-                f.write(body)
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
+                tmp.write(body)
+                tmp_name = tmp.name
 
-            doc = Document(temp_path)
+            doc = Document(tmp_name)
             text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
-            os.unlink(temp_path)
+            Path(tmp_name).unlink(missing_ok=True)
 
-        elif file_ext.lower() in ['.html', '.htm']:
+        elif file_ext.lower() in [".html", ".htm"]:
             from bs4 import BeautifulSoup
 
-            html_content = body.decode('utf-8')
-            soup = BeautifulSoup(html_content, 'html.parser')
+            html_content = body.decode("utf-8")
+            soup = BeautifulSoup(html_content, "html.parser")
 
             for script in soup(["script", "style"]):
                 script.decompose()
 
-            text = soup.get_text(separator='\n', strip=True)
-            lines = [line.strip() for line in text.split('\n') if line.strip()]
-            text = '\n'.join(lines)
+            text = soup.get_text(separator="\n", strip=True)
+            lines = [line.strip() for line in text.split("\n") if line.strip()]
+            text = "\n".join(lines)
 
         else:
-            text = body.decode('utf-8')
+            text = body.decode("utf-8")
 
     except Exception as e:
         return JSONResponse({"error": f"File parsing error: {str(e)}"})
 
     # Save extracted text to temp file for load_resume
-    temp_path = tempfile.mktemp(suffix=".txt")
-    with open(temp_path, 'w', encoding='utf-8') as f:
-        f.write(text)
+    with tempfile.NamedTemporaryFile(suffix=".txt", mode="w", encoding="utf-8", delete=False) as tmp:
+        tmp.write(text)
+        temp_path = tmp.name
 
     set_stream_callback(broadcast_message)
 
@@ -555,15 +557,11 @@ async def upload_resume(request: Request, model_type: str = "mistral", file_ext:
         return JSONResponse(result)
     finally:
         set_stream_callback(None)
-        try:
-            os.unlink(temp_path)
-        except Exception:
-            pass
+        Path(temp_path).unlink(missing_ok=True)
 
 
 @app.post("/api/resume/set")
 async def set_resume(request: ResumeSetRequest):
-    """Set active resume from stored data (no re-upload)."""
     from .ml_filter import set_resume_data, save_session
 
     result = await set_resume_data(request.resume_data)
@@ -577,13 +575,11 @@ async def set_resume(request: ResumeSetRequest):
     return JSONResponse({"status": "ok", "resume": result})
 
 
-# Use model from models.py (backward compatible alias)
 ImproveRequest = ImproveResumeRequest
 
 
 @app.post("/api/improve-resume")
 async def improve_resume_endpoint(request: ImproveResumeRequest) -> JSONResponse:
-    """Stage 3: Start resume improvement in background"""
     from .ml_filter import RESUME_DATA
 
     if not RESUME_DATA:
@@ -597,15 +593,18 @@ async def improve_resume_endpoint(request: ImproveResumeRequest) -> JSONResponse
 
     # Start background task
     task = asyncio.create_task(
-        run_improvement(vacancy_id, request.vacancy_text, request.vacancy_title, request.recruiter_analysis)
+        run_improvement(
+            vacancy_id, request.vacancy_text, request.vacancy_title, request.recruiter_analysis
+        )
     )
     await state.add_improvement_task(vacancy_id, task)
 
     return JSONResponse({"status": "started", "vacancy_id": vacancy_id})
 
 
-async def run_improvement(vacancy_id: str, vacancy_text: str, vacancy_title: str, existing_analysis: dict = None):
-    """Stage 3: Background resume improvement generation"""
+async def run_improvement(
+    vacancy_id: str, vacancy_text: str, vacancy_title: str, existing_analysis: dict = None
+):
     from .ml_filter import compare_with_resume, set_stream_callback, RecruiterAnalysis
 
     state = get_state()
@@ -618,38 +617,39 @@ async def run_improvement(vacancy_id: str, vacancy_text: str, vacancy_title: str
     set_stream_callback(scoped_callback)
 
     try:
-        # Convert to RecruiterAnalysis if provided (can be dict or RecruiterAnalysisResult)
         recruiter_analysis_obj = None
         if existing_analysis:
             # Handle both dict and Pydantic model
             if isinstance(existing_analysis, dict):
-                match_score = existing_analysis.get('match_score', 0)
+                match_score = existing_analysis.get("match_score", 0)
                 if match_score > 0:
                     log.info(f"Using existing recruiter analysis (dict): match_score={match_score}")
                     recruiter_analysis_obj = RecruiterAnalysis(
                         match_score=match_score,
-                        strong_sides=existing_analysis.get('strong_sides', []),
-                        weak_sides=existing_analysis.get('weak_sides', []),
-                        missing_skills=existing_analysis.get('missing_skills', []),
-                        risks=existing_analysis.get('risks', []),
-                        recommendations=existing_analysis.get('recommendations', []),
-                        verdict=existing_analysis.get('verdict', ''),
-                        cover_letter_hint=existing_analysis.get('cover_letter_hint', '')
+                        strong_sides=existing_analysis.get("strong_sides", []),
+                        weak_sides=existing_analysis.get("weak_sides", []),
+                        missing_skills=existing_analysis.get("missing_skills", []),
+                        risks=existing_analysis.get("risks", []),
+                        recommendations=existing_analysis.get("recommendations", []),
+                        verdict=existing_analysis.get("verdict", ""),
+                        cover_letter_hint=existing_analysis.get("cover_letter_hint", ""),
                     )
             else:
                 # It's a Pydantic model (RecruiterAnalysisResult)
-                match_score = getattr(existing_analysis, 'match_score', 0)
+                match_score = getattr(existing_analysis, "match_score", 0)
                 if match_score > 0:
-                    log.info(f"Using existing recruiter analysis (model): match_score={match_score}")
+                    log.info(
+                        f"Using existing recruiter analysis (model): match_score={match_score}"
+                    )
                     recruiter_analysis_obj = RecruiterAnalysis(
                         match_score=match_score,
-                        strong_sides=getattr(existing_analysis, 'strong_sides', []),
-                        weak_sides=getattr(existing_analysis, 'weak_sides', []),
-                        missing_skills=getattr(existing_analysis, 'missing_skills', []),
-                        risks=getattr(existing_analysis, 'risks', []),
-                        recommendations=getattr(existing_analysis, 'recommendations', []),
-                        verdict=getattr(existing_analysis, 'verdict', ''),
-                        cover_letter_hint=getattr(existing_analysis, 'cover_letter_hint', '')
+                        strong_sides=getattr(existing_analysis, "strong_sides", []),
+                        weak_sides=getattr(existing_analysis, "weak_sides", []),
+                        missing_skills=getattr(existing_analysis, "missing_skills", []),
+                        risks=getattr(existing_analysis, "risks", []),
+                        recommendations=getattr(existing_analysis, "recommendations", []),
+                        verdict=getattr(existing_analysis, "verdict", ""),
+                        cover_letter_hint=getattr(existing_analysis, "cover_letter_hint", ""),
                     )
 
         comparison = await compare_with_resume(vacancy_text, vacancy_title, recruiter_analysis_obj)
@@ -668,11 +668,7 @@ async def run_improvement(vacancy_id: str, vacancy_text: str, vacancy_title: str
 
         await state.update_improvement_task(vacancy_id, "completed", result)
 
-        message = {
-            "type": "resume_improved",
-            "vacancy_id": vacancy_id,
-            "result": result
-        }
+        message = {"type": "resume_improved", "vacancy_id": vacancy_id, "result": result}
 
         await broadcast_message(message)
         log.info(f"Message broadcasted to {state.ws_client_count} connections")
@@ -680,11 +676,9 @@ async def run_improvement(vacancy_id: str, vacancy_text: str, vacancy_title: str
     except Exception as e:
         log.error(f"Error in run_improvement: {e}", exc_info=True)
         await state.update_improvement_task(vacancy_id, "error")
-        await broadcast_message({
-            "type": "resume_improved",
-            "vacancy_id": vacancy_id,
-            "error": str(e)
-        })
+        await broadcast_message(
+            {"type": "resume_improved", "vacancy_id": vacancy_id, "error": str(e)}
+        )
     finally:
         set_stream_callback(None)
 
@@ -697,28 +691,29 @@ async def get_improvement_status(vacancy_id: str):
     if not info:
         return JSONResponse({"status": "not_found"})
 
-    return JSONResponse({
-        "status": info.get("status"),
-        "result": info.get("result")
-    })
+    return JSONResponse({"status": info.get("status"), "result": info.get("result")})
 
 
 @app.post("/api/settings")
 async def save_settings(settings: Settings):
     state = get_state()
-    await state.update_settings({
-        "model_type": settings.model_type,
-        "days_back": settings.days_back,
-        "custom_prompt": settings.custom_prompt,
-        "resume_summary": settings.resume_summary,
-        "channels": settings.channels,
-        "keyword_filter": settings.keyword_filter,
-        "search_mode": settings.search_mode,
-        # enable_stage2 removed - Stage 2 is now triggered manually
-    })
+    await state.update_settings(
+        {
+            "model_type": settings.model_type,
+            "days_back": settings.days_back,
+            "custom_prompt": settings.custom_prompt,
+            "resume_summary": settings.resume_summary,
+            "channels": settings.channels,
+            "keyword_filter": settings.keyword_filter,
+            "search_mode": settings.search_mode,
+            # enable_stage2 removed - Stage 2 is now triggered manually
+        }
+    )
 
     save_settings_to_file()
-    log.info(f"Settings saved: mode={settings.search_mode}, prompt={len(settings.custom_prompt)} chars")
+    log.info(
+        f"Settings saved: mode={settings.search_mode}, prompt={len(settings.custom_prompt)} chars"
+    )
     return JSONResponse({"status": "saved"})
 
 
@@ -729,38 +724,34 @@ async def get_settings_endpoint():
 
 @app.get("/api/models")
 async def get_models():
-    """Get list of available models"""
     ollama_client = AIClientFactory.get_ollama_client()
     models = await ollama_client.list_models()
 
-    # Add Gemini if API key available
     if GEMINI_API_KEY:
-        models.append({
-            "name": "gemini",
-            "display_name": "Gemini (Cloud)",
-            "size": 0
-        })
+        models.append(
+            {"name": "gemini", "display_name": "Gemini (Cloud)", "size": 0, "provider": "gemini"}
+        )
+
+    if GROQ_API_KEY:
+        from .ai_client import GroqClient
+
+        groq_client = GroqClient(GROQ_API_KEY)
+        groq_models = await groq_client.list_models()
+        models.extend(groq_models)
 
     return JSONResponse({"models": models})
 
 
-# ============== TELEGRAM AUTH ==============
-
 @app.get("/api/auth/status")
 async def auth_status():
-    """Check authorization status"""
     status = await get_auth_status()
     user_info = await get_user_info() if status.get("authorized") else None
 
-    return JSONResponse({
-        "status": status,
-        "user": user_info
-    })
+    return JSONResponse({"status": status, "user": user_info})
 
 
 @app.post("/api/auth/qr")
 async def auth_qr():
-    """Start QR authorization"""
     set_status_callback(broadcast_message)
     result = await start_qr_auth()
     return JSONResponse(result)
@@ -768,7 +759,6 @@ async def auth_qr():
 
 @app.post("/api/auth/phone")
 async def auth_phone(request: PhoneAuthRequest):
-    """Start phone authorization"""
     set_status_callback(broadcast_message)
     result = await start_phone_auth(request.phone)
     return JSONResponse(result)
@@ -776,26 +766,21 @@ async def auth_phone(request: PhoneAuthRequest):
 
 @app.post("/api/auth/code")
 async def auth_code(request: CodeSubmitRequest):
-    """Submit verification code"""
     result = await submit_code(request.code)
     return JSONResponse(result)
 
 
 @app.post("/api/auth/password")
 async def auth_password(request: PasswordSubmitRequest):
-    """Submit 2FA password"""
     result = await submit_password(request.password)
     return JSONResponse(result)
 
 
 @app.post("/api/auth/logout")
 async def auth_logout():
-    """Logout from account"""
     result = await logout()
     return JSONResponse(result)
 
-
-# ============== WEBSOCKET ==============
 
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
@@ -804,7 +789,6 @@ async def websocket_endpoint(ws: WebSocket):
     await state.add_ws_client(ws)
     log.info(f"WebSocket connected. Total: {state.ws_client_count}")
 
-    # Send current state
     try:
         await ws.send_json({"type": "stats", "stats": state.get_stats_dict()})
         await ws.send_json({"type": "monitoring", "active": state.monitoring_active})
@@ -823,10 +807,7 @@ async def websocket_endpoint(ws: WebSocket):
         log.info(f"WebSocket disconnected. Total: {state.ws_client_count}")
 
 
-# ============== BROADCAST ==============
-
 async def broadcast_vacancy(vacancy: dict):
-    """Broadcast new vacancy"""
     save_vacancy(vacancy)
     state = get_state()
     await state.increment_stats(suitable=1)
@@ -852,7 +833,6 @@ async def broadcast_progress(percent: int, remaining: int = None):
 
 
 async def broadcast_message(message: dict):
-    """Broadcast message to all connected WebSocket clients"""
     state = get_state()
     clients = await state.get_ws_clients()
     dead_clients = []
@@ -869,10 +849,7 @@ async def broadcast_message(message: dict):
         await state.cleanup_ws_clients(dead_clients)
 
 
-# ============== SYSTEM MONITORING ==============
-
 def get_cpu_info():
-    """Get CPU information via psutil"""
     try:
         cpu_percent = psutil.cpu_percent(interval=None)
         mem = psutil.virtual_memory()
@@ -890,7 +867,7 @@ def get_cpu_info():
             "frequency_mhz": round(cpu_freq),
             "memory_percent": mem.percent,
             "memory_used_gb": round(mem.used / (1024**3), 1),
-            "memory_total_gb": round(mem.total / (1024**3), 1)
+            "memory_total_gb": round(mem.total / (1024**3), 1),
         }
     except Exception as e:
         log.error(f"CPU info error: {e}")
@@ -900,43 +877,42 @@ def get_cpu_info():
             "frequency_mhz": 0,
             "memory_percent": 0,
             "memory_used_gb": 0,
-            "memory_total_gb": 0
+            "memory_total_gb": 0,
         }
 
 
 @app.get("/api/system-monitor")
 async def get_system_monitor():
-    """Endpoint for system monitoring data"""
     gpu_info_dict = get_gpu_info()
     cpu_info = get_cpu_info()
 
     return {
         "gpu": gpu_info_dict,
         "cpu": cpu_info,
-        "has_gpu": gpu_info_dict is not None and gpu_info_dict.get("available", False)
+        "has_gpu": gpu_info_dict is not None and gpu_info_dict.get("available", False),
     }
 
 
 async def monitor_loop():
-    """Background loop for streaming monitoring data via WebSocket"""
     state = get_state()
     while state.monitor_loop_active:
         gpu_info_dict = get_gpu_info()
         cpu_info = get_cpu_info()
 
-        await broadcast_message({
-            "type": "system_monitor",
-            "gpu": gpu_info_dict,
-            "cpu": cpu_info,
-            "has_gpu": gpu_info_dict is not None
-        })
+        await broadcast_message(
+            {
+                "type": "system_monitor",
+                "gpu": gpu_info_dict,
+                "cpu": cpu_info,
+                "has_gpu": gpu_info_dict is not None,
+            }
+        )
 
         await asyncio.sleep(1)
 
 
 @app.post("/api/monitor/start")
 async def start_monitor():
-    """Start background monitoring"""
     state = get_state()
     if not state.monitor_loop_active:
         await state.set_monitor_loop_active(True)
@@ -946,17 +922,13 @@ async def start_monitor():
 
 @app.post("/api/monitor/stop")
 async def stop_monitor():
-    """Stop background monitoring"""
     state = get_state()
     await state.set_monitor_loop_active(False)
     return {"status": "stopped"}
 
 
-# ============== CLEANUP ==============
-
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Cleanup on application shutdown"""
     state = get_state()
 
     # Stop monitoring
@@ -968,13 +940,10 @@ async def shutdown_event():
         except asyncio.CancelledError:
             pass
 
-    # Cancel Stage 2 tasks
     await state.cancel_all_stage2_tasks()
 
-    # Stop monitor loop
     await state.set_monitor_loop_active(False)
 
-    # Close HTTP sessions
     await close_session()
 
     log.info("Application shutdown complete")

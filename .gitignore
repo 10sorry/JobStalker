@@ -1,8 +1,10 @@
 # Environments
 .env
+.claude
 .venv
 venv/
 *.env
+CLAUDE.md
 
 # Data
 /data/

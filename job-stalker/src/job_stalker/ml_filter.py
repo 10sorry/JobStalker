@@ -1,17 +1,9 @@
-"""
-ML Filter Module - AI-powered vacancy filtering and resume analysis
-
-Provides:
-- Stage 1: Quick vacancy filtering
-- Stage 2: Recruiter analysis
-- Stage 3: Resume optimization
-"""
 import asyncio
 import re
-import os
 import logging
 import json
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Optional, Callable, List
 from dataclasses import dataclass, field
 
@@ -19,23 +11,21 @@ from .ai_client import AIClientFactory, OllamaClient, GeminiClient
 
 log = logging.getLogger("ml_filter")
 
-# Import API key from config
 try:
-    from .config import GEMINI_API_KEY
+    from .config import GEMINI_API_KEY, GROQ_API_KEY
 except ImportError:
     GEMINI_API_KEY = None
+    GROQ_API_KEY = None
 
-# Global resume data storage (with lock for thread safety)
 RESUME_DATA: Optional[Dict] = None
 _resume_lock = asyncio.Lock()
 
-# Output directory for PDF
-OUTPUT_DIR = "./output"
+DATA_DIR = Path("data")
+OUTPUT_DIR = Path("output")
 
 
 @dataclass
 class RecruiterAnalysis:
-    """Stage 2: Recruiter analysis result"""
     match_score: int = 0
     strong_sides: List[str] = field(default_factory=list)
     weak_sides: List[str] = field(default_factory=list)
@@ -48,7 +38,6 @@ class RecruiterAnalysis:
 
 @dataclass
 class ResumeComparison:
-    """Stage 3: Resume improvement result"""
     match_score: int = 0
     strong_sides: List[str] = field(default_factory=list)
     weak_sides: List[str] = field(default_factory=list)
@@ -60,7 +49,6 @@ class ResumeComparison:
 
 @dataclass
 class VacancyAnalysis:
-    """Vacancy analysis result (Stage 1 + optional Stage 2)"""
     suitable: bool
     analysis: str = ""
     match_score: int = 0
@@ -71,28 +59,20 @@ class VacancyAnalysis:
         return self.suitable
 
 
-# Stream callback for real-time updates
 _stream_callback: Optional[Callable] = None
 
 
 def set_stream_callback(callback: Optional[Callable]):
-    """Set callback for streaming responses"""
     global _stream_callback
     _stream_callback = callback
-    # Also set on AI clients
     ollama = AIClientFactory.get_ollama_client()
     ollama.set_stream_callback(callback)
 
 
 async def notify_stream(chunk: str, stream_type: str = "analysis"):
-    """Send chunk via callback"""
     if _stream_callback:
         try:
-            await _stream_callback({
-                "type": "stream",
-                "stream_type": stream_type,
-                "chunk": chunk
-            })
+            await _stream_callback({"type": "stream", "stream_type": stream_type, "chunk": chunk})
         except Exception as e:
             log.warning(f"Stream callback error: {e}")
 
@@ -113,7 +93,6 @@ DEFAULT_FILTER_PROMPT_EXAMPLE = """Ищу позиции:
 
 
 def get_filter_prompt(custom_prompt: str = "", resume_summary: str = "") -> str:
-    """Generate vacancy filter prompt"""
     if not custom_prompt or not custom_prompt.strip():
         return ""
 
@@ -139,7 +118,7 @@ def get_filter_prompt(custom_prompt: str = "", resume_summary: str = "") -> str:
   "reasons_reject": ["почему не подходит"],
   "position_type": "developer/manager/designer/artist/qa/other",
   "summary": "краткий вывод на русском",
-  "match_score": число от 0 до 100 (насколько вакансия соответствует критериям{' и резюме' if resume_summary else ''})
+  "match_score": число от 0 до 100 (насколько вакансия соответствует критериям{" и резюме" if resume_summary else ""})
 }}"""
 
     if resume_summary:
@@ -149,12 +128,10 @@ def get_filter_prompt(custom_prompt: str = "", resume_summary: str = "") -> str:
 
 
 def get_default_prompt(resume_summary: str = "") -> str:
-    """For backward compatibility"""
     return get_filter_prompt(DEFAULT_FILTER_PROMPT_EXAMPLE, resume_summary)
 
 
 def get_comparison_prompt(vacancy_text: str, resume_text: str) -> str:
-    """Prompt for resume-vacancy comparison"""
     return f"""Ты — опытный карьерный ассистент и эксперт по оптимизации резюме под системы отслеживания кандидатов (ATS).
 
 Задача:
@@ -216,33 +193,28 @@ JSON:"""
 
 
 def extract_json_safely(text: str) -> dict:
-    """Safe JSON extraction from AI output"""
     original_text = text
 
-    # Remove markdown code blocks
-    text = text.replace('```json', '').replace('```', '').strip()
+    text = text.replace("```json", "").replace("```", "").strip()
 
-    # Remove "JSON:" prefix if present
-    if text.startswith('JSON:'):
+    if text.startswith("JSON:"):
         text = text[5:].strip()
 
-    # Fix escaped underscores
-    text = text.replace('\\_', '_')
+    text = text.replace("\\_", "_")
 
     log.debug(f"extract_json_safely: input length={len(text)}")
 
-    # Method 1: Balanced braces (recursive search)
     depth = 0
     start = -1
     for i, char in enumerate(text):
-        if char == '{':
+        if char == "{":
             if depth == 0:
                 start = i
             depth += 1
-        elif char == '}':
+        elif char == "}":
             depth -= 1
             if depth == 0 and start != -1:
-                json_str = text[start:i+1]
+                json_str = text[start : i + 1]
                 try:
                     parsed = json.loads(json_str)
                     log.info(f"JSON parsed (method 1), keys: {list(parsed.keys())}")
@@ -250,19 +222,18 @@ def extract_json_safely(text: str) -> dict:
                 except json.JSONDecodeError:
                     continue
 
-    # Method 2: Find longest valid JSON
     all_matches = []
     depth = 0
     start = -1
     for i, char in enumerate(text):
-        if char == '{':
+        if char == "{":
             if depth == 0:
                 start = i
             depth += 1
-        elif char == '}':
+        elif char == "}":
             depth -= 1
             if depth == 0 and start != -1:
-                all_matches.append((start, i+1, text[start:i+1]))
+                all_matches.append((start, i + 1, text[start : i + 1]))
                 start = -1
 
     all_matches.sort(key=lambda x: len(x[2]), reverse=True)
@@ -274,7 +245,6 @@ def extract_json_safely(text: str) -> dict:
         except Exception:
             continue
 
-    # Method 2.5: Merge multiple JSON objects
     if len(all_matches) >= 2:
         log.info(f"Found {len(all_matches)} JSON objects, trying to merge...")
         try:
@@ -291,8 +261,7 @@ def extract_json_safely(text: str) -> dict:
         except Exception as e:
             log.warning(f"Method 2.5 failed: {e}")
 
-    # Method 3: Greedy regex
-    json_match = re.search(r'\{.*\}', text, re.DOTALL)
+    json_match = re.search(r"\{.*\}", text, re.DOTALL)
     if json_match:
         try:
             parsed = json.loads(json_match.group(0))
@@ -301,7 +270,6 @@ def extract_json_safely(text: str) -> dict:
         except Exception as e:
             log.warning(f"Method 3 failed: {e}")
 
-    # Method 4: Special handling for improved_resume
     log.warning("Standard methods failed, trying special improved_resume extraction...")
     improved_match = re.search(r'"improved_resume"\s*:\s*"([^"]*(?:\\"[^"]*)*)"', text, re.DOTALL)
     if improved_match:
@@ -309,27 +277,26 @@ def extract_json_safely(text: str) -> dict:
         for start_idx, end_idx, json_str in all_matches:
             try:
                 parsed = json.loads(json_str)
-                parsed['improved_resume'] = improved_text
+                parsed["improved_resume"] = improved_text
                 log.info(f"JSON parsed with special extraction, keys: {list(parsed.keys())}")
                 return parsed
             except Exception:
                 continue
 
-    # Method 5: Auto-fix incomplete JSON
     log.warning("Trying auto-fix for incomplete JSON...")
-    if '{' in text:
-        start_idx = text.find('{')
+    if "{" in text:
+        start_idx = text.find("{")
         json_part = text[start_idx:]
 
         depth = 0
         for char in json_part:
-            if char == '{':
+            if char == "{":
                 depth += 1
-            elif char == '}':
+            elif char == "}":
                 depth -= 1
 
         if depth > 0:
-            json_part += '}' * depth
+            json_part += "}" * depth
             log.info(f"Added {depth} closing braces")
 
             try:
@@ -344,61 +311,59 @@ def extract_json_safely(text: str) -> dict:
 
 
 def normalize_resume_data(data: dict) -> dict:
-    """Normalize resume data structure"""
     normalized = {}
 
     # Experience
-    if 'experience_years' in data:
-        normalized['experience_years'] = data['experience_years']
-    elif 'experience' in data:
-        exp = data['experience']
+    if "experience_years" in data:
+        normalized["experience_years"] = data["experience_years"]
+    elif "experience" in data:
+        exp = data["experience"]
         if isinstance(exp, list):
-            normalized['experience_years'] = len(exp) * 2
+            normalized["experience_years"] = len(exp) * 2
             projects = []
             for item in exp:
                 if isinstance(item, dict):
-                    company = item.get('company', item.get('project', ''))
-                    position = item.get('positionTitle', item.get('position', ''))
+                    company = item.get("company", item.get("project", ""))
+                    position = item.get("positionTitle", item.get("position", ""))
                     if company or position:
-                        projects.append(f"{position} @ {company}".strip(' @'))
+                        projects.append(f"{position} @ {company}".strip(" @"))
             if projects:
-                normalized['projects'] = projects
+                normalized["projects"] = projects
         elif isinstance(exp, (int, float)):
-            normalized['experience_years'] = exp
+            normalized["experience_years"] = exp
 
     # Level
-    if 'level' in data:
-        normalized['level'] = data['level']
+    if "level" in data:
+        normalized["level"] = data["level"]
     else:
-        years = normalized.get('experience_years', 0)
+        years = normalized.get("experience_years", 0)
         if isinstance(years, (int, float)):
-            normalized['level'] = 'junior' if years <= 2 else 'middle' if years <= 5 else 'senior'
+            normalized["level"] = "junior" if years <= 2 else "middle" if years <= 5 else "senior"
 
     # Skills
     skills = []
-    if 'key_skills' in data:
-        skills = data['key_skills']
-    elif 'skills' in data:
-        sk = data['skills']
+    if "key_skills" in data:
+        skills = data["key_skills"]
+    elif "skills" in data:
+        sk = data["skills"]
         if isinstance(sk, list):
             skills = sk
         elif isinstance(sk, dict):
             for items in sk.values():
                 if isinstance(items, list):
                     skills.extend(items)
-    normalized['key_skills'] = skills[:10]
+    normalized["key_skills"] = skills[:10]
 
-    if 'projects' not in normalized:
-        normalized['projects'] = data.get('projects', [])
-    normalized['summary'] = data.get('summary', '')
-    if 'name' in data:
-        normalized['name'] = data['name']
+    if "projects" not in normalized:
+        normalized["projects"] = data.get("projects", [])
+    normalized["summary"] = data.get("summary", "")
+    if "name" in data:
+        normalized["name"] = data["name"]
 
     return normalized
 
 
 async def load_resume(file_path: str, model_type: str = "mistral") -> dict:
-    """Load and analyze resume"""
     global RESUME_DATA
 
     log.info(f"load_resume: model={model_type}, file={file_path}")
@@ -407,7 +372,7 @@ async def load_resume(file_path: str, model_type: str = "mistral") -> dict:
         return {"error": "File not found"}
 
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             resume_text = f.read()
         log.info(f"Resume: {len(resume_text)} chars")
     except Exception as e:
@@ -428,11 +393,17 @@ async def load_resume(file_path: str, model_type: str = "mistral") -> dict:
 JSON:"""
 
     try:
-        client = AIClientFactory.get_client(model_type, GEMINI_API_KEY, _stream_callback)
+        from .ai_client import GroqClient
+
+        is_groq = (
+            model_type == "groq"
+            or model_type.startswith("groq:")
+            or model_type in GroqClient.AVAILABLE_MODELS
+        )
+        api_key = GROQ_API_KEY if is_groq else GEMINI_API_KEY
+        client = AIClientFactory.get_client(model_type, api_key, _stream_callback)
         response = await client.generate_with_retry(
-            prompt,
-            stream_type="resume_analysis",
-            num_predict=1024
+            prompt, stream_type="resume_analysis", num_predict=1024
         )
 
         if not response.success:
@@ -442,9 +413,11 @@ JSON:"""
 
         async with _resume_lock:
             RESUME_DATA = normalize_resume_data(raw_data)
-            RESUME_DATA['raw_text'] = resume_text
+            RESUME_DATA["raw_text"] = resume_text
 
-        log.info(f"Resume: level={RESUME_DATA.get('level')}, exp={RESUME_DATA.get('experience_years')}")
+        log.info(
+            f"Resume: level={RESUME_DATA.get('level')}, exp={RESUME_DATA.get('experience_years')}"
+        )
         return RESUME_DATA
 
     except Exception as e:
@@ -453,7 +426,6 @@ JSON:"""
 
 
 async def set_resume_data(resume_data: dict) -> dict:
-    """Set active resume data from pre-parsed payload (no re-analysis)."""
     global RESUME_DATA
 
     if not resume_data:
@@ -461,7 +433,6 @@ async def set_resume_data(resume_data: dict) -> dict:
 
     try:
         normalized = normalize_resume_data(resume_data)
-        # Preserve raw text if provided
         if resume_data.get("raw_text"):
             normalized["raw_text"] = resume_data["raw_text"]
 
@@ -469,7 +440,9 @@ async def set_resume_data(resume_data: dict) -> dict:
             RESUME_DATA = normalized
 
         save_session()
-        log.info(f"Resume restored: level={normalized.get('level')}, exp={normalized.get('experience_years')}")
+        log.info(
+            f"Resume restored: level={normalized.get('level')}, exp={normalized.get('experience_years')}"
+        )
         return normalized
     except Exception as e:
         log.error(f"set_resume_data error: {e}")
@@ -477,15 +450,13 @@ async def set_resume_data(resume_data: dict) -> dict:
 
 
 async def get_available_ollama_models() -> List[Dict[str, str]]:
-    """Get list of available Ollama models"""
     client = AIClientFactory.get_ollama_client()
     return await client.list_models()
 
 
-async def recruiter_analysis(vacancy_text: str, resume_text: str, enable_stream: bool = False) -> RecruiterAnalysis:
-    """
-    Stage 2: Deep recruiter analysis of resume vs vacancy.
-    """
+async def recruiter_analysis(
+    vacancy_text: str, resume_text: str, enable_stream: bool = False
+) -> RecruiterAnalysis:
     prompt = f"""Ты — строгий, опытный, но справедливый IT-рекрутер с 10+ годами опыта найма.
 
 ТВОЯ ЗАДАЧА: Оценить кандидата по конкретной вакансии. Будь честен и критичен — это поможет кандидату понять реальные шансы.
@@ -531,23 +502,21 @@ JSON:"""
         client = AIClientFactory.get_ollama_client()
         stream_type = "recruiter_analysis" if enable_stream else None
         response = await client.generate_with_retry(
-            prompt,
-            stream_type=stream_type,
-            num_predict=1024
+            prompt, stream_type=stream_type, num_predict=1024
         )
 
         if not response.success:
             log.error(f"Recruiter analysis failed: {response.error}")
             return RecruiterAnalysis(verdict="Analysis failed")
 
-        output = response.text.replace('\\_', '_')
+        output = response.text.replace("\\_", "_")
         data = extract_json_safely(output)
 
         if not data:
             log.error("Recruiter analysis JSON parsing failed")
             return RecruiterAnalysis(verdict="Could not complete analysis")
 
-        match_score = data.get('match_score', 0)
+        match_score = data.get("match_score", 0)
         if isinstance(match_score, str):
             try:
                 match_score = int(match_score)
@@ -556,13 +525,13 @@ JSON:"""
 
         result = RecruiterAnalysis(
             match_score=match_score,
-            strong_sides=data.get('strong_sides', []),
-            weak_sides=data.get('weak_sides', []),
-            missing_skills=data.get('missing_skills', []),
-            risks=data.get('risks', []),
-            recommendations=data.get('recommendations', []),
-            verdict=data.get('verdict', ''),
-            cover_letter_hint=data.get('cover_letter_hint', '')
+            strong_sides=data.get("strong_sides", []),
+            weak_sides=data.get("weak_sides", []),
+            missing_skills=data.get("missing_skills", []),
+            risks=data.get("risks", []),
+            recommendations=data.get("recommendations", []),
+            verdict=data.get("verdict", ""),
+            cover_letter_hint=data.get("cover_letter_hint", ""),
         )
 
         log.info(f"Recruiter analysis done: match_score={match_score}")
@@ -574,7 +543,6 @@ JSON:"""
 
 
 async def quick_resume_analysis(vacancy_text: str, resume_text: str) -> dict:
-    """Deprecated: use recruiter_analysis()"""
     result = await recruiter_analysis(vacancy_text, resume_text)
     return {
         "match_score": result.match_score,
@@ -582,27 +550,22 @@ async def quick_resume_analysis(vacancy_text: str, resume_text: str) -> dict:
         "weak_sides": result.weak_sides,
         "missing_skills": result.missing_skills,
         "recommendations": result.recommendations,
-        "cover_letter_hint": result.cover_letter_hint
+        "cover_letter_hint": result.cover_letter_hint,
     }
 
 
 async def generate_improved_resume(
-    vacancy_text: str,
-    resume_text: str,
-    analysis: Optional[RecruiterAnalysis] = None
+    vacancy_text: str, resume_text: str, analysis: Optional[RecruiterAnalysis] = None
 ) -> str:
-    """
-    Stage 3: Generate improved resume based on vacancy + recruiter analysis.
-    """
     analysis_context = ""
     if analysis and analysis.match_score > 0:
         analysis_context = f"""
 АНАЛИЗ РЕКРУТЕРА (учти при улучшении):
 - Оценка соответствия: {analysis.match_score}%
-- Сильные стороны: {', '.join(analysis.strong_sides[:3]) if analysis.strong_sides else 'не указаны'}
-- Слабые стороны: {', '.join(analysis.weak_sides[:3]) if analysis.weak_sides else 'не указаны'}
-- Недостающие навыки: {', '.join(analysis.missing_skills[:3]) if analysis.missing_skills else 'не указаны'}
-- Рекомендации: {', '.join(analysis.recommendations[:2]) if analysis.recommendations else 'не указаны'}
+- Сильные стороны: {", ".join(analysis.strong_sides[:3]) if analysis.strong_sides else "не указаны"}
+- Слабые стороны: {", ".join(analysis.weak_sides[:3]) if analysis.weak_sides else "не указаны"}
+- Недостающие навыки: {", ".join(analysis.missing_skills[:3]) if analysis.missing_skills else "не указаны"}
+- Рекомендации: {", ".join(analysis.recommendations[:2]) if analysis.recommendations else "не указаны"}
 
 """
 
@@ -658,9 +621,7 @@ async def generate_improved_resume(
 
         client = AIClientFactory.get_ollama_client()
         response = await client.generate_with_retry(
-            prompt,
-            stream_type="improved_resume",
-            num_predict=3072
+            prompt, stream_type="improved_resume", num_predict=3072
         )
 
         if not response.success:
@@ -668,12 +629,11 @@ async def generate_improved_resume(
 
         output = response.text.strip()
 
-        # Clean markdown code blocks if added
-        if output.startswith('```markdown'):
+        if output.startswith("```markdown"):
             output = output[11:]
-        if output.startswith('```'):
+        if output.startswith("```"):
             output = output[3:]
-        if output.endswith('```'):
+        if output.endswith("```"):
             output = output[:-3]
 
         output = output.strip()
@@ -687,30 +647,23 @@ async def generate_improved_resume(
 
 
 async def generate_improved_resume_markdown(vacancy_text: str, resume_text: str) -> str:
-    """Deprecated: use generate_improved_resume()"""
     return await generate_improved_resume(vacancy_text, resume_text, None)
 
 
 async def compare_with_resume(
     vacancy_text: str,
     vacancy_title: str = "",
-    existing_analysis: Optional[RecruiterAnalysis] = None
+    existing_analysis: Optional[RecruiterAnalysis] = None,
 ) -> ResumeComparison:
-    """
-    Stage 3: Generate improved resume.
-
-    Uses existing_analysis if provided, otherwise runs Stage 2 first.
-    """
-    if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
+    if not RESUME_DATA or "raw_text" not in RESUME_DATA:
         log.warning("No resume for comparison")
         return ResumeComparison()
 
-    resume_text = RESUME_DATA['raw_text']
+    resume_text = RESUME_DATA["raw_text"]
     log.info(f"Resume text length: {len(resume_text)}")
     log.info(f"Vacancy text length: {len(vacancy_text)}")
 
     try:
-        # Use existing analysis or run Stage 2
         if existing_analysis and existing_analysis.match_score > 0:
             log.info("Using existing recruiter analysis...")
             analysis = existing_analysis
@@ -718,7 +671,6 @@ async def compare_with_resume(
             log.info("Stage 2: Running recruiter analysis...")
             analysis = await recruiter_analysis(vacancy_text, resume_text)
 
-        # Stage 3: Generate improved resume
         log.info("Stage 3: Generating improved resume...")
         improved_resume = await generate_improved_resume(vacancy_text, resume_text, analysis)
 
@@ -729,10 +681,12 @@ async def compare_with_resume(
             missing_skills=analysis.missing_skills,
             recommendations=analysis.recommendations,
             improved_resume=improved_resume,
-            cover_letter_hint=analysis.cover_letter_hint
+            cover_letter_hint=analysis.cover_letter_hint,
         )
 
-        log.info(f"Stage 3 done: score={result.match_score}, improved_len={len(result.improved_resume)}")
+        log.info(
+            f"Stage 3 done: score={result.match_score}, improved_len={len(result.improved_resume)}"
+        )
         return result
 
     except Exception as e:
@@ -741,18 +695,12 @@ async def compare_with_resume(
 
 
 async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnalysis:
-    """
-    Analyze vacancy - WITHOUT comparison.
-
-    Logic:
-    - If custom_prompt is empty -> vacancy auto-approved
-    - If custom_prompt is set -> LLM filters by criteria
-    """
     if len(text.strip()) < 20:
         return VacancyAnalysis(False, "Text too short")
 
     try:
         from .web_ui import get_current_settings
+
         settings = get_current_settings()
         custom_prompt = settings.get("custom_prompt", "")
         resume_summary = settings.get("resume_summary", "")
@@ -762,17 +710,15 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
         custom_prompt = ""
         resume_summary = ""
 
-    # If prompt empty -> all vacancies pass
     if not custom_prompt or not custom_prompt.strip():
         log.info("Filter prompt empty - vacancy auto-approved")
         return VacancyAnalysis(
             suitable=True,
             analysis="Filter not configured - vacancy added automatically.\n\nConfigure criteria in Settings -> Search Filter Prompt",
             match_score=0,
-            recruiter_analysis=None
+            recruiter_analysis=None,
         )
 
-    # Generate prompt with user criteria
     filter_prompt = get_filter_prompt(custom_prompt, resume_summary)
     vacancy_text_short = text.strip()[:1500]
     full_prompt = f"{filter_prompt}\n\nВАКАНСИЯ:\n{vacancy_text_short}\n\nJSON:"
@@ -780,7 +726,15 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
     log.info(f"Analyzing with {model_type.upper()}...")
 
     try:
-        client = AIClientFactory.get_client(model_type, GEMINI_API_KEY)
+        from .ai_client import GroqClient
+
+        is_groq = (
+            model_type == "groq"
+            or model_type.startswith("groq:")
+            or model_type in GroqClient.AVAILABLE_MODELS
+        )
+        api_key = GROQ_API_KEY if is_groq else GEMINI_API_KEY
+        client = AIClientFactory.get_client(model_type, api_key)
         response = await client.generate_with_retry(full_prompt, num_predict=2048)
 
         if not response.success:
@@ -788,26 +742,25 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
 
         data = extract_json_safely(response.text)
 
-        suitable = data.get('suitable', False)
+        suitable = data.get("suitable", False)
         if isinstance(suitable, str):
-            suitable = suitable.lower() in ('true', 'yes', 'да', '1')
+            suitable = suitable.lower() in ("true", "yes", "да", "1")
 
-        position_type = data.get('position_type', '').lower()
+        position_type = data.get("position_type", "").lower()
 
         log.info(f"LLM Response: suitable={suitable}, position_type={position_type}")
 
-        # Contradiction protection
         if suitable and position_type:
             role_translations = {
-                'artist': ['художник', 'артист'],
-                'designer': ['дизайнер', 'design'],
-                'manager': ['менеджер', 'управляющий', 'руководитель'],
-                'qa': ['тестировщик', 'тестер', 'качество'],
-                'producer': ['продюсер'],
-                'marketing': ['маркетолог', 'маркетинг'],
-                'animator': ['аниматор', 'анимация'],
-                'modeller': ['моделлер', 'модельер', '3d model'],
-                'hr': ['рекрутер', 'hr специалист']
+                "artist": ["художник", "артист"],
+                "designer": ["дизайнер", "design"],
+                "manager": ["менеджер", "управляющий", "руководитель"],
+                "qa": ["тестировщик", "тестер", "качество"],
+                "producer": ["продюсер"],
+                "marketing": ["маркетолог", "маркетинг"],
+                "animator": ["аниматор", "анимация"],
+                "modeller": ["моделлер", "модельер", "3d model"],
+                "hr": ["рекрутер", "hr специалист"],
             }
 
             role_variants = [position_type.lower()]
@@ -815,9 +768,21 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
                 if eng in position_type.lower():
                     role_variants.extend(rus_list)
 
-            negative_markers = ['не подходит', 'не хочу', 'отбрасывать', 'исключить', 'отбросить',
-                              'не твоего направления', 'не по профилю', 'без', 'кроме',
-                              '❌', 'NOT suitable', 'exclude', 'не относится']
+            negative_markers = [
+                "не подходит",
+                "не хочу",
+                "отбрасывать",
+                "исключить",
+                "отбросить",
+                "не твоего направления",
+                "не по профилю",
+                "без",
+                "кроме",
+                "❌",
+                "NOT suitable",
+                "exclude",
+                "не относится",
+            ]
 
             for marker in negative_markers:
                 if marker.lower() in custom_prompt.lower():
@@ -826,24 +791,27 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
                         context = part[:500]
                         for variant in role_variants:
                             if variant in context:
-                                log.warning(f"CONTRADICTION: position_type='{position_type}' found in negative context")
+                                log.warning(
+                                    f"CONTRADICTION: position_type='{position_type}' found in negative context"
+                                )
                                 suitable = False
-                                if not data.get('reasons_reject'):
-                                    data['reasons_reject'] = []
-                                if isinstance(data['reasons_reject'], str):
-                                    data['reasons_reject'] = [data['reasons_reject']]
-                                data['reasons_reject'].append(f"Role '{position_type}' explicitly excluded")
+                                if not data.get("reasons_reject"):
+                                    data["reasons_reject"] = []
+                                if isinstance(data["reasons_reject"], str):
+                                    data["reasons_reject"] = [data["reasons_reject"]]
+                                data["reasons_reject"].append(
+                                    f"Role '{position_type}' explicitly excluded"
+                                )
                                 break
                         if not suitable:
                             break
                     if not suitable:
                         break
 
-        # Format analysis
         analysis_parts = []
-        reasons_fit = data.get('reasons_fit', [])
-        reasons_reject = data.get('reasons_reject', data.get('reasons_lack', []))
-        summary = data.get('summary', '')
+        reasons_fit = data.get("reasons_fit", [])
+        reasons_reject = data.get("reasons_reject", data.get("reasons_lack", []))
+        summary = data.get("summary", "")
 
         if isinstance(reasons_fit, str):
             reasons_fit = [reasons_fit]
@@ -853,7 +821,9 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
         if reasons_fit:
             analysis_parts.append("**Fits:**\n" + "\n".join(f"  - {r}" for r in reasons_fit))
         if reasons_reject:
-            analysis_parts.append("**Doesn't fit:**\n" + "\n".join(f"  - {r}" for r in reasons_reject))
+            analysis_parts.append(
+                "**Doesn't fit:**\n" + "\n".join(f"  - {r}" for r in reasons_reject)
+            )
         if summary:
             analysis_parts.append(f"**Summary:** {summary}")
         if position_type:
@@ -861,7 +831,7 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
 
         analysis_text = "\n\n".join(analysis_parts) if analysis_parts else response.text[:500]
 
-        match_score = data.get('match_score', 0)
+        match_score = data.get("match_score", 0)
         if isinstance(match_score, str):
             try:
                 match_score = int(match_score)
@@ -872,7 +842,7 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
             suitable=suitable,
             analysis=analysis_text,
             match_score=match_score,
-            recruiter_analysis=None
+            recruiter_analysis=None,
         )
 
     except Exception as e:
@@ -881,9 +851,9 @@ async def analyze_vacancy(text: str, model_type: str = "mistral") -> VacancyAnal
 
 
 async def ml_interesting_async(text: str) -> VacancyAnalysis:
-    """Main analysis function"""
     try:
         from .web_ui import get_current_settings
+
         settings = get_current_settings()
         model_type = settings.get("model_type", "mistral")
     except Exception:
@@ -892,33 +862,30 @@ async def ml_interesting_async(text: str) -> VacancyAnalysis:
     return await analyze_vacancy(text, model_type)
 
 
-# Session persistence
-SESSION_FILE = "./data/session.json"
+SESSION_FILE = DATA_DIR / "session.json"
 
 
 def save_session():
-    """Save session to file"""
     if RESUME_DATA:
-        os.makedirs("./data", exist_ok=True)
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
         session = {
-            "resume_data": {k: v for k, v in RESUME_DATA.items() if k != '_original'},
-            "saved_at": datetime.now().isoformat()
+            "resume_data": {k: v for k, v in RESUME_DATA.items() if k != "_original"},
+            "saved_at": datetime.now().isoformat(),
         }
         try:
-            with open(SESSION_FILE, 'w', encoding='utf-8') as f:
+            with open(SESSION_FILE, "w", encoding="utf-8") as f:
                 json.dump(session, f, ensure_ascii=False, indent=2)
         except Exception as e:
             log.error(f"Session save error: {e}")
 
 
 def load_session():
-    """Load session from file"""
     global RESUME_DATA
     try:
-        if os.path.exists(SESSION_FILE):
-            with open(SESSION_FILE, 'r', encoding='utf-8') as f:
+        if SESSION_FILE.exists():
+            with open(SESSION_FILE, "r", encoding="utf-8") as f:
                 session = json.load(f)
-            RESUME_DATA = session.get('resume_data')
+            RESUME_DATA = session.get("resume_data")
             if RESUME_DATA:
                 log.info("Session loaded")
                 return True
@@ -927,5 +894,4 @@ def load_session():
     return False
 
 
-# Load on import
 load_session()

@@ -7,6 +7,7 @@ Provides:
 - Gemini client for Google's API
 - Shared HTTP session management
 """
+
 import asyncio
 import json
 import logging
@@ -19,20 +20,19 @@ import aiohttp
 
 log = logging.getLogger("ai_client")
 
-# Default timeouts
-DEFAULT_CONNECT_TIMEOUT = 10  # seconds
-DEFAULT_READ_TIMEOUT = 300    # 5 minutes for long generations
-DEFAULT_TOTAL_TIMEOUT = 600   # 10 minutes max
+DEFAULT_CONNECT_TIMEOUT = 10
+DEFAULT_READ_TIMEOUT = 300
+DEFAULT_TOTAL_TIMEOUT = 600
 
-# Retry configuration
 MAX_RETRIES = 3
-RETRY_DELAY_BASE = 1.0  # seconds
-RETRY_DELAY_MAX = 30.0  # seconds
+RETRY_DELAY_BASE = 1.0
+RETRY_DELAY_MAX = 30.0
 
 
 @dataclass
 class AIResponse:
     """Standardized AI response"""
+
     text: str
     success: bool
     error: Optional[str] = None
@@ -42,6 +42,7 @@ class AIResponse:
 
 class RetryConfig:
     """Configuration for retry behavior"""
+
     def __init__(
         self,
         max_retries: int = MAX_RETRIES,
@@ -51,7 +52,7 @@ class RetryConfig:
             aiohttp.ClientError,
             asyncio.TimeoutError,
             ConnectionError,
-        )
+        ),
     ):
         self.max_retries = max_retries
         self.base_delay = base_delay
@@ -60,7 +61,7 @@ class RetryConfig:
 
     def get_delay(self, attempt: int) -> float:
         """Calculate delay with exponential backoff"""
-        delay: float = self.base_delay * (2 ** attempt)
+        delay: float = self.base_delay * (2**attempt)
         return min(delay, self.max_delay)
 
 
@@ -69,11 +70,12 @@ class HTTPSessionManager:
     Manages shared aiohttp ClientSession for all AI clients.
     Prevents creating new sessions for each request.
     """
-    _instance: Optional['HTTPSessionManager'] = None
+
+    _instance: Optional["HTTPSessionManager"] = None
     _session: Optional[aiohttp.ClientSession] = None
     _lock: asyncio.Lock
 
-    def __new__(cls) -> 'HTTPSessionManager':
+    def __new__(cls) -> "HTTPSessionManager":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._lock = asyncio.Lock()
@@ -86,7 +88,7 @@ class HTTPSessionManager:
                 timeout = aiohttp.ClientTimeout(
                     connect=DEFAULT_CONNECT_TIMEOUT,
                     sock_read=DEFAULT_READ_TIMEOUT,
-                    total=DEFAULT_TOTAL_TIMEOUT
+                    total=DEFAULT_TOTAL_TIMEOUT,
                 )
                 self._session = aiohttp.ClientSession(timeout=timeout)
                 log.debug("Created new HTTP session")
@@ -108,7 +110,6 @@ class HTTPSessionManager:
             yield response
 
 
-# Global session manager
 _session_manager: Optional[HTTPSessionManager] = None
 
 
@@ -138,9 +139,7 @@ class BaseAIClient(ABC):
     """
 
     def __init__(
-        self,
-        retry_config: Optional[RetryConfig] = None,
-        stream_callback: Optional[Callable] = None
+        self, retry_config: Optional[RetryConfig] = None, stream_callback: Optional[Callable] = None
     ):
         self.retry_config = retry_config or RetryConfig()
         self._stream_callback = stream_callback
@@ -153,19 +152,14 @@ class BaseAIClient(ABC):
         """Send chunk to stream callback"""
         if self._stream_callback:
             try:
-                await self._stream_callback({
-                    "type": "stream",
-                    "stream_type": stream_type,
-                    "chunk": chunk
-                })
+                await self._stream_callback(
+                    {"type": "stream", "stream_type": stream_type, "chunk": chunk}
+                )
             except Exception as e:
                 log.warning(f"Stream callback error: {e}")
 
     async def generate_with_retry(
-        self,
-        prompt: str,
-        stream_type: Optional[str] = None,
-        **kwargs
+        self, prompt: str, stream_type: Optional[str] = None, **kwargs
     ) -> AIResponse:
         """Generate with automatic retry on failure"""
         last_error = None
@@ -183,46 +177,29 @@ class BaseAIClient(ABC):
                     )
                     await asyncio.sleep(delay)
                 else:
-                    log.error(f"AI request failed after {self.retry_config.max_retries} attempts: {e}")
+                    log.error(
+                        f"AI request failed after {self.retry_config.max_retries} attempts: {e}"
+                    )
 
-        return AIResponse(
-            text="",
-            success=False,
-            error=str(last_error)
-        )
+        return AIResponse(text="", success=False, error=str(last_error))
 
     @abstractmethod
     async def generate(
-        self,
-        prompt: str,
-        stream_type: Optional[str] = None,
-        **kwargs: Any
+        self, prompt: str, stream_type: Optional[str] = None, **kwargs: Any
     ) -> AIResponse:
         """Generate response from the AI model"""
         pass
 
     @abstractmethod
-    async def stream(
-        self,
-        prompt: str,
-        **kwargs: Any
-    ) -> AsyncGenerator[str, None]:
-        """Stream response chunks from the AI model"""
-        yield ""  # type: ignore[misc]
+    async def stream(self, prompt: str, **kwargs: Any) -> AsyncGenerator[str, None]:
+        yield ""
 
     @abstractmethod
     async def is_available(self) -> bool:
-        """Check if the AI service is available"""
         pass
 
 
 class OllamaClient(BaseAIClient):
-    """
-    Client for local Ollama API.
-
-    Supports streaming and multiple models.
-    """
-
     DEFAULT_URL = "http://localhost:11434"
 
     def __init__(
@@ -230,22 +207,21 @@ class OllamaClient(BaseAIClient):
         base_url: str = DEFAULT_URL,
         default_model: str = "mistral7",
         retry_config: Optional[RetryConfig] = None,
-        stream_callback: Optional[Callable] = None
+        stream_callback: Optional[Callable] = None,
     ):
         super().__init__(retry_config, stream_callback)
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.default_model = default_model
 
-    async def generate(  # type: ignore[override]
+    async def generate(
         self,
         prompt: str,
         model: Optional[str] = None,
         stream_type: Optional[str] = None,
         num_predict: int = 2048,
         temperature: float = 0.7,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AIResponse:
-        """Generate response from Ollama"""
         model = model or self.default_model
         full_response = ""
 
@@ -254,18 +230,10 @@ class OllamaClient(BaseAIClient):
 
         try:
             async for chunk in self.stream(
-                prompt,
-                model=model,
-                num_predict=num_predict,
-                temperature=temperature
+                prompt, model=model, num_predict=num_predict, temperature=temperature
             ):
                 if chunk.startswith("[ERROR:"):
-                    return AIResponse(
-                        text="",
-                        success=False,
-                        error=chunk,
-                        model=model
-                    )
+                    return AIResponse(text="", success=False, error=chunk, model=model)
                 full_response += chunk
                 if stream_type:
                     await self._notify_stream(chunk, stream_type)
@@ -274,28 +242,19 @@ class OllamaClient(BaseAIClient):
             if stream_type:
                 await self._notify_stream("[END]", stream_type)
 
-            return AIResponse(
-                text=full_response,
-                success=True,
-                model=model
-            )
+            return AIResponse(text=full_response, success=True, model=model)
 
         except Exception as e:
             log.error(f"Ollama generate error: {e}")
-            return AIResponse(
-                text="",
-                success=False,
-                error=str(e),
-                model=model
-            )
+            return AIResponse(text="", success=False, error=str(e), model=model)
 
-    async def stream(  # type: ignore[override]
+    async def stream(
         self,
         prompt: str,
         model: Optional[str] = None,
         num_predict: int = 2048,
         temperature: float = 0.7,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> AsyncGenerator[str, None]:
         """Stream response from Ollama"""
         model = model or self.default_model
@@ -305,10 +264,7 @@ class OllamaClient(BaseAIClient):
             "model": model,
             "prompt": prompt,
             "stream": True,
-            "options": {
-                "num_predict": num_predict,
-                "temperature": temperature
-            }
+            "options": {"num_predict": num_predict, "temperature": temperature},
         }
 
         session_manager = get_session_manager()
@@ -325,11 +281,11 @@ class OllamaClient(BaseAIClient):
                 async for line in response.content:
                     if line:
                         try:
-                            data = json.loads(line.decode('utf-8'))
-                            chunk = data.get('response', '')
+                            data = json.loads(line.decode("utf-8"))
+                            chunk = data.get("response", "")
                             if chunk:
                                 yield chunk
-                            if data.get('done', False):
+                            if data.get("done", False):
                                 break
                         except json.JSONDecodeError:
                             continue
@@ -347,8 +303,7 @@ class OllamaClient(BaseAIClient):
             session_manager = get_session_manager()
             session = await session_manager.get_session()
             async with session.get(
-                f"{self.base_url}/api/tags",
-                timeout=aiohttp.ClientTimeout(total=5)
+                f"{self.base_url}/api/tags", timeout=aiohttp.ClientTimeout(total=5)
             ) as response:
                 return response.status == 200
         except Exception:
@@ -360,37 +315,31 @@ class OllamaClient(BaseAIClient):
             session_manager = get_session_manager()
             session = await session_manager.get_session()
             async with session.get(
-                f"{self.base_url}/api/tags",
-                timeout=aiohttp.ClientTimeout(total=10)
+                f"{self.base_url}/api/tags", timeout=aiohttp.ClientTimeout(total=10)
             ) as response:
                 if response.status == 200:
                     data = await response.json()
                     models = []
                     for model_info in data.get("models", []):
-                        models.append({
-                            "name": model_info.get("name", ""),
-                            "display_name": model_info.get("name", ""),
-                            "size": model_info.get("size", 0)
-                        })
+                        models.append(
+                            {
+                                "name": model_info.get("name", ""),
+                                "display_name": model_info.get("name", ""),
+                                "size": model_info.get("size", 0),
+                            }
+                        )
                     log.info(f"Found {len(models)} Ollama models")
                     return models
         except Exception as e:
             log.warning(f"Could not get Ollama models: {e}")
 
-        # Return defaults if Ollama unavailable
         return [
             {"name": "mistral7", "display_name": "mistral7", "size": 0},
-            {"name": "llama3.2:3b", "display_name": "llama3.2:3b", "size": 0}
+            {"name": "llama3.2:3b", "display_name": "llama3.2:3b", "size": 0},
         ]
 
 
 class GeminiClient(BaseAIClient):
-    """
-    Client for Google Gemini API.
-
-    Requires API key for authentication.
-    """
-
     BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
     DEFAULT_MODEL = "gemini-1.5-flash"
 
@@ -399,7 +348,7 @@ class GeminiClient(BaseAIClient):
         api_key: str,
         model: str = DEFAULT_MODEL,
         retry_config: Optional[RetryConfig] = None,
-        stream_callback: Optional[Callable] = None
+        stream_callback: Optional[Callable] = None,
     ):
         super().__init__(retry_config, stream_callback)
         self.api_key = api_key
@@ -411,17 +360,14 @@ class GeminiClient(BaseAIClient):
         stream_type: Optional[str] = None,
         temperature: float = 0.3,
         max_tokens: int = 1000,
-        **kwargs
+        **kwargs,
     ) -> AIResponse:
         """Generate response from Gemini"""
         url = f"{self.BASE_URL}/models/{self.model}:generateContent?key={self.api_key}"
 
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": temperature,
-                "maxOutputTokens": max_tokens
-            }
+            "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens},
         }
 
         session_manager = get_session_manager()
@@ -429,9 +375,7 @@ class GeminiClient(BaseAIClient):
         try:
             session = await session_manager.get_session()
             async with session.post(
-                url,
-                json=payload,
-                timeout=aiohttp.ClientTimeout(total=60)
+                url, json=payload, timeout=aiohttp.ClientTimeout(total=60)
             ) as response:
                 if response.status != 200:
                     error = await response.text()
@@ -440,32 +384,19 @@ class GeminiClient(BaseAIClient):
                         text="",
                         success=False,
                         error=f"Gemini API error {response.status}",
-                        model=self.model
+                        model=self.model,
                     )
 
                 data = await response.json()
-                text = data['candidates'][0]['content']['parts'][0]['text'].strip()
+                text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
-                return AIResponse(
-                    text=text,
-                    success=True,
-                    model=self.model
-                )
+                return AIResponse(text=text, success=True, model=self.model)
 
         except Exception as e:
             log.error(f"Gemini generate error: {e}")
-            return AIResponse(
-                text="",
-                success=False,
-                error=str(e),
-                model=self.model
-            )
+            return AIResponse(text="", success=False, error=str(e), model=self.model)
 
-    async def stream(  # type: ignore[override]
-        self,
-        prompt: str,
-        **kwargs: Any
-    ) -> AsyncGenerator[str, None]:
+    async def stream(self, prompt: str, **kwargs: Any) -> AsyncGenerator[str, None]:
         """Gemini doesn't support streaming in this implementation"""
         response = await self.generate(prompt, **kwargs)
         if response.success:
@@ -482,31 +413,209 @@ class GeminiClient(BaseAIClient):
             url = f"{self.BASE_URL}/models?key={self.api_key}"
             session_manager = get_session_manager()
             session = await session_manager.get_session()
-            async with session.get(
-                url,
-                timeout=aiohttp.ClientTimeout(total=10)
-            ) as response:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                 return response.status == 200
         except Exception:
             return False
 
 
-class AIClientFactory:
-    """
-    Factory for creating AI clients.
+class GroqClient(BaseAIClient):
+    # For GROQ
+    BASE_URL = "https://api.groq.com/openai/v1"
+    DEFAULT_MODEL = "llama-3.1-70b-versatile"
 
-    Manages client instances and provides unified access.
-    """
+    # Available Groq models
+    AVAILABLE_MODELS = [
+        "llama-3.1-70b-versatile",
+        "llama-3.1-8b-instant",
+        "gemma2-9b-it",
+        "llama-3.2-90b-text-preview",
+        "llama-3.2-11b-text-preview",
+        "llama-3.2-3b-text-preview",
+    ]
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = DEFAULT_MODEL,
+        retry_config: Optional[RetryConfig] = None,
+        stream_callback: Optional[Callable] = None,
+    ):
+        super().__init__(retry_config, stream_callback)
+        self.api_key = api_key
+        self.model = model
+
+    async def generate(
+        self,
+        prompt: str,
+        stream_type: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 2048,
+        **kwargs,
+    ) -> AIResponse:
+        """Generate response from Groq"""
+        if stream_type:
+            full_response = ""
+            await self._notify_stream("[START]", stream_type)
+
+            try:
+                async for chunk in self.stream(
+                    prompt, temperature=temperature, max_tokens=max_tokens
+                ):
+                    if chunk.startswith("[ERROR:"):
+                        await self._notify_stream("[END]", stream_type)
+                        return AIResponse(text="", success=False, error=chunk, model=self.model)
+                    full_response += chunk
+                    await self._notify_stream(chunk, stream_type)
+                    await asyncio.sleep(0.005)  # Small delay for UI updates
+
+                await self._notify_stream("[END]", stream_type)
+                return AIResponse(text=full_response, success=True, model=self.model)
+            except Exception as e:
+                log.error(f"Groq generate error: {e}")
+                await self._notify_stream("[END]", stream_type)
+                return AIResponse(text="", success=False, error=str(e), model=self.model)
+
+        url = f"{self.BASE_URL}/chat/completions"
+
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": False,
+        }
+
+        session_manager = get_session_manager()
+
+        try:
+            session = await session_manager.get_session()
+            async with session.post(
+                url, json=payload, headers=headers, timeout=aiohttp.ClientTimeout(total=60)
+            ) as response:
+                if response.status != 200:
+                    error = await response.text()
+                    log.error(f"Groq API error: {response.status} - {error}")
+                    return AIResponse(
+                        text="",
+                        success=False,
+                        error=f"Groq API error {response.status}",
+                        model=self.model,
+                    )
+
+                data = await response.json()
+                text = data["choices"][0]["message"]["content"].strip()
+
+                tokens_used = data.get("usage", {}).get("total_tokens", 0)
+
+                return AIResponse(
+                    text=text, success=True, tokens_used=tokens_used, model=self.model
+                )
+
+        except Exception as e:
+            log.error(f"Groq generate error: {e}")
+            return AIResponse(text="", success=False, error=str(e), model=self.model)
+
+    async def stream(
+        self, prompt: str, temperature: float = 0.7, max_tokens: int = 2048, **kwargs: Any
+    ) -> AsyncGenerator[str, None]:
+        """Stream response from Groq"""
+        url = f"{self.BASE_URL}/chat/completions"
+
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+
+        session_manager = get_session_manager()
+
+        try:
+            session = await session_manager.get_session()
+            async with session.post(
+                url, json=payload, headers=headers, timeout=aiohttp.ClientTimeout(total=300)
+            ) as response:
+                if response.status != 200:
+                    error = await response.text()
+                    log.error(f"Groq API error: {error}")
+                    yield f"[ERROR: {response.status}]"
+                    return
+
+                async for line in response.content:
+                    if line:
+                        try:
+                            line_text = line.decode("utf-8").strip()
+                            if line_text.startswith("data: "):
+                                data_str = line_text[6:]
+                                if data_str == "[DONE]":
+                                    break
+                                data = json.loads(data_str)
+                                if "choices" in data and len(data["choices"]) > 0:
+                                    delta = data["choices"][0].get("delta", {})
+                                    chunk = delta.get("content", "")
+                                    if chunk:
+                                        yield chunk
+                        except json.JSONDecodeError:
+                            continue
+                        except Exception as e:
+                            log.warning(f"Groq stream parsing error: {e}")
+                            continue
+
+        except aiohttp.ClientError as e:
+            log.error(f"Groq connection error: {e}")
+            yield f"[ERROR: {e}]"
+        except Exception as e:
+            log.error(f"Groq stream error: {e}")
+            yield f"[ERROR: {e}]"
+
+    async def is_available(self) -> bool:
+        """Check if Groq API is accessible"""
+        if not self.api_key:
+            return False
+
+        try:
+            url = f"{self.BASE_URL}/models"
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+            session_manager = get_session_manager()
+            session = await session_manager.get_session()
+            async with session.get(
+                url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)
+            ) as response:
+                return response.status == 200
+        except Exception:
+            return False
+
+    async def list_models(self) -> List[Dict[str, Any]]:
+        """Get list of available Groq models"""
+        models = []
+        for model_name in self.AVAILABLE_MODELS:
+            models.append(
+                {
+                    "name": model_name,
+                    "display_name": f"Groq {model_name}",
+                    "size": 0,
+                    "provider": "groq",
+                }
+            )
+        return models
+
+
+class AIClientFactory:
+    # Factory for AI-clients(LLM)
     _ollama_client: Optional[OllamaClient] = None
     _gemini_client: Optional[GeminiClient] = None
+    _groq_client: Optional[GroqClient] = None
 
     @classmethod
     def get_ollama_client(
-        cls,
-        model: str = "mistral7",
-        stream_callback: Optional[Callable] = None
+        cls, model: str = "mistral7", stream_callback: Optional[Callable] = None
     ) -> OllamaClient:
-        """Get or create Ollama client"""
         if cls._ollama_client is None:
             cls._ollama_client = OllamaClient(default_model=model)
         if stream_callback:
@@ -515,11 +624,8 @@ class AIClientFactory:
 
     @classmethod
     def get_gemini_client(
-        cls,
-        api_key: str,
-        stream_callback: Optional[Callable] = None
+        cls, api_key: str, stream_callback: Optional[Callable] = None
     ) -> Optional[GeminiClient]:
-        """Get or create Gemini client"""
         if not api_key:
             return None
         if cls._gemini_client is None:
@@ -529,15 +635,63 @@ class AIClientFactory:
         return cls._gemini_client
 
     @classmethod
+    def get_groq_client(
+        cls,
+        api_key: str,
+        model: str = "llama-3.1-70b-versatile",
+        stream_callback: Optional[Callable] = None,
+    ) -> Optional[GroqClient]:
+        if not api_key:
+            return None
+        if cls._groq_client is None:
+            cls._groq_client = GroqClient(api_key, model=model)
+        elif cls._groq_client.model != model:
+            cls._groq_client.model = model
+        if stream_callback:
+            cls._groq_client.set_stream_callback(stream_callback)
+        return cls._groq_client
+
+    @classmethod
     def get_client(
         cls,
         model_type: str,
         api_key: Optional[str] = None,
-        stream_callback: Optional[Callable] = None
+        stream_callback: Optional[Callable] = None,
     ) -> Optional[BaseAIClient]:
-        """Get appropriate client based on model type"""
         if model_type == "gemini" and api_key:
             return cls.get_gemini_client(api_key, stream_callback)
+
+        is_groq_model = (
+            model_type == "groq"
+            or model_type.startswith("groq:")
+            or model_type in GroqClient.AVAILABLE_MODELS
+            or model_type.startswith("llama-3.")
+            or model_type.startswith("llama-3.1")
+            or model_type.startswith("llama-3.2")
+            or model_type.startswith("gemma2")
+            or model_type == "mixtral-8x7b-32768"
+        )
+
+        if is_groq_model:
+            if api_key:
+                if model_type == "mixtral-8x7b-32768":
+                    log.warning(
+                        "Model mixtral-8x7b-32768 has been decommissioned. Using default model instead."
+                    )
+                    model = GroqClient.DEFAULT_MODEL
+                elif model_type.startswith("groq:"):
+                    model = model_type[5:]  # Remove "groq:" prefix
+                elif model_type in GroqClient.AVAILABLE_MODELS:
+                    model = model_type
+                elif model_type == "groq":
+                    model = GroqClient.DEFAULT_MODEL
+                else:
+                    model = model_type
+                return cls.get_groq_client(api_key, model=model, stream_callback=stream_callback)
+            else:
+                log.warning("Groq API key not provided, falling back to Ollama")
+                model = "mistral7" if model_type == "mistral" else "llama3.2:3b"
+                return cls.get_ollama_client(model, stream_callback)
         else:
             model = "mistral7" if model_type == "mistral" else "llama3.2:3b"
             return cls.get_ollama_client(model, stream_callback)
@@ -547,4 +701,5 @@ class AIClientFactory:
         """Cleanup all clients and sessions"""
         cls._ollama_client = None
         cls._gemini_client = None
+        cls._groq_client = None
         await close_session()

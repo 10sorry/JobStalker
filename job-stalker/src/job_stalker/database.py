@@ -1,17 +1,10 @@
-"""
-Database Module for JobStalker
-
-Provides:
-- Connection pooling for SQLite
-- Async database operations
-- Proper resource management
-"""
 from __future__ import annotations
 
 import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, AsyncGenerator, List, Optional, Tuple
 
 import aiosqlite
@@ -20,27 +13,13 @@ from .exceptions import DatabaseError
 
 log = logging.getLogger("database")
 
-DB_PATH = "./data/forwarded.db"
+DATA_DIR = Path("data")
+DB_PATH = DATA_DIR / "forwarded.db"
 
 
 class DatabasePool:
-    """
-    SQLite connection pool for async operations.
-
-    Features:
-    - Configurable pool size
-    - Connection reuse
-    - Automatic cleanup
-    - Thread-safe operations
-    """
-
-    def __init__(
-        self,
-        db_path: str = DB_PATH,
-        pool_size: int = 5,
-        timeout: float = 30.0
-    ):
-        self.db_path = db_path
+    def __init__(self, db_path: Path = DB_PATH, pool_size: int = 5, timeout: float = 30.0):
+        self.db_path = Path(db_path)
         self.pool_size = pool_size
         self.timeout = timeout
         self._pool: asyncio.Queue[aiosqlite.Connection] = asyncio.Queue(maxsize=pool_size)
@@ -49,7 +28,6 @@ class DatabasePool:
         self._initialized = False
 
     async def initialize(self) -> None:
-        """Initialize the connection pool"""
         if self._initialized:
             return
 
@@ -57,23 +35,16 @@ class DatabasePool:
             if self._initialized:
                 return
 
-            # Ensure data directory exists
-            os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Create initial connections
             for _ in range(self.pool_size):
-                conn = await aiosqlite.connect(
-                    self.db_path,
-                    timeout=self.timeout
-                )
-                # Enable WAL mode for better concurrency
+                conn = await aiosqlite.connect(self.db_path, timeout=self.timeout)
                 await conn.execute("PRAGMA journal_mode=WAL")
                 await conn.execute("PRAGMA synchronous=NORMAL")
                 await conn.execute("PRAGMA cache_size=10000")
                 self._connections.append(conn)
                 await self._pool.put(conn)
 
-            # Create schema
             async with self.acquire() as conn:
                 await conn.execute("""
                     CREATE TABLE IF NOT EXISTS forwarded (
@@ -83,7 +54,6 @@ class DatabasePool:
                         PRIMARY KEY (chat_id, message_id)
                     )
                 """)
-                # Create index for faster lookups
                 await conn.execute("""
                     CREATE INDEX IF NOT EXISTS idx_forwarded_chat
                     ON forwarded(chat_id)
@@ -95,21 +65,16 @@ class DatabasePool:
 
     @asynccontextmanager
     async def acquire(self) -> AsyncGenerator[aiosqlite.Connection, None]:
-        """Acquire a connection from the pool"""
         if not self._initialized:
             await self.initialize()
 
-        conn = await asyncio.wait_for(
-            self._pool.get(),
-            timeout=self.timeout
-        )
+        conn = await asyncio.wait_for(self._pool.get(), timeout=self.timeout)
         try:
             yield conn
         finally:
             await self._pool.put(conn)
 
     async def close(self) -> None:
-        """Close all connections in the pool"""
         async with self._lock:
             for conn in self._connections:
                 try:
@@ -123,21 +88,18 @@ class DatabasePool:
 
     @property
     def stats(self) -> dict:
-        """Get pool statistics"""
         return {
             "pool_size": self.pool_size,
             "available": self._pool.qsize(),
             "in_use": self.pool_size - self._pool.qsize(),
-            "initialized": self._initialized
+            "initialized": self._initialized,
         }
 
 
-# Global pool instance
 _pool: Optional[DatabasePool] = None
 
 
 def get_pool() -> DatabasePool:
-    """Get or create global database pool"""
     global _pool
     if _pool is None:
         _pool = DatabasePool()
@@ -145,13 +107,11 @@ def get_pool() -> DatabasePool:
 
 
 async def init_db() -> None:
-    """Initialize database (compatibility function)"""
     pool = get_pool()
     await pool.initialize()
 
 
 async def close_db() -> None:
-    """Close database connections"""
     global _pool
     if _pool is not None:
         await _pool.close()
@@ -159,13 +119,12 @@ async def close_db() -> None:
 
 
 async def is_forwarded(chat_id: int, message_id: int) -> bool:
-    """Check if message was already processed"""
     pool = get_pool()
     try:
         async with pool.acquire() as conn:
             async with conn.execute(
                 "SELECT 1 FROM forwarded WHERE chat_id = ? AND message_id = ?",
-                (chat_id, message_id)
+                (chat_id, message_id),
             ) as cursor:
                 row = await cursor.fetchone()
                 return row is not None
@@ -174,13 +133,12 @@ async def is_forwarded(chat_id: int, message_id: int) -> bool:
 
 
 async def mark_forwarded(chat_id: int, message_id: int) -> None:
-    """Mark message as processed"""
     pool = get_pool()
     try:
         async with pool.acquire() as conn:
             await conn.execute(
                 "INSERT OR IGNORE INTO forwarded (chat_id, message_id) VALUES (?, ?)",
-                (chat_id, message_id)
+                (chat_id, message_id),
             )
             await conn.commit()
     except Exception as e:
@@ -188,7 +146,6 @@ async def mark_forwarded(chat_id: int, message_id: int) -> None:
 
 
 async def mark_forwarded_batch(messages: List[Tuple[int, int]]) -> None:
-    """Mark multiple messages as processed (batch operation)"""
     if not messages:
         return
 
@@ -196,8 +153,7 @@ async def mark_forwarded_batch(messages: List[Tuple[int, int]]) -> None:
     try:
         async with pool.acquire() as conn:
             await conn.executemany(
-                "INSERT OR IGNORE INTO forwarded (chat_id, message_id) VALUES (?, ?)",
-                messages
+                "INSERT OR IGNORE INTO forwarded (chat_id, message_id) VALUES (?, ?)", messages
             )
             await conn.commit()
             log.debug(f"Batch marked {len(messages)} messages as forwarded")
@@ -206,7 +162,6 @@ async def mark_forwarded_batch(messages: List[Tuple[int, int]]) -> None:
 
 
 async def reset_db() -> None:
-    """Reset database (clear all records)"""
     pool = get_pool()
     try:
         async with pool.acquire() as conn:
@@ -218,7 +173,6 @@ async def reset_db() -> None:
 
 
 async def get_forwarded_count() -> int:
-    """Get count of processed messages"""
     pool = get_pool()
     try:
         async with pool.acquire() as conn:
@@ -230,13 +184,11 @@ async def get_forwarded_count() -> int:
 
 
 async def get_forwarded_for_channel(chat_id: int) -> List[int]:
-    """Get all forwarded message IDs for a channel"""
     pool = get_pool()
     try:
         async with pool.acquire() as conn:
             async with conn.execute(
-                "SELECT message_id FROM forwarded WHERE chat_id = ?",
-                (chat_id,)
+                "SELECT message_id FROM forwarded WHERE chat_id = ?", (chat_id,)
             ) as cursor:
                 rows = await cursor.fetchall()
                 return [row[0] for row in rows]
@@ -245,13 +197,11 @@ async def get_forwarded_for_channel(chat_id: int) -> List[int]:
 
 
 async def cleanup_old_records(days: int = 30) -> int:
-    """Remove records older than specified days"""
     pool = get_pool()
     try:
         async with pool.acquire() as conn:
             result = await conn.execute(
-                "DELETE FROM forwarded WHERE forwarded_at < datetime('now', ?)",
-                (f'-{days} days',)
+                "DELETE FROM forwarded WHERE forwarded_at < datetime('now', ?)", (f"-{days} days",)
             )
             await conn.commit()
             deleted = result.rowcount

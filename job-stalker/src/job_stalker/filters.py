@@ -4,8 +4,10 @@ from .config import KEYWORDS, BLACKLIST, REGEXES, ALLOW_MEDIA
 
 compiled_regexes = [re.compile(r, re.IGNORECASE) for r in REGEXES if r]
 
+
 def text_from_message(message) -> str:
     return (message.text or message.caption or "") or ""
+
 
 def has_allowed_media(message) -> bool:
     if message.photo:
@@ -23,6 +25,7 @@ def has_allowed_media(message) -> bool:
     else:
         t = "text"
     return t in ALLOW_MEDIA
+
 
 def matches_filters(message) -> bool:
     txt = text_from_message(message).lower()
@@ -45,4 +48,3 @@ def matches_filters(message) -> bool:
         return False
 
     return True
-

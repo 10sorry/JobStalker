@@ -1,13 +1,7 @@
-"""
-GPU Detection and Monitoring Module
-
-Supports:
-- NVIDIA GPUs via pynvml
-- AMD GPUs via pyamdgpuinfo, rocm-smi, or sysfs
-"""
 import os
 import re
 import subprocess
+import sys
 import logging
 from typing import Optional, Dict, Any
 from dataclasses import dataclass
@@ -15,9 +9,10 @@ from enum import Enum
 
 log = logging.getLogger("gpu_monitor")
 
+IS_LINUX = sys.platform.startswith("linux")
+
 
 class GPUType(Enum):
-    """Supported GPU types"""
     NVIDIA = "nvidia"
     AMD = "amd"
     AMD_ROCM = "amd_rocm"
@@ -27,7 +22,6 @@ class GPUType(Enum):
 
 @dataclass
 class GPUInfo:
-    """GPU information container"""
     available: bool = False
     gpu_type: str = ""
     name: str = ""
@@ -48,21 +42,17 @@ class GPUInfo:
             "memory_utilization": self.memory_utilization,
             "memory_used_mb": self.memory_used_mb,
             "memory_total_mb": self.memory_total_mb,
-            "temperature": self.temperature
+            "temperature": self.temperature,
         }
 
 
 class GPUDetector:
-    """
-    Singleton GPU detector that caches detected GPU type.
-    Thread-safe for detection, but get_info() should be called from one context.
-    """
-    _instance: Optional['GPUDetector'] = None
+    _instance: Optional["GPUDetector"] = None
     _gpu_type: GPUType = GPUType.NONE
     _gpu_name: Optional[str] = None
     _initialized: bool = False
 
-    def __new__(cls) -> 'GPUDetector':
+    def __new__(cls) -> "GPUDetector":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
@@ -73,7 +63,6 @@ class GPUDetector:
             GPUDetector._initialized = True
 
     def _detect_gpu(self) -> None:
-        """Detect available GPU (runs once on init)"""
         # 1. Try NVIDIA (pynvml)
         if self._try_nvidia():
             return
@@ -93,15 +82,15 @@ class GPUDetector:
         log.info("No GPU detected")
 
     def _try_nvidia(self) -> bool:
-        """Try to detect NVIDIA GPU via pynvml"""
         try:
             import pynvml
+
             pynvml.nvmlInit()
             if pynvml.nvmlDeviceGetCount() > 0:
                 handle = pynvml.nvmlDeviceGetHandleByIndex(0)
                 name = pynvml.nvmlDeviceGetName(handle)
                 if isinstance(name, bytes):
-                    name = name.decode('utf-8')
+                    name = name.decode("utf-8")
                 GPUDetector._gpu_type = GPUType.NVIDIA
                 GPUDetector._gpu_name = name
                 log.info(f"Detected NVIDIA GPU: {name}")
@@ -111,12 +100,12 @@ class GPUDetector:
         return False
 
     def _try_amd_pyamdgpuinfo(self) -> bool:
-        """Try to detect AMD GPU via pyamdgpuinfo"""
         try:
             import pyamdgpuinfo
+
             if pyamdgpuinfo.detect_gpus() > 0:
                 gpu = pyamdgpuinfo.get_gpu(0)
-                name = gpu.name if hasattr(gpu, 'name') else 'AMD GPU'
+                name = gpu.name if hasattr(gpu, "name") else "AMD GPU"
                 GPUDetector._gpu_type = GPUType.AMD
                 GPUDetector._gpu_name = name
                 log.info(f"Detected AMD GPU via pyamdgpuinfo: {name}")
@@ -126,17 +115,18 @@ class GPUDetector:
         return False
 
     def _try_amd_rocm(self) -> bool:
-        """Try to detect AMD GPU via rocm-smi CLI"""
+        # rocm-smi is Linux-only
+        if not IS_LINUX:
+            return False
         try:
             result = subprocess.run(
-                ['rocm-smi', '--showproductname'],
-                capture_output=True, text=True, timeout=5
+                ["rocm-smi", "--showproductname"], capture_output=True, text=True, timeout=5
             )
-            if result.returncode == 0 and 'GPU' in result.stdout:
-                name = 'AMD GPU'
-                for line in result.stdout.split('\n'):
-                    if 'Card series' in line or 'GPU' in line:
-                        name = line.split(':')[-1].strip() if ':' in line else 'AMD GPU'
+            if result.returncode == 0 and "GPU" in result.stdout:
+                name = "AMD GPU"
+                for line in result.stdout.split("\n"):
+                    if "Card series" in line or "GPU" in line:
+                        name = line.split(":")[-1].strip() if ":" in line else "AMD GPU"
                         break
                 GPUDetector._gpu_type = GPUType.AMD_ROCM
                 GPUDetector._gpu_name = name
@@ -147,23 +137,25 @@ class GPUDetector:
         return False
 
     def _try_amd_sysfs(self) -> bool:
-        """Try to detect AMD GPU via sysfs (Linux fallback)"""
+        # sysfs is Linux-only
+        if not IS_LINUX:
+            return False
         try:
-            drm_path = '/sys/class/drm'
+            drm_path = "/sys/class/drm"
             if not os.path.exists(drm_path):
                 return False
 
             for card in os.listdir(drm_path):
-                if card.startswith('card') and card[4:].isdigit():
-                    device_path = os.path.join(drm_path, card, 'device')
-                    vendor_path = os.path.join(device_path, 'vendor')
+                if card.startswith("card") and card[4:].isdigit():
+                    device_path = os.path.join(drm_path, card, "device")
+                    vendor_path = os.path.join(device_path, "vendor")
                     if os.path.exists(vendor_path):
                         with open(vendor_path) as f:
                             vendor = f.read().strip()
                         # AMD vendor ID = 0x1002
-                        if vendor == '0x1002':
-                            name = 'AMD GPU'
-                            name_path = os.path.join(device_path, 'product_name')
+                        if vendor == "0x1002":
+                            name = "AMD GPU"
+                            name_path = os.path.join(device_path, "product_name")
                             if os.path.exists(name_path):
                                 with open(name_path) as f:
                                     name = f.read().strip()
@@ -188,25 +180,23 @@ class GPUDetector:
         return self._gpu_type != GPUType.NONE
 
     def _get_short_name(self, name: str, gpu_type: GPUType) -> str:
-        """Extract short GPU name for display"""
         if gpu_type == GPUType.NVIDIA:
-            match = re.search(r'(RTX|GTX|Quadro)\s*(\d{3,4})\s*(Ti|SUPER)?', name, re.I)
+            match = re.search(r"(RTX|GTX|Quadro)\s*(\d{3,4})\s*(Ti|SUPER)?", name, re.I)
             if match:
-                short = match.group(1).upper() + ' ' + match.group(2)
+                short = match.group(1).upper() + " " + match.group(2)
                 if match.group(3):
-                    short += ' ' + match.group(3)
+                    short += " " + match.group(3)
                 return short
         else:  # AMD variants
-            match = re.search(r'(RX|Radeon)\s*(\d{3,4})\s*(XT|XTX)?', name, re.I)
+            match = re.search(r"(RX|Radeon)\s*(\d{3,4})\s*(XT|XTX)?", name, re.I)
             if match:
-                short = 'RX ' + match.group(2)
+                short = "RX " + match.group(2)
                 if match.group(3):
-                    short += ' ' + match.group(3)
+                    short += " " + match.group(3)
                 return short
-        return name or 'GPU'
+        return name or "GPU"
 
     def get_info(self) -> Optional[GPUInfo]:
-        """Get current GPU information (utilization, memory, temperature)"""
         if self._gpu_type == GPUType.NONE:
             return None
 
@@ -226,8 +216,8 @@ class GPUDetector:
         return None
 
     def _get_nvidia_info(self) -> GPUInfo:
-        """Get NVIDIA GPU info via pynvml"""
         import pynvml
+
         handle = pynvml.nvmlDeviceGetHandleByIndex(0)
 
         utilization = pynvml.nvmlDeviceGetUtilizationRates(handle)
@@ -247,18 +237,18 @@ class GPUDetector:
             memory_utilization=utilization.memory,
             memory_used_mb=round(mem_info.used / (1024 * 1024)),
             memory_total_mb=round(mem_info.total / (1024 * 1024)),
-            temperature=temp
+            temperature=temp,
         )
 
     def _get_amd_pyamdgpuinfo_info(self) -> GPUInfo:
-        """Get AMD GPU info via pyamdgpuinfo"""
         import pyamdgpuinfo
+
         gpu = pyamdgpuinfo.get_gpu(0)
 
-        gpu_util = gpu.query_load() * 100 if hasattr(gpu, 'query_load') else 0
-        vram_used = gpu.query_vram_usage() if hasattr(gpu, 'query_vram_usage') else 0
-        vram_total = gpu.memory_info.get('vram_size', 0) if hasattr(gpu, 'memory_info') else 0
-        temp = gpu.query_temperature() if hasattr(gpu, 'query_temperature') else 0
+        gpu_util = gpu.query_load() * 100 if hasattr(gpu, "query_load") else 0
+        vram_used = gpu.query_vram_usage() if hasattr(gpu, "query_vram_usage") else 0
+        vram_total = gpu.memory_info.get("vram_size", 0) if hasattr(gpu, "memory_info") else 0
+        temp = gpu.query_temperature() if hasattr(gpu, "query_temperature") else 0
 
         mem_used_mb = vram_used / (1024 * 1024) if vram_used else 0
         mem_total_mb = vram_total / (1024 * 1024) if vram_total else 0
@@ -273,11 +263,10 @@ class GPUDetector:
             memory_utilization=round(mem_util),
             memory_used_mb=round(mem_used_mb),
             memory_total_mb=round(mem_total_mb),
-            temperature=round(temp) if temp else 0
+            temperature=round(temp) if temp else 0,
         )
 
     def _get_amd_rocm_info(self) -> GPUInfo:
-        """Get AMD GPU info via rocm-smi CLI"""
         gpu_util: float = 0
         mem_used_mb: float = 0
         mem_total_mb: float = 0
@@ -286,12 +275,11 @@ class GPUDetector:
         # GPU utilization
         try:
             result = subprocess.run(
-                ['rocm-smi', '--showuse'],
-                capture_output=True, text=True, timeout=2
+                ["rocm-smi", "--showuse"], capture_output=True, text=True, timeout=2
             )
-            for line in result.stdout.split('\n'):
-                if 'GPU use' in line or '%' in line:
-                    match = re.search(r'(\d+)\s*%', line)
+            for line in result.stdout.split("\n"):
+                if "GPU use" in line or "%" in line:
+                    match = re.search(r"(\d+)\s*%", line)
                     if match:
                         gpu_util = int(match.group(1))
                         break
@@ -301,16 +289,15 @@ class GPUDetector:
         # Memory
         try:
             result = subprocess.run(
-                ['rocm-smi', '--showmeminfo', 'vram'],
-                capture_output=True, text=True, timeout=2
+                ["rocm-smi", "--showmeminfo", "vram"], capture_output=True, text=True, timeout=2
             )
-            for line in result.stdout.split('\n'):
-                if 'Used' in line:
-                    match = re.search(r'(\d+)', line)
+            for line in result.stdout.split("\n"):
+                if "Used" in line:
+                    match = re.search(r"(\d+)", line)
                     if match:
                         mem_used_mb = int(match.group(1)) / (1024 * 1024)
-                elif 'Total' in line:
-                    match = re.search(r'(\d+)', line)
+                elif "Total" in line:
+                    match = re.search(r"(\d+)", line)
                     if match:
                         mem_total_mb = int(match.group(1)) / (1024 * 1024)
         except Exception:
@@ -319,12 +306,11 @@ class GPUDetector:
         # Temperature
         try:
             result = subprocess.run(
-                ['rocm-smi', '--showtemp'],
-                capture_output=True, text=True, timeout=2
+                ["rocm-smi", "--showtemp"], capture_output=True, text=True, timeout=2
             )
-            for line in result.stdout.split('\n'):
-                if 'Temperature' in line or 'edge' in line.lower():
-                    match = re.search(r'(\d+\.?\d*)', line)
+            for line in result.stdout.split("\n"):
+                if "Temperature" in line or "edge" in line.lower():
+                    match = re.search(r"(\d+\.?\d*)", line)
                     if match:
                         temp = float(match.group(1))
                         break
@@ -342,11 +328,10 @@ class GPUDetector:
             memory_utilization=round(mem_util),
             memory_used_mb=round(mem_used_mb),
             memory_total_mb=round(mem_total_mb),
-            temperature=round(temp)
+            temperature=round(temp),
         )
 
     def _get_amd_sysfs_info(self) -> GPUInfo:
-        """Get AMD GPU info via sysfs (Linux)"""
         gpu_util: float = 0
         mem_used_mb: float = 0
         mem_total_mb: float = 0
@@ -354,10 +339,10 @@ class GPUDetector:
 
         # Temperature via hwmon
         try:
-            hwmon_base = '/sys/class/drm/card0/device/hwmon'
+            hwmon_base = "/sys/class/drm/card0/device/hwmon"
             if os.path.exists(hwmon_base):
                 hwmon_dir = os.path.join(hwmon_base, os.listdir(hwmon_base)[0])
-                temp_file = os.path.join(hwmon_dir, 'temp1_input')
+                temp_file = os.path.join(hwmon_dir, "temp1_input")
                 if os.path.exists(temp_file):
                     with open(temp_file) as f:
                         temp = int(f.read().strip()) / 1000  # millidegrees to degrees
@@ -366,7 +351,7 @@ class GPUDetector:
 
         # GPU busy percent
         try:
-            busy_file = '/sys/class/drm/card0/device/gpu_busy_percent'
+            busy_file = "/sys/class/drm/card0/device/gpu_busy_percent"
             if os.path.exists(busy_file):
                 with open(busy_file) as f:
                     gpu_util = int(f.read().strip())
@@ -375,8 +360,8 @@ class GPUDetector:
 
         # VRAM
         try:
-            vram_used_file = '/sys/class/drm/card0/device/mem_info_vram_used'
-            vram_total_file = '/sys/class/drm/card0/device/mem_info_vram_total'
+            vram_used_file = "/sys/class/drm/card0/device/mem_info_vram_used"
+            vram_total_file = "/sys/class/drm/card0/device/mem_info_vram_total"
             if os.path.exists(vram_used_file):
                 with open(vram_used_file) as f:
                     mem_used_mb = int(f.read().strip()) / (1024 * 1024)
@@ -397,7 +382,7 @@ class GPUDetector:
             memory_utilization=round(mem_util),
             memory_used_mb=round(mem_used_mb),
             memory_total_mb=round(mem_total_mb),
-            temperature=round(temp)
+            temperature=round(temp),
         )
 
 
@@ -406,7 +391,6 @@ _detector: Optional[GPUDetector] = None
 
 
 def get_gpu_detector() -> GPUDetector:
-    """Get or create GPU detector singleton"""
     global _detector
     if _detector is None:
         _detector = GPUDetector()
@@ -414,12 +398,10 @@ def get_gpu_detector() -> GPUDetector:
 
 
 def get_gpu_info() -> Optional[Dict[str, Any]]:
-    """Convenience function to get GPU info as dict"""
     detector = get_gpu_detector()
     info = detector.get_info()
     return info.to_dict() if info else None
 
 
 def has_gpu() -> bool:
-    """Check if GPU is available"""
     return get_gpu_detector().has_gpu

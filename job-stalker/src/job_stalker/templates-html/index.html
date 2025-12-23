@@ -953,7 +953,46 @@
             box-shadow: 0 0 8px #f69029;
             animation: pulse 1s infinite;
         }
-        
+
+        /* ---------- дата в хедере карточки ---------- */
+        .vacancy-card-date {
+            font-size: 11px;
+            color: #8a9aa9;
+            letter-spacing: .5px;
+        }
+
+        .vacancy-card-lead {
+            --max-lines: 3;
+            --line-height: 1.4;
+            /* max-height: calc(var(--line-height) * 1em * var(--max-lines)); */
+            overflow-y: auto;          /* разрешаем скролл */
+
+            font-size: var(--font-size-sm);
+            color: #a0b0c0;
+            line-height: var(--line-height);
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,.2);
+            border-left: 2px solid #4a6a8a;
+            border-radius: 0 4px 4px 0;
+
+            /* ---------- кастомный скролл ---------- */
+            scrollbar-width: thin;              /* Firefox */
+            scrollbar-color: #4a6a8a transparent;
+        }
+
+        /* Chrome / Edge / Safari */
+        .vacancy-card-lead::-webkit-scrollbar {
+            width: 6px;                 /* толщина вертикального скролла */
+        }
+        .vacancy-card-lead::-webkit-scrollbar-track {
+            background: transparent;    /* фон «дорожки» */
+        }
+        .vacancy-card-lead::-webkit-scrollbar-thumb {
+            background-color: #4a6a8a;
+            border-radius: 3px;         /* скругление ползунка */
+        }
+                
         .vacancy-header-text {
             color: #f69029;
             font-size: var(--font-size-sm);
@@ -2162,6 +2201,46 @@
             background: linear-gradient(180deg, #3a4250, #2d333f);
             border-bottom: 2px solid #252932;
         }
+        /* дата в хедере трекера */
+        .tracker-card-date {
+            font-size: 11px;
+            color: #8a9aa9;
+            margin-left: auto;
+            padding-right: 4px;
+        }
+        
+        /* текст вакансии (под заголовком) */
+        .tracker-card-text {
+            --max-lines: 3;
+            --line-height: 1.4;
+            /* max-height: calc(var(--line-height) * 1em * var(--max-lines)); */
+            overflow-y: auto;          /* разрешаем скролл */
+
+            font-size: var(--font-size-sm);
+            color: #a0b0c0;
+            line-height: var(--line-height);
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0,0,0,.2);
+            border-left: 2px solid #4a6a8a;
+            border-radius: 0 4px 4px 0;
+
+            /* ---------- кастомный скролл ---------- */
+            scrollbar-width: thin;              /* Firefox */
+            scrollbar-color: #4a6a8a transparent;
+        }
+
+        /* Chrome / Edge / Safari */
+        .tracker-card-text::-webkit-scrollbar {
+            width: 6px;                 /* толщина вертикального скролла */
+        }
+        .tracker-card-text::-webkit-scrollbar-track {
+            background: transparent;    /* фон «дорожки» */
+        }
+        .tracker-card-text::-webkit-scrollbar-thumb {
+            background-color: #4a6a8a;
+            border-radius: 3px;         /* скругление ползунка */
+        }
         .tracker-card-source {
             display: flex;
             align-items: center;
@@ -2213,9 +2292,11 @@
             gap: 8px;
             padding: 12px 16px;
             border-top: 1px solid #3a4250;
+            flex-wrap: wrap;
         }
         .tracker-card-actions select {
             flex: 1;
+            min-width: 140px;
             padding: 8px 12px;
             background: #1a1d25;
             border: 2px solid #3a4250;
@@ -2228,6 +2309,157 @@
         .tracker-card-actions select:focus {
             outline: none;
             border-color: #4a9eff;
+        }
+        
+        /* Quick action buttons */
+        .quick-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .quick-action-btn {
+            padding: 6px 10px;
+            background: linear-gradient(180deg, #2d333f, #252932);
+            border: 1px solid #3a4250;
+            border-radius: 4px;
+            color: #7dff7d;
+            font-family: var(--font-main);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.7;
+        }
+        .quick-action-btn:hover {
+            opacity: 1;
+            border-color: #4a9eff;
+            transform: translateY(-1px);
+        }
+        .quick-action-btn.active {
+            opacity: 1;
+            border-color: #7dff7d;
+            background: linear-gradient(180deg, #2a5a4a, #1a4a3a);
+        }
+        
+        /* Status badge improvements */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+        }
+        .status-badge.wishlist { background: rgba(74, 158, 255, 0.15); color: #4a9eff; border: 1px solid rgba(74, 158, 255, 0.3); }
+        .status-badge.applied { background: rgba(246, 144, 41, 0.15); color: #f69029; border: 1px solid rgba(246, 144, 41, 0.3); }
+        .status-badge.interview { background: rgba(180, 120, 255, 0.15); color: #b478ff; border: 1px solid rgba(180, 120, 255, 0.3); }
+        .status-badge.offer { background: rgba(125, 255, 125, 0.15); color: #7dff7d; border: 1px solid rgba(125, 255, 125, 0.3); }
+        .status-badge.rejected { background: rgba(255, 96, 96, 0.15); color: #ff6060; border: 1px solid rgba(255, 96, 96, 0.3); }
+        
+        /* Match score improvements */
+        .match-meter {
+            margin: 12px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            border: 1px solid #3a4250;
+        }
+        .match-meter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .match-meter-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #5a6a7a;
+            font-family: var(--font-main);
+        }
+        .match-meter-icon {
+            font-size: 14px;
+        }
+        .match-meter-value {
+            font-size: 14px;
+            font-weight: bold;
+            font-family: var(--font-main);
+        }
+        .match-meter-value.high { color: #7dff7d; }
+        .match-meter-value.medium { color: #f69029; }
+        .match-meter-value.low { color: #ff6060; }
+        .match-meter-bar {
+            height: 6px;
+            background: #1a1d25;
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid #2a303a;
+        }
+        .match-meter-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+        .match-meter-fill.high { background: linear-gradient(90deg, #7dff7d, #5ddf5d); }
+        .match-meter-fill.medium { background: linear-gradient(90deg, #f69029, #d67009); }
+        .match-meter-fill.low { background: linear-gradient(90deg, #ff6060, #df4040); }
+        
+        /* Tracker card improvements */
+        .tracker-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(58, 66, 80, 0.5);
+            font-size: 10px;
+            color: #5a6a7a;
+        }
+        .tracker-card-time {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Filter badges with counts */
+        .tracker-filter-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 18px;
+            padding: 0 6px;
+            margin-left: 6px;
+            background: rgba(125, 255, 125, 0.2);
+            border-radius: 9px;
+            font-size: 10px;
+            color: #7dff7d;
+            font-weight: bold;
+        }
+        
+        /* Search in tracker */
+        .tracker-search {
+            margin-bottom: 16px;
+        }
+        .tracker-search-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: #1a1d25;
+            border: 2px solid #3a4250;
+            border-radius: 6px;
+            color: #7dff7d;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+        }
+        .tracker-search-input:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+        .tracker-search-input::placeholder {
+            color: #5a6a7a;
         }
 
         /* ============== LAYOUT ============== */
@@ -2265,9 +2497,543 @@
         
         /* Hidden file input */
         .hidden-input { display: none; }
+
+        /* ============== TOAST NOTIFICATIONS ============== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        .toast {
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: auto;
+            animation: toastSlideIn 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        .toast::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+        .toast.success {
+            border-color: #7dff7d;
+        }
+        .toast.success::before {
+            background: #7dff7d;
+        }
+        .toast.error {
+            border-color: #ff6060;
+        }
+        .toast.error::before {
+            background: #ff6060;
+        }
+        .toast.warning {
+            border-color: #f69029;
+        }
+        .toast.warning::before {
+            background: #f69029;
+        }
+        .toast.info {
+            border-color: #4a9eff;
+        }
+        .toast.info::before {
+            background: #4a9eff;
+        }
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .toast-content {
+            flex: 1;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            color: #7dff7d;
+        }
+        .toast-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .toast-message {
+            opacity: 0.9;
+            font-size: var(--font-size-xs);
+        }
+        .toast-close {
+            background: none;
+            border: none;
+            color: #5a6a7a;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .toast-close:hover {
+            opacity: 1;
+            color: #7dff7d;
+        }
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes toastSlideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        .toast.hiding {
+            animation: toastSlideOut 0.3s ease-in forwards;
+        }
+
+        /* ============== LOADING SPINNER ============== */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(125, 255, 125, 0.3);
+            border-top-color: #7dff7d;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(125, 255, 125, 0.3);
+            border-top-color: #7dff7d;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        /* ============== CONFIRMATION MODAL ============== */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .confirm-modal.active {
+            display: flex;
+        }
+        .confirm-dialog {
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border: 4px solid #5a6070;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+        .confirm-title {
+            font-family: var(--font-main);
+            font-size: var(--font-size-lg);
+            color: #ff6060;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .confirm-message {
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            color: #7dff7d;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        .confirm-btn {
+            padding: 10px 20px;
+            border: 2px solid;
+            border-radius: 6px;
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .confirm-btn.cancel {
+            background: linear-gradient(180deg, #3a4250, #2d333f);
+            border-color: #5a6070;
+            color: #7dff7d;
+        }
+        .confirm-btn.cancel:hover {
+            border-color: #7dff7d;
+            filter: brightness(1.1);
+        }
+        .confirm-btn.danger {
+            background: linear-gradient(180deg, #8a4040, #6a3030);
+            border-color: #ff6060;
+            color: #ff6060;
+        }
+        .confirm-btn.danger:hover {
+            filter: brightness(1.2);
+        }
+
+        /* ============== TOOLTIP ============== */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, #2d333f, #1a1d25);
+            color: #7dff7d;
+            font-family: var(--font-main);
+            font-size: var(--font-size-xs);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #3a4250;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s, visibility 0.2s;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .tooltip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #2d333f;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ============== VACANCY TEXT FORMATTING ============== */
+        .vacancy-formatted {
+            font-family: var(--font-main);
+            font-size: var(--font-size-sm);
+            color: #c0c8d0;
+            line-height: 1.7;
+        }
+
+        .vacancy-empty {
+            color: #5a6070;
+            font-style: italic;
+            text-align: center;
+            padding: 32px;
+        }
+
+        .vacancy-intro {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(90, 130, 140, 0.2);
+        }
+
+        .vacancy-section {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: linear-gradient(180deg, rgba(30, 50, 60, 0.4), rgba(20, 35, 45, 0.3));
+            border: 1px solid rgba(90, 130, 140, 0.25);
+            border-radius: 8px;
+            transition: border-color 0.2s ease;
+        }
+
+        .vacancy-section:hover {
+            border-color: rgba(90, 130, 140, 0.45);
+        }
+
+        .vacancy-section-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #7dddaa;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(125, 221, 170, 0.2);
+        }
+
+        .vacancy-section-content {
+            color: #b8c4cc;
+        }
+
+        .vacancy-paragraph {
+            margin: 0 0 10px 0;
+            line-height: 1.7;
+        }
+
+        .vacancy-paragraph:last-child {
+            margin-bottom: 0;
+        }
+
+        .vacancy-list {
+            margin: 8px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .vacancy-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .vacancy-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #5a9a7a;
+            font-size: 12px;
+        }
+
+        .vacancy-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .vacancy-tag {
+            display: inline-block;
+            background: rgba(74, 158, 255, 0.15);
+            color: #6ab4ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 0 2px;
+        }
+
+        .vacancy-link {
+            color: #4a9eff;
+            text-decoration: none;
+            border-bottom: 1px dotted rgba(74, 158, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .vacancy-link:hover {
+            color: #7dbfff;
+            border-bottom-color: rgba(74, 158, 255, 0.8);
+        }
+
+        .vacancy-salary {
+            display: inline-block;
+            background: rgba(125, 221, 170, 0.15);
+            color: #7dddaa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .vacancy-loading {
+            color: #6a8aaa;
+            text-align: center;
+            padding: 24px;
+            font-style: italic;
+        }
+
+        .vacancy-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(90, 130, 140, 0.2);
+        }
+
+        .vacancy-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(90, 130, 140, 0.2);
+            color: #a0b8c8;
+        }
+
+        .vacancy-badge.salary {
+            background: rgba(125, 221, 170, 0.2);
+            color: #7dddaa;
+        }
+
+        .vacancy-badge.remote {
+            background: rgba(74, 158, 255, 0.2);
+            color: #6ab4ff;
+        }
+
+        .vacancy-badge.office {
+            background: rgba(255, 180, 100, 0.2);
+            color: #ffb464;
+        }
+
+        .vacancy-tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .vacancy-tech {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(140, 100, 200, 0.15);
+            color: #b090d0;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--font-mono, monospace);
+            text-transform: lowercase;
+        }
+
+        .vacancy-contacts-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: linear-gradient(180deg, rgba(40, 50, 70, 0.4), rgba(30, 40, 55, 0.3));
+            border: 1px solid rgba(100, 140, 180, 0.25);
+            border-radius: 8px;
+        }
+
+        .vacancy-contacts-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8ab4e8;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(138, 180, 232, 0.2);
+        }
+
+        .vacancy-contacts-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .vacancy-contact {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: rgba(60, 80, 100, 0.3);
+            border: 1px solid rgba(100, 140, 180, 0.2);
+            border-radius: 6px;
+            font-size: 13px;
+            color: #b0c8e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        a.vacancy-contact:hover {
+            background: rgba(74, 158, 255, 0.15);
+            border-color: rgba(74, 158, 255, 0.4);
+            color: #8ac4ff;
+        }
+
+        .contact-icon {
+            font-size: 14px;
+        }
+
+        .contact-value {
+            font-family: var(--font-mono, monospace);
+        }
+
+        .contact-label {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: rgba(125, 221, 170, 0.2);
+            color: #7dddaa;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Contact type colors */
+        .contact-email { border-left: 3px solid #e8a87c; }
+        .contact-telegram { border-left: 3px solid #54a9eb; }
+        .contact-phone { border-left: 3px solid #7dddaa; }
+        .contact-whatsapp { border-left: 3px solid #25d366; }
+        .contact-linkedin { border-left: 3px solid #0077b5; }
+        .contact-form { border-left: 3px solid #b090d0; }
+        .contact-website { border-left: 3px solid #6ab4ff; }
+        .contact-discord { border-left: 3px solid #7289da; }
+        .contact-skype { border-left: 3px solid #00aff0; }
+
+        .vacancy-section[data-confidence="low"] {
+            border-left: 3px solid rgba(255, 180, 100, 0.5);
+        }
+
+        .vacancy-section[data-confidence="high"] {
+            border-left: 3px solid rgba(125, 221, 170, 0.5);
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Confirmation Modal -->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="confirm-dialog">
+            <div class="confirm-title">
+                <span>⚠️</span>
+                <span id="confirmTitle">Confirm Action</span>
+            </div>
+            <div class="confirm-message" id="confirmMessage"></div>
+            <div class="confirm-actions">
+                <button class="confirm-btn cancel" onclick="confirmCancel()">Cancel</button>
+                <button class="confirm-btn danger" id="confirmOkBtn" onclick="confirmOk()">Confirm</button>
+            </div>
+        </div>
+    </div>
     <!-- Подключаем модуль авторизации -->
     <div class="app-container">
         <div class="chrome-panel">
@@ -2309,71 +3075,70 @@
 
                     <!-- HOME TAB -->
                     <div class="tab-panel" id="tabHome">
-                        <div class="content-area" style="min-height: 400px; padding: 30px;">
-                            <!-- Main Stats Grid -->
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;">
-
-                                <!-- Search Stats Panel -->
-                                <div class="lcd-panel">
-                                    <div class="lcd-screen" style="padding: 24px;">
-                                        <div class="lcd-title" style="font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                                            <span style="font-size: 24px;">🔍</span> SEARCH STATISTICS
+                        <div class="content-area" style="padding: 20px;">
+                            <!-- Single Unified LCD Panel -->
+                            <div class="lcd-panel" style="max-width: 1600px; margin: 0 auto;">
+                                <div class="lcd-screen" style="padding: 24px;">
+                                    
+                                    <!-- SEARCH STATISTICS Section -->
+                                    <div style="margin-bottom: 20px;">
+                                        <div class="lcd-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 22px;">🔍</span> SEARCH STATISTICS
                                         </div>
-                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                                            <div style="text-align: center; padding: 16px; background: rgba(125,255,125,0.08); border-radius: 8px; border: 1px solid #2a4040;">
+                                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                                            <div style="text-align: center; padding: 14px 10px; background: rgba(125,255,125,0.08); border-radius: 6px; border: 1px solid #2a4040;">
                                                 <div style="font-size: 28px; color: #7dff7d; font-weight: bold;" id="homeStatFound">0</div>
                                                 <div style="color: #5a7a6a; font-size: 11px; margin-top: 4px;">FOUND</div>
                                             </div>
-                                            <div style="text-align: center; padding: 16px; background: rgba(74,158,255,0.08); border-radius: 8px; border: 1px solid #2a4060;">
+                                            <div style="text-align: center; padding: 14px 10px; background: rgba(74,158,255,0.08); border-radius: 6px; border: 1px solid #2a4060;">
                                                 <div style="font-size: 28px; color: #4a9eff; font-weight: bold;" id="homeStatProcessed">0</div>
                                                 <div style="color: #5a6a8a; font-size: 11px; margin-top: 4px;">PROCESSED</div>
                                             </div>
-                                            <div style="text-align: center; padding: 16px; background: rgba(255,96,96,0.08); border-radius: 8px; border: 1px solid #503030;">
+                                            <div style="text-align: center; padding: 14px 10px; background: rgba(255,96,96,0.08); border-radius: 6px; border: 1px solid #503030;">
                                                 <div style="font-size: 28px; color: #ff6060; font-weight: bold;" id="homeStatRejected">0</div>
                                                 <div style="color: #8a5a5a; font-size: 11px; margin-top: 4px;">REJECTED</div>
                                             </div>
-                                            <div style="text-align: center; padding: 16px; background: rgba(125,255,125,0.12); border-radius: 8px; border: 1px solid #3a5050;">
+                                            <div style="text-align: center; padding: 14px 10px; background: rgba(125,255,125,0.12); border-radius: 6px; border: 1px solid #3a5050;">
                                                 <div style="font-size: 28px; color: #7dff7d; font-weight: bold;" id="homeStatSuitable">0</div>
                                                 <div style="color: #5a8a6a; font-size: 11px; margin-top: 4px;">SUITABLE</div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Tracker Stats Panel -->
-                                <div class="lcd-panel">
-                                    <div class="lcd-screen" style="padding: 24px;">
-                                        <div class="lcd-title" style="font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                                            <span style="font-size: 24px;">📋</span> TRACKER PIPELINE
+                                    <!-- Divider -->
+                                    <div style="height: 1px; background: rgba(125, 255, 125, 0.2); margin: 16px 0;"></div>
+
+                                    <!-- TRACKER PIPELINE Section -->
+                                    <div style="margin-bottom: 20px;">
+                                        <div class="lcd-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 22px;">📋</span> TRACKER PIPELINE
                                         </div>
-                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px;">
                                             <div style="text-align: center; padding: 12px 8px; background: rgba(74,158,255,0.1); border-radius: 6px; border: 1px solid #3a5070;">
-                                                <div style="font-size: 24px; color: #4a9eff; font-weight: bold;" id="homeStatWishlist">0</div>
-                                                <div style="color: #5a6a8a; font-size: 10px; margin-top: 2px;">💭 WISHLIST</div>
+                                                <div style="font-size: 26px; color: #4a9eff; font-weight: bold;" id="homeStatWishlist">0</div>
+                                                <div style="color: #5a6a8a; font-size: 10px; margin-top: 3px;">💭 WISHLIST</div>
                                             </div>
                                             <div style="text-align: center; padding: 12px 8px; background: rgba(246,144,41,0.1); border-radius: 6px; border: 1px solid #705030;">
-                                                <div style="font-size: 24px; color: #f69029; font-weight: bold;" id="homeStatApplied">0</div>
-                                                <div style="color: #8a6a4a; font-size: 10px; margin-top: 2px;">📤 APPLIED</div>
+                                                <div style="font-size: 26px; color: #f69029; font-weight: bold;" id="homeStatApplied">0</div>
+                                                <div style="color: #8a6a4a; font-size: 10px; margin-top: 3px;">📤 APPLIED</div>
                                             </div>
                                             <div style="text-align: center; padding: 12px 8px; background: rgba(180,120,255,0.1); border-radius: 6px; border: 1px solid #504070;">
-                                                <div style="font-size: 24px; color: #b478ff; font-weight: bold;" id="homeStatInterview">0</div>
-                                                <div style="color: #7a5a9a; font-size: 10px; margin-top: 2px;">🎤 INTERVIEW</div>
+                                                <div style="font-size: 26px; color: #b478ff; font-weight: bold;" id="homeStatInterview">0</div>
+                                                <div style="color: #7a5a9a; font-size: 10px; margin-top: 3px;">🎤 INTERVIEW</div>
                                             </div>
-                                        </div>
-                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                                             <div style="text-align: center; padding: 12px 8px; background: rgba(125,255,125,0.12); border-radius: 6px; border: 1px solid #3a6050;">
-                                                <div style="font-size: 24px; color: #7dff7d; font-weight: bold;" id="homeStatOffer">0</div>
-                                                <div style="color: #5a8a6a; font-size: 10px; margin-top: 2px;">🎉 OFFER</div>
+                                                <div style="font-size: 26px; color: #7dff7d; font-weight: bold;" id="homeStatOffer">0</div>
+                                                <div style="color: #5a8a6a; font-size: 10px; margin-top: 3px;">🎉 OFFER</div>
                                             </div>
                                             <div style="text-align: center; padding: 12px 8px; background: rgba(255,96,96,0.08); border-radius: 6px; border: 1px solid #503030;">
-                                                <div style="font-size: 24px; color: #ff6060; font-weight: bold;" id="homeStatTrackerRejected">0</div>
-                                                <div style="color: #8a5a5a; font-size: 10px; margin-top: 2px;">❌ REJECTED</div>
+                                                <div style="font-size: 26px; color: #ff6060; font-weight: bold;" id="homeStatTrackerRejected">0</div>
+                                                <div style="color: #8a5a5a; font-size: 10px; margin-top: 3px;">❌ REJECTED</div>
                                             </div>
                                         </div>
                                         <!-- Pipeline Progress Bar -->
-                                        <div style="margin-top: 20px;">
-                                            <div style="color: #5a6a7a; font-size: 11px; margin-bottom: 8px;">PIPELINE PROGRESS</div>
-                                            <div style="display: flex; height: 24px; border-radius: 4px; overflow: hidden; background: #1a1d25; border: 1px solid #2a303a;">
+                                        <div>
+                                            <div style="color: #5a6a7a; font-size: 11px; margin-bottom: 6px;">PIPELINE PROGRESS</div>
+                                            <div style="display: flex; height: 24px; border-radius: 5px; overflow: hidden; background: #1a1d25; border: 1px solid #2a303a;">
                                                 <div id="pipelineWishlist" style="background: linear-gradient(180deg, #4a9eff, #3a7edf); transition: width 0.3s;"></div>
                                                 <div id="pipelineApplied" style="background: linear-gradient(180deg, #f69029, #d67009); transition: width 0.3s;"></div>
                                                 <div id="pipelineInterview" style="background: linear-gradient(180deg, #b478ff, #9458df); transition: width 0.3s;"></div>
@@ -2386,47 +3151,51 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Stats Chart Panel -->
-                                <div class="lcd-panel" style="grid-column: span 2;">
-                                    <div class="lcd-screen" style="padding: 24px;">
-                                        <div class="lcd-title" style="font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                                            <span style="font-size: 24px;">📊</span> STATISTICS OVERVIEW
+                                    <!-- Divider -->
+                                    <div style="height: 1px; background: rgba(125, 255, 125, 0.2); margin: 16px 0;"></div>
+
+                                    <!-- STATISTICS OVERVIEW Section -->
+                                    <div>
+                                        <div class="lcd-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 22px;">📊</span> STATISTICS OVERVIEW
                                         </div>
-                                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: center;">
+                                        <div style="display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: start;">
                                             <!-- Pie Chart Canvas -->
                                             <div style="display: flex; justify-content: center; align-items: center;">
-                                                <canvas id="statsChart" width="180" height="180" style="width: 180px; height: 180px;"></canvas>
+                                                <canvas id="statsChart" width="220" height="220" style="width: 220px; height: 220px;"></canvas>
                                             </div>
                                             <!-- Stats Summary -->
-                                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                                                <div style="padding: 12px; background: rgba(125,255,125,0.05); border-radius: 6px; border: 1px solid #2a4040;">
-                                                    <div style="color: #5a7a6a; font-size: 11px; margin-bottom: 4px;">MATCH RATE</div>
-                                                    <div style="font-size: 20px; color: #7dff7d; font-weight: bold;" id="homeMatchRate">0%</div>
+                                            <div>
+                                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 14px;">
+                                                    <div style="padding: 14px; background: rgba(125,255,125,0.05); border-radius: 6px; border: 1px solid #2a4040;">
+                                                        <div style="color: #5a7a6a; font-size: 11px; margin-bottom: 4px;">MATCH RATE</div>
+                                                        <div style="font-size: 22px; color: #7dff7d; font-weight: bold;" id="homeMatchRate">0%</div>
+                                                    </div>
+                                                    <div style="padding: 14px; background: rgba(74,158,255,0.05); border-radius: 6px; border: 1px solid #2a4060;">
+                                                        <div style="color: #5a6a8a; font-size: 11px; margin-bottom: 4px;">SUCCESS RATE</div>
+                                                        <div style="font-size: 22px; color: #4a9eff; font-weight: bold;" id="homeSuccessRate">0%</div>
+                                                    </div>
+                                                    <div style="padding: 14px; background: rgba(246,144,41,0.05); border-radius: 6px; border: 1px solid #504030;">
+                                                        <div style="color: #8a6a4a; font-size: 11px; margin-bottom: 4px;">APPLY RATE</div>
+                                                        <div style="font-size: 22px; color: #f69029; font-weight: bold;" id="homeApplyRate">0%</div>
+                                                    </div>
+                                                    <div style="padding: 14px; background: rgba(180,120,255,0.05); border-radius: 6px; border: 1px solid #403050;">
+                                                        <div style="color: #7a5a9a; font-size: 11px; margin-bottom: 4px;">INTERVIEW RATE</div>
+                                                        <div style="font-size: 22px; color: #b478ff; font-weight: bold;" id="homeInterviewRate">0%</div>
+                                                    </div>
                                                 </div>
-                                                <div style="padding: 12px; background: rgba(74,158,255,0.05); border-radius: 6px; border: 1px solid #2a4060;">
-                                                    <div style="color: #5a6a8a; font-size: 11px; margin-bottom: 4px;">SUCCESS RATE</div>
-                                                    <div style="font-size: 20px; color: #4a9eff; font-weight: bold;" id="homeSuccessRate">0%</div>
+                                                <div style="padding-top: 12px; border-top: 1px solid #2a303a; color: #5a6a7a; font-size: 11px;">
+                                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                                                        <div>Resume: <span id="homeResumeStatus" style="color: #7dff7d;">Not loaded</span></div>
+                                                        <div>Channels: <span id="homeChannelsCount" style="color: #4a9eff;">0 configured</span></div>
+                                                        <div>Search mode: <span id="homeSearchMode" style="color: #f69029;">Basic</span></div>
+                                                    </div>
                                                 </div>
-                                                <div style="padding: 12px; background: rgba(246,144,41,0.05); border-radius: 6px; border: 1px solid #504030;">
-                                                    <div style="color: #8a6a4a; font-size: 11px; margin-bottom: 4px;">APPLY RATE</div>
-                                                    <div style="font-size: 20px; color: #f69029; font-weight: bold;" id="homeApplyRate">0%</div>
-                                                </div>
-                                                <div style="padding: 12px; background: rgba(180,120,255,0.05); border-radius: 6px; border: 1px solid #403050;">
-                                                    <div style="color: #7a5a9a; font-size: 11px; margin-bottom: 4px;">INTERVIEW RATE</div>
-                                                    <div style="font-size: 20px; color: #b478ff; font-weight: bold;" id="homeInterviewRate">0%</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #2a303a; color: #5a6a7a; font-size: 11px;">
-                                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-                                                <div>Resume: <span id="homeResumeStatus" style="color: #7dff7d;">Not loaded</span></div>
-                                                <div>Channels: <span id="homeChannelsCount" style="color: #4a9eff;">0 configured</span></div>
-                                                <div>Search mode: <span id="homeSearchMode" style="color: #f69029;">Basic</span></div>
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -2745,14 +3514,37 @@
                                     </button>
                                 </div>
 
+                                <!-- Tracker Search -->
+                                <div class="tracker-search">
+                                    <input type="text" class="tracker-search-input" id="trackerSearchInput" placeholder="🔍 Search vacancies..." oninput="filterTrackerBySearch(this.value)">
+                                </div>
+
                                 <!-- Tracker Filters -->
-                                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-                                    <button class="tracker-filter active" onclick="filterTracker('all')" data-filter="all">ALL</button>
-                                    <button class="tracker-filter" onclick="filterTracker('wishlist')" data-filter="wishlist">📌 WISHLIST</button>
-                                    <button class="tracker-filter" onclick="filterTracker('applied')" data-filter="applied">✉️ APPLIED</button>
-                                    <button class="tracker-filter" onclick="filterTracker('interview')" data-filter="interview">🎯 INTERVIEW</button>
-                                    <button class="tracker-filter" onclick="filterTracker('offer')" data-filter="offer">🎉 OFFER</button>
-                                    <button class="tracker-filter" onclick="filterTracker('rejected')" data-filter="rejected">❌ REJECTED</button>
+                                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                                    <button class="tracker-filter active" onclick="filterTracker('all')" data-filter="all">
+                                        ALL
+                                        <span class="tracker-filter-badge" id="filterCountAll">0</span>
+                                    </button>
+                                    <button class="tracker-filter" onclick="filterTracker('wishlist')" data-filter="wishlist">
+                                        📌 WISHLIST
+                                        <span class="tracker-filter-badge" id="filterCountWishlist">0</span>
+                                    </button>
+                                    <button class="tracker-filter" onclick="filterTracker('applied')" data-filter="applied">
+                                        ✉️ APPLIED
+                                        <span class="tracker-filter-badge" id="filterCountApplied">0</span>
+                                    </button>
+                                    <button class="tracker-filter" onclick="filterTracker('interview')" data-filter="interview">
+                                        🎯 INTERVIEW
+                                        <span class="tracker-filter-badge" id="filterCountInterview">0</span>
+                                    </button>
+                                    <button class="tracker-filter" onclick="filterTracker('offer')" data-filter="offer">
+                                        🎉 OFFER
+                                        <span class="tracker-filter-badge" id="filterCountOffer">0</span>
+                                    </button>
+                                    <button class="tracker-filter" onclick="filterTracker('rejected')" data-filter="rejected">
+                                        ❌ REJECTED
+                                        <span class="tracker-filter-badge" id="filterCountRejected">0</span>
+                                    </button>
                                 </div>
 
                                 <!-- Tracker List -->
@@ -2929,6 +3721,7 @@ Benefits:
         // Tracker state
         let trackedVacancies = [];
         let currentTrackerFilter = 'all';
+        let trackerSearchQuery = '';
 
         // Stage 2 progress tracking
         const stage2InProgress = new Set();
@@ -2938,6 +3731,111 @@ Benefits:
 
         // Channels state
         let channels = [];
+
+        // Confirmation modal state
+        let confirmCallback = null;
+
+        // ============== TOAST NOTIFICATIONS ==============
+        function showToast(message, type = 'info', title = null) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+            
+            const titles = {
+                success: title || 'Success',
+                error: title || 'Error',
+                warning: title || 'Warning',
+                info: title || 'Info'
+            };
+
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type] || icons.info}</span>
+                <div class="toast-content">
+                    <div class="toast-title">${titles[type]}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // ============== CONFIRMATION MODAL ==============
+        function showConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('confirmTitle');
+            const messageEl = document.getElementById('confirmMessage');
+            
+            if (!modal || !titleEl || !messageEl) {
+                // Fallback to native confirm
+                if (confirm(`${title}\n\n${message}`)) {
+                    onConfirm();
+                }
+                return;
+            }
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            confirmCallback = onConfirm;
+            modal.classList.add('active');
+        }
+
+        function confirmOk() {
+            const modal = document.getElementById('confirmModal');
+            if (modal) modal.classList.remove('active');
+            
+            if (confirmCallback) {
+                confirmCallback();
+                confirmCallback = null;
+            }
+        }
+
+        function confirmCancel() {
+            const modal = document.getElementById('confirmModal');
+            if (modal) modal.classList.remove('active');
+            confirmCallback = null;
+        }
+
+        // Close modal on background click
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('confirmModal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        confirmCancel();
+                    }
+                });
+            }
+        });
+
+        // ============== BUTTON LOADING STATE ==============
+        function setButtonLoading(buttonId, loading) {
+            const btn = typeof buttonId === 'string' ? document.getElementById(buttonId) : buttonId;
+            if (!btn) return;
+            
+            if (loading) {
+                btn.classList.add('btn-loading');
+                btn.disabled = true;
+            } else {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+            }
+        }
 
         // ============== INIT ==============
         document.addEventListener('DOMContentLoaded', () => {
@@ -2950,6 +3848,35 @@ Benefits:
             restoreSession();
             loadVacancies();
             loadTrackedVacancies();
+            
+            // Update filter counts after loading
+            setTimeout(() => {
+                updateFilterCounts();
+            }, 500);
+            
+            // Restore filter states
+            const savedFilter = localStorage.getItem('trackerFilter');
+            if (savedFilter) {
+                currentTrackerFilter = savedFilter;
+                const filterBtn = document.querySelector(`.tracker-filter[data-filter="${savedFilter}"]`);
+                if (filterBtn) {
+                    filterBtn.classList.add('active');
+                    document.querySelectorAll('.tracker-filter').forEach(btn => {
+                        if (btn !== filterBtn) btn.classList.remove('active');
+                    });
+                }
+            }
+            
+            const savedSearchMode = localStorage.getItem('searchMode');
+            if (savedSearchMode) {
+                switchSearchMode(savedSearchMode);
+            }
+            
+            const savedDaysBack = localStorage.getItem('selectedDaysBack');
+            if (savedDaysBack) {
+                setTimeRange(parseInt(savedDaysBack));
+            }
+            
             connectWS();
         });
 
@@ -3098,7 +4025,7 @@ Benefits:
             const ctx = canvas.getContext('2d');
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            const radius = 80;
+            const radius = 95;
 
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -3107,7 +4034,7 @@ Benefits:
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.strokeStyle = '#2a303a';
-            ctx.lineWidth = 8;
+            ctx.lineWidth = 12;
             ctx.stroke();
 
             // Calculate values for chart
@@ -3129,14 +4056,14 @@ Benefits:
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
                 ctx.strokeStyle = colors[i];
-                ctx.lineWidth = 8;
+                ctx.lineWidth = 12;
                 ctx.stroke();
 
                 // Draw inner arc to create doughnut effect
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, radius - 4, startAngle + sliceAngle, startAngle, true);
+                ctx.arc(centerX, centerY, radius - 6, startAngle + sliceAngle, startAngle, true);
                 ctx.strokeStyle = '#1a1d25';
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 6;
                 ctx.stroke();
 
                 startAngle += sliceAngle;
@@ -3144,14 +4071,14 @@ Benefits:
 
             // Draw center text
             ctx.fillStyle = '#7dff7d';
-            ctx.font = 'bold 18px "Share Tech Mono", monospace';
+            ctx.font = 'bold 24px "Share Tech Mono", monospace';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(total.toString(), centerX, centerY);
 
             ctx.fillStyle = '#5a6a7a';
-            ctx.font = '12px "Share Tech Mono", monospace';
-            ctx.fillText('TOTAL', centerX, centerY + 20);
+            ctx.font = '14px "Share Tech Mono", monospace';
+            ctx.fillText('TOTAL', centerX, centerY + 25);
         }
 
         // ============== TRACKER ==============
@@ -3193,18 +4120,22 @@ Benefits:
                     trackedVacancies.unshift(trackedVacancy);
                     renderTrackerList();
                     updateTrackerBadge();
+                    updateFilterCounts();
                     updateHomeStats();
+                    showToast('Vacancy added to tracker', 'success', 'Tracker Updated');
 
                     // Update button on search card
                     const btn = document.getElementById('trackBtn_' + vacancyId);
                     if (btn) {
                         btn.disabled = true;
                         btn.style.opacity = '0.5';
-                        btn.innerHTML = '📌 TRACKED';
+                        btn.style.cursor = 'not-allowed';
+                        btn.innerHTML = '✓ TRACKED';
                     }
                 }
             } catch (error) {
                 console.error('Error adding to tracker:', error);
+                showToast('Failed to add to tracker: ' + error.message, 'error', 'Add Error');
             }
         }
 
@@ -3221,12 +4152,23 @@ Benefits:
                     const idx = trackedVacancies.findIndex(v => v.id === vacancyId);
                     if (idx >= 0) {
                         trackedVacancies[idx].tracker_status = newStatus;
+                        trackedVacancies[idx].status_updated_at = new Date().toISOString();
                         renderTrackerList();
+                        updateFilterCounts();
                         updateHomeStats();
+                        const statusNames = {
+                            wishlist: 'Wishlist',
+                            applied: 'Applied',
+                            interview: 'Interview',
+                            offer: 'Offer',
+                            rejected: 'Rejected'
+                        };
+                        showToast(`Status updated to ${statusNames[newStatus] || newStatus}`, 'success', 'Status Updated');
                     }
                 }
             } catch (error) {
                 console.error('Error updating tracker status:', error);
+                showToast('Failed to update status: ' + error.message, 'error', 'Update Error');
             }
         }
 
@@ -3246,18 +4188,22 @@ Benefits:
                     // Re-render the list
                     renderTrackerList();
                     updateTrackerBadge();
+                    updateFilterCounts();
                     updateHomeStats();
+                    showToast('Vacancy removed from tracker', 'success', 'Tracker Updated');
 
                     // Update button on search card
                     const btn = document.getElementById('trackBtn_' + vacancyId);
                     if (btn) {
                         btn.disabled = false;
                         btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
                         btn.innerHTML = '📌 TRACK';
                     }
                 }
             } catch (error) {
                 console.error('Error removing from tracker:', error);
+                showToast('Failed to remove from tracker: ' + error.message, 'error', 'Remove Error');
             }
         }
 
@@ -3275,94 +4221,197 @@ Benefits:
 
         function filterTracker(filter) {
             currentTrackerFilter = filter;
+            localStorage.setItem('trackerFilter', filter);
             document.querySelectorAll('.tracker-filter').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.filter === filter);
             });
             renderTrackerList();
+            updateFilterCounts();
+        }
+        
+        function filterTrackerBySearch(query) {
+            trackerSearchQuery = query.toLowerCase().trim();
+            renderTrackerList();
+        }
+        
+        function updateFilterCounts() {
+            const counts = {
+                all: trackedVacancies.length,
+                wishlist: trackedVacancies.filter(v => v.tracker_status === 'wishlist').length,
+                applied: trackedVacancies.filter(v => v.tracker_status === 'applied').length,
+                interview: trackedVacancies.filter(v => v.tracker_status === 'interview').length,
+                offer: trackedVacancies.filter(v => v.tracker_status === 'offer').length,
+                rejected: trackedVacancies.filter(v => v.tracker_status === 'rejected').length
+            };
+            
+            Object.keys(counts).forEach(status => {
+                const badge = document.getElementById(`filterCount${status.charAt(0).toUpperCase() + status.slice(1)}`);
+                if (badge) {
+                    badge.textContent = counts[status];
+                    badge.style.display = counts[status] > 0 ? 'inline-flex' : 'none';
+                }
+            });
+        }
+        
+        function getTimeInStatus(vacancy) {
+            const dateToUse = vacancy.status_updated_at || vacancy.tracked_at;
+            if (!dateToUse) return '';
+            const statusDate = new Date(dateToUse);
+            const now = new Date();
+            const diffMs = now - statusDate;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            
+            if (diffHours < 1) return 'Just now';
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays === 1) return '1 day ago';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+            return `${Math.floor(diffDays / 30)}mo ago`;
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                wishlist: '#4a9eff',
+                applied: '#f69029',
+                interview: '#b478ff',
+                offer: '#7dff7d',
+                rejected: '#ff6060'
+            };
+            return colors[status] || '#7dff7d';
+        }
+        
+        function getStatusIcon(status) {
+            const icons = {
+                wishlist: '📌',
+                applied: '✉️',
+                interview: '🎯',
+                offer: '🎉',
+                rejected: '❌'
+            };
+            return icons[status] || '📌';
         }
 
         function renderTrackerList() {
-            const container = document.getElementById('trackerList');
+          const container = document.getElementById('trackerList');
+          if (!container) return;
 
-            let filtered = trackedVacancies;
-            if (currentTrackerFilter !== 'all') {
-                filtered = trackedVacancies.filter(v => v.tracker_status === currentTrackerFilter);
+          let filtered = trackedVacancies;
+          
+          // Apply status filter
+          if (currentTrackerFilter !== 'all') {
+            filtered = trackedVacancies.filter(v => v.tracker_status === currentTrackerFilter);
+          }
+          
+          // Apply search filter
+          if (trackerSearchQuery) {
+            filtered = filtered.filter(v => {
+              const searchText = `${v.title || ''} ${v.text || ''} ${v.channel || ''}`.toLowerCase();
+              return searchText.includes(trackerSearchQuery);
+            });
+          }
+
+          if (filtered.length === 0) {
+            const emptyMessage = trackerSearchQuery 
+              ? 'No vacancies match your search'
+              : 'NO TRACKED VACANCIES';
+            const emptyHint = trackerSearchQuery
+              ? 'Try a different search term'
+              : 'Add vacancies from Search or create custom ones';
+            container.innerHTML = `
+              <div class="tracker-empty">
+                <div style="font-size:48px;margin-bottom:16px;">${trackerSearchQuery ? '🔍' : '📋'}</div>
+                <div style="color:#7dff7d;font-size:18px;margin-bottom:8px;">${emptyMessage}</div>
+                <div style="color:#5a6a7a;font-size:14px;">${emptyHint}</div>
+              </div>`;
+            return;
+          }
+
+          const sourceIcons = { telegram:'📱', linkedin:'🔗', headhunter:'🎯', habr:'💼', custom:'📝' };
+
+          container.innerHTML = filtered.map(v => {
+            const sourceIcon = sourceIcons[v.source] || '📱';
+
+            // ── дата и preview из самой вакансии ──
+            const dateStr = v.date
+              ? new Date(v.date).toLocaleDateString('ru-RU')
+              : '';
+
+            const leadText = (v.text || '')
+              .replace(/\s+/g,' ')
+              .trim()
+              .slice(0,220) + (v.text.length > 220 ? '…' : '');
+
+            const firstLine = (v.text || '').split('\n').find(l => l.trim()) || '';
+            const shortTitle = v.title || firstLine.substring(0,60) || 'Vacancy';
+
+            // match-метр (если есть)
+            const hasRecruiterScore = v.recruiter_analysis?.match_score > 0;
+            const hasComparisonScore = v.comparison?.match_score > 0;
+            const match = hasRecruiterScore ? v.recruiter_analysis.match_score
+                        : hasComparisonScore ? v.comparison.match_score : null;
+            const matchClass = match !== null ? (match >= 70 ? 'high' : match >= 50 ? 'medium' : 'low') : 'none';
+
+            const matchMeterHTML = match !== null
+              ? `<div class="match-meter" style="margin:12px 0;">
+                   <div class="match-meter-header">
+                     <div class="match-meter-label"><span class="match-meter-icon">📈</span><span>MATCH RATE</span></div>
+                     <span class="match-meter-value ${matchClass}">${match}%</span>
+                   </div>
+                   <div class="match-meter-bar"><div class="match-meter-fill ${matchClass}" style="width:${match}%"></div></div>
+                 </div>`
+              : '';
+
+            const currentStatus = v.tracker_status || 'wishlist';
+            const statusIcon = getStatusIcon(currentStatus);
+            const timeInStatus = getTimeInStatus(v);
+            
+            // Quick action buttons - show adjacent statuses for quick navigation
+            const statusFlow = ['wishlist', 'applied', 'interview', 'offer'];
+            const currentIndex = statusFlow.indexOf(currentStatus);
+            const quickActions = [];
+            
+            if (currentIndex > 0) {
+              quickActions.push(`<button class="quick-action-btn" onclick="updateTrackerStatus('${v.id}','${statusFlow[currentIndex - 1]}')" title="Move to ${statusFlow[currentIndex - 1]}">${getStatusIcon(statusFlow[currentIndex - 1])}</button>`);
+            }
+            if (currentIndex < statusFlow.length - 1 && currentStatus !== 'rejected') {
+              quickActions.push(`<button class="quick-action-btn" onclick="updateTrackerStatus('${v.id}','${statusFlow[currentIndex + 1]}')" title="Move to ${statusFlow[currentIndex + 1]}">${getStatusIcon(statusFlow[currentIndex + 1])}</button>`);
+            }
+            if (currentStatus !== 'rejected') {
+              quickActions.push(`<button class="quick-action-btn" onclick="updateTrackerStatus('${v.id}','rejected')" title="Mark as rejected" style="color:#ff6060;">❌</button>`);
             }
 
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="tracker-empty">
-                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-                        <div style="font-size: 18px; color: #7dff7d; margin-bottom: 8px;">NO TRACKED VACANCIES</div>
-                        <div style="color: #5a6a7a; font-size: 14px;">Add vacancies from Search or create custom ones</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const sourceIcons = {
-                'telegram': '📱',
-                'linkedin': '🔗',
-                'headhunter': '🎯',
-                'habr': '💼',
-                'custom': '📝'
-            };
-
-            container.innerHTML = filtered.map(v => {
-                const sourceIcon = sourceIcons[v.source] || '📱';
-                const firstLine = (v.text || '').split('\n').find(l => l.trim()) || '';
-                const shortTitle = v.title || firstLine.substring(0, 60) || 'Vacancy';
-
-                // Match Rate from recruiter analysis or comparison
-                const hasRecruiterScore = v.recruiter_analysis && typeof v.recruiter_analysis.match_score === 'number' && v.recruiter_analysis.match_score > 0;
-                const hasComparisonScore = v.comparison && typeof v.comparison.match_score === 'number' && v.comparison.match_score > 0;
-                const match = hasRecruiterScore ? v.recruiter_analysis.match_score : (hasComparisonScore ? v.comparison.match_score : null);
-                const matchClass = match !== null ? (match >= 70 ? 'high' : match >= 50 ? 'medium' : 'low') : 'none';
-
-                const matchMeterHTML = match !== null ? `
-                    <div class="match-meter" style="margin: 12px 0;">
-                        <div class="match-meter-header">
-                            <div class="match-meter-label">
-                                <span class="match-meter-icon">📈</span>
-                                <span>MATCH RATE</span>
-                            </div>
-                            <span class="match-meter-value ${matchClass}">${match}%</span>
-                        </div>
-                        <div class="match-meter-bar">
-                            <div class="match-meter-fill ${matchClass}" style="width: ${match}%;"></div>
-                        </div>
-                    </div>
-                ` : '';
-
-                return `
-                    <div class="vacancy-card" id="tracker_${v.id}">
-                        <div class="vacancy-card-header">
-                            <div class="vacancy-card-id">
-                                <div class="vacancy-card-led ${v.tracker_status === 'offer' ? 'active' : v.tracker_status === 'rejected' ? 'archived' : 'pending'}"></div>
-                                <span class="vacancy-card-code">${sourceIcon}</span>
-                            </div>
-                            <span class="vacancy-card-source" title="${escapeHtml(v.channel || 'Unknown')}">${escapeHtml(v.channel || 'Unknown')}</span>
-                            <span class="vacancy-card-status" style="color: ${getStatusColor(v.tracker_status)}">${(v.tracker_status || 'wishlist').toUpperCase()}</span>
-                        </div>
-                        <div class="vacancy-card-body">
-                            <div class="vacancy-card-title">${escapeHtml(shortTitle)}</div>
-                            ${matchMeterHTML}
-                            <div class="vacancy-card-actions" style="grid-template-columns: 1fr auto auto;">
-                                <select onchange="updateTrackerStatus('${v.id}', this.value)" class="tracker-status-select">
-                                    <option value="wishlist" ${v.tracker_status === 'wishlist' ? 'selected' : ''}>📌 Wishlist</option>
-                                    <option value="applied" ${v.tracker_status === 'applied' ? 'selected' : ''}>✉️ Applied</option>
-                                    <option value="interview" ${v.tracker_status === 'interview' ? 'selected' : ''}>🎯 Interview</option>
-                                    <option value="offer" ${v.tracker_status === 'offer' ? 'selected' : ''}>🎉 Offer</option>
-                                    <option value="rejected" ${v.tracker_status === 'rejected' ? 'selected' : ''}>❌ Rejected</option>
-                                </select>
-                                <button class="vacancy-btn details" onclick="showTrackedDetails('${v.id}')">📋 DETAILS</button>
-                                <button class="vacancy-btn" onclick="event.stopPropagation(); removeFromTracker('${v.id}')" style="color: #ff6060; padding: 8px 12px;">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="vacancy-card-footer"></div>
-                    </div>
-                `;
-            }).join('');
+            return `
+              <div class="vacancy-card" id="tracker_${v.id}">
+                <div class="vacancy-card-header">
+                  <div class="vacancy-card-id">
+                    <div class="vacancy-card-led ${currentStatus==='offer'?'active':currentStatus==='rejected'?'archived':'pending'}"></div>
+                    <span class="vacancy-card-code">${sourceIcon}</span>
+                  </div>
+                  <span class="vacancy-card-source" title="${escapeHtml(v.channel||'Unknown')}">${escapeHtml((v.channel||'Unknown').substring(0, 20))}</span>
+                  <span class="tracker-card-date">${dateStr}</span>
+                  <span class="status-badge ${currentStatus}">${statusIcon} ${currentStatus.toUpperCase()}</span>
+                </div>
+                <div class="tracker-card-body">
+                  <div class="tracker-card-title">${escapeHtml(shortTitle)}</div>
+                  <div class="tracker-card-text">${escapeHtml(leadText)}</div>
+                  ${matchMeterHTML}
+                </div>
+                <div class="tracker-card-actions">
+                  <select onchange="updateTrackerStatus('${v.id}',this.value)" class="tracker-status-select">
+                    <option value="wishlist" ${currentStatus==='wishlist'?'selected':''}>📌 Wishlist</option>
+                    <option value="applied"  ${currentStatus==='applied' ?'selected':''}>✉️ Applied</option>
+                    <option value="interview"${currentStatus==='interview'?'selected':''}>🎯 Interview</option>
+                    <option value="offer"    ${currentStatus==='offer'   ?'selected':''}>🎉 Offer</option>
+                    <option value="rejected" ${currentStatus==='rejected'?'selected':''}>❌ Rejected</option>
+                  </select>
+                  <button class="vacancy-btn details" onclick="showTrackedDetails('${v.id}')">📋 DETAILS</button>
+                  <button class="vacancy-btn" onclick="event.stopPropagation();removeFromTracker('${v.id}')" style="padding:8px 12px;color:#ff6060;" title="Remove from tracker">🗑️</button>
+                </div>
+                <div class="vacancy-card-footer"></div>
+              </div>
+            `;
+          }).join('');
         }
 
         function showTrackedDetails(id) {
@@ -3388,12 +4437,8 @@ Benefits:
 
                 modalTitle.textContent = 'VACANCY :: ' + (currentVacancy.channel || '').substring(0, 20);
 
-                // Details tab
-                tabDetails.innerHTML = `
-                    <div style="font-family: var(--font-main); font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.7; white-space: pre-wrap;">
-                        ${escapeHtml(currentVacancy.text || 'No description')}
-                    </div>
-                `;
+                // Details tab - use async parser with API, fallback to client-side
+                parseVacancyAsync(currentVacancy.text, 'tabDetails');
 
                 // Analysis tab
                 let analysisContent = '';
@@ -3461,6 +4506,7 @@ Benefits:
 
         function switchSearchMode(mode) {
             searchMode = mode;
+            localStorage.setItem('searchMode', mode);
 
             // Update tabs
             document.getElementById('searchModeBasic').classList.toggle('active', mode === 'basic');
@@ -3475,6 +4521,7 @@ Benefits:
 
         function setTimeRange(days) {
             selectedDaysBack = days;
+            localStorage.setItem('selectedDaysBack', days.toString());
             document.getElementById('daysBackBasic').value = days;
 
             // Update button states
@@ -3791,17 +4838,53 @@ Benefits:
         }
         
         // ============== WEBSOCKET ==============
+        let wsReconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+        let wsReconnectTimeout = null;
+
         function connectWS() {
             if (ws && ws.readyState === WebSocket.OPEN) return;
 
-            ws = new WebSocket(`ws://${window.location.host}/ws`);
-            ws.onopen = () => console.log('WS connected');
-            ws.onmessage = (e) => handleWSMessage(JSON.parse(e.data));
-            ws.onclose = () => {
-                console.log('WS disconnected, will reconnect in 2s');
-                setTimeout(connectWS, 2000);
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            
+            ws.onopen = () => {
+                console.log('WS connected');
+                wsReconnectAttempts = 0;
+                if (wsReconnectAttempts === 0) {
+                    // Only show toast on initial connection or after reconnection
+                    showToast('WebSocket connected', 'success', 'Connection');
+                }
             };
-            ws.onerror = (e) => console.error('WS error:', e);
+            
+            ws.onmessage = (e) => handleWSMessage(JSON.parse(e.data));
+            
+            ws.onclose = () => {
+                console.log('WS disconnected');
+                if (wsReconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    scheduleReconnect();
+                } else {
+                    showToast('WebSocket connection failed. Please refresh the page.', 'error', 'Connection Lost');
+                }
+            };
+            
+            ws.onerror = (e) => {
+                console.error('WS error:', e);
+                if (wsReconnectAttempts === 0) {
+                    showToast('WebSocket connection error. Reconnecting...', 'warning', 'Connection');
+                }
+                scheduleReconnect();
+            };
+            
+            function scheduleReconnect() {
+                if (wsReconnectTimeout) return;
+                wsReconnectAttempts++;
+                const delay = Math.min(1000 * Math.pow(2, wsReconnectAttempts), 30000); // Exponential backoff, max 30s
+                wsReconnectTimeout = setTimeout(() => {
+                    wsReconnectTimeout = null;
+                    connectWS();
+                }, delay);
+            }
         }
 
         function ensureWSConnected() {
@@ -3935,7 +5018,7 @@ Benefits:
                 const result = await res.json();
 
                 if (result.error) {
-                    alert('Error: ' + result.error);
+                    showToast(result.error, 'error', 'Upload Failed');
                     hideResumeLoading();
                 } else {
                     resumeData = result;
@@ -3945,10 +5028,11 @@ Benefits:
                     }
                     showResumeInserted(result, true);
                     rememberResume(result, fileName, file.size || fileData.byteLength || 0);
+                    showToast('Resume uploaded and processed successfully', 'success', 'Resume Uploaded');
                 }
             } catch (e) {
                 console.error('Upload failed:', e);
-                alert('Upload failed: ' + e.message);
+                showToast('Upload failed: ' + e.message, 'error', 'Upload Error');
                 hideResumeLoading();
             }
         }
@@ -4098,6 +5182,7 @@ Benefits:
                 const exp = r.data?.experience_years || '—';
                 const uploaded = r.uploaded_at ? formatDate(r.uploaded_at) : '';
                 const isActive = r.id === activeResumeId;
+
                 return `
                     <div class="tracker-card ${isActive ? 'active' : ''}">
                         <div class="tracker-card-header">
@@ -4204,45 +5289,51 @@ Benefits:
         }
 
         function clearSavedResumes() {
-            savedResumes = [];
-            activeResumeId = null;
-            resumeData = null;
+            showConfirm(
+                'Clear Resume Library',
+                'This will remove all saved resumes from the library. This action cannot be undone.',
+                () => {
+                    savedResumes = [];
+                    activeResumeId = null;
+                    resumeData = null;
 
-            const cassette = document.getElementById('diskCassette');
-            if (cassette && cassette.classList.contains('inserted')) {
-                // Trigger eject animation
-                cassette.classList.remove('inserted', 'inserting');
-                cassette.classList.add('ejecting');
+                    const cassette = document.getElementById('diskCassette');
+                    if (cassette && cassette.classList.contains('inserted')) {
+                        // Trigger eject animation
+                        cassette.classList.remove('inserted', 'inserting');
+                        cassette.classList.add('ejecting');
 
-                setTimeout(() => {
-                    cassette.classList.remove('ejecting');
-                    const diskEmpty = document.getElementById('diskEmpty');
-                    if (diskEmpty) diskEmpty.style.display = 'flex';
-                    const ledReady = document.getElementById('ledReady');
-                    if (ledReady) ledReady.classList.remove('active', 'green');
-                    const insertBtn = document.getElementById('insertBtn');
-                    if (insertBtn) insertBtn.disabled = false;
-                    const ejectBtn = document.getElementById('ejectBtn');
-                    if (ejectBtn) ejectBtn.disabled = true;
-                    const resumeInfoCard = document.getElementById('resumeInfoCard');
-                    if (resumeInfoCard) resumeInfoCard.classList.remove('active');
-                    const diskHint = document.getElementById('diskHint');
-                    if (diskHint) diskHint.textContent = 'INSERT RESUME DISK';
-                }, 600);
-            } else {
+                        setTimeout(() => {
+                            cassette.classList.remove('ejecting');
+                            const diskEmpty = document.getElementById('diskEmpty');
+                            if (diskEmpty) diskEmpty.style.display = 'flex';
+                            const ledReady = document.getElementById('ledReady');
+                            if (ledReady) ledReady.classList.remove('active', 'green');
+                            const insertBtn = document.getElementById('insertBtn');
+                            if (insertBtn) insertBtn.disabled = false;
+                            const ejectBtn = document.getElementById('ejectBtn');
+                            if (ejectBtn) ejectBtn.disabled = true;
+                            const resumeInfoCard = document.getElementById('resumeInfoCard');
+                            if (resumeInfoCard) resumeInfoCard.classList.remove('active');
+                            const diskHint = document.getElementById('diskHint');
+                            if (diskHint) diskHint.textContent = 'INSERT RESUME DISK';
+                        }, 600);
+                    } else {
+                        const insertBtn = document.getElementById('insertBtn');
+                        if (insertBtn) insertBtn.disabled = false;
+                        const ejectBtn = document.getElementById('ejectBtn');
+                        if (ejectBtn) ejectBtn.disabled = true;
+                        const diskHint = document.getElementById('diskHint');
+                        if (diskHint) diskHint.textContent = 'INSERT RESUME DISK';
+                        const diskEmpty = document.getElementById('diskEmpty');
+                        if (diskEmpty) diskEmpty.style.display = 'flex';
+                    }
 
-                const insertBtn = document.getElementById('insertBtn');
-                if (insertBtn) insertBtn.disabled = false;
-                const ejectBtn = document.getElementById('ejectBtn');
-                if (ejectBtn) ejectBtn.disabled = true;
-                const diskHint = document.getElementById('diskHint');
-                if (diskHint) diskHint.textContent = 'INSERT RESUME DISK';
-                const diskEmpty = document.getElementById('diskEmpty');
-                if (diskEmpty) diskEmpty.style.display = 'flex';
-            }
-
-            persistSavedResumes();
-            renderSavedResumes();
+                    persistSavedResumes();
+                    renderSavedResumes();
+                    showToast('Resume library cleared', 'success', 'Library Cleared');
+                }
+            );
         }
 
         function ensureResumeStoredFromSession() {
@@ -4364,7 +5455,7 @@ Benefits:
             const source = document.querySelector('input[name="vacancySource"]:checked').value;
 
             if (text.length < 30) {
-                alert('Please enter at least 30 characters of vacancy description');
+                showToast('Please enter at least 30 characters of vacancy description', 'warning', 'Validation Error');
                 return;
             }
 
@@ -4391,6 +5482,7 @@ Benefits:
 
                 if (result.status === 'added') {
                     btnText.textContent = '✓ ADDED!';
+                    showToast('Vacancy added successfully', 'success', 'Vacancy Added');
 
                     // Server already added to tracker, just update local state
                     if (result.vacancy) {
@@ -4405,30 +5497,36 @@ Benefits:
                         switchMainTab('tracker');
                     }, 1000);
                 } else if (result.status === 'error') {
-                    alert('Error: ' + (result.error || 'Unknown error'));
+                    showToast(result.error || 'Unknown error', 'error', 'Add Vacancy Error');
                     btn.disabled = false;
                     btnText.textContent = 'ADD VACANCY';
                 }
             } catch (error) {
                 console.error('Error adding vacancy:', error);
-                alert('Failed to add vacancy: ' + error.message);
+                showToast('Failed to add vacancy: ' + error.message, 'error', 'Add Vacancy Error');
                 btn.disabled = false;
                 btnText.textContent = 'ADD VACANCY';
             }
         }
 
         async function resetAll() {
-            if (!confirm('Reset all data?')) return;
-            await fetch('/api/reset', {method: 'POST'});
-            vacancies = [];
-            document.getElementById('vacanciesGrid').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📡</div>
-                    <div class="empty-state-text">AWAITING SIGNAL...<br>PRESS SCAN TO BEGIN</div>
-                </div>
-            `;
-            document.getElementById('vacancyCount').textContent = '0';
-            updateStatsDisplay({found: 0, processed: 0, rejected: 0, suitable: 0});
+            showConfirm(
+                'Reset All Data',
+                'This will clear all vacancies, statistics, and reset the scanner. This action cannot be undone.',
+                async () => {
+                    await fetch('/api/reset', {method: 'POST'});
+                    vacancies = [];
+                    document.getElementById('vacanciesGrid').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📡</div>
+                            <div class="empty-state-text">AWAITING SIGNAL...<br>PRESS SCAN TO BEGIN</div>
+                        </div>
+                    `;
+                    document.getElementById('vacancyCount').textContent = '0';
+                    updateStatsDisplay({found: 0, processed: 0, rejected: 0, suitable: 0});
+                    showToast('All data has been reset', 'success', 'Reset Complete');
+                }
+            );
         }
         
         // ============== VACANCIES ==============
@@ -4582,7 +5680,16 @@ Benefits:
             card.className = 'vacancy-card';
             card.id = 'card_' + v.id;
 
-            // Extract short title from first line of text
+            const dateStr = v.date
+              ? new Date(v.date).toLocaleDateString('ru-RU')
+              : '';
+
+            const leadText = (v.text || '')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 320) + (v.text.length > 320 ? '…' : '');
+
+            // Extract short title from first l2ne of text
             const firstLine = (v.text || '').split('\n').find(l => l.trim()) || '';
             const shortTitle = v.title || firstLine.substring(0, 60) || 'Vacancy';
 
@@ -4593,30 +5700,30 @@ Benefits:
             const matchClass = match !== null ? (match >= 70 ? 'high' : match >= 50 ? 'medium' : 'low') : 'none';
 
             // Match meter HTML
-            const matchMeterHTML = match !== null ? `
-                <div class="match-meter">
-                    <div class="match-meter-header">
-                        <div class="match-meter-label">
-                            <span class="match-meter-icon">📈</span>
-                            <span>MATCH RATE</span>
-                        </div>
-                        <span class="match-meter-value ${matchClass}">${match}%</span>
-                    </div>
-                    <div class="match-meter-bar">
-                        <div class="match-meter-fill ${matchClass}" style="width: ${match}%;"></div>
-                    </div>
-                </div>
-            ` : `
-                <div class="match-meter pending">
-                    <div class="match-meter-header">
-                        <div class="match-meter-label">
-                            <span class="match-meter-icon">📈</span>
-                            <span>MATCH RATE</span>
-                        </div>
-                        <span class="match-meter-value none">—</span>
-                    </div>
-                </div>
-            `;
+            const matchMeterHTML = '';
+            //     <div class="match-meter">
+            //         <div class="match-meter-header">
+            //             <div class="match-meter-label">
+            //                 <span class="match-meter-icon">📈</span>
+            //                 <span>MATCH RATE</span>
+            //             </div>
+            //             <span class="match-meter-value ${matchClass}">${match}%</span>
+            //         </div>
+            //         <div class="match-meter-bar">
+            //             <div class="match-meter-fill ${matchClass}" style="width: ${match}%;"></div>
+            //         </div>
+            //     </div>
+            // ` : `
+            //     <div class="match-meter pending">
+            //         <div class="match-meter-header">
+            //             <div class="match-meter-label">
+            //                 <span class="match-meter-icon">📈</span>
+            //                 <span>MATCH RATE</span>
+            //             </div>
+            //             <span class="match-meter-value none">—</span>
+            //         </div>
+            //     </div>
+            // `;
 
             // Source icon mapping
             const sourceIcons = {
@@ -4634,15 +5741,19 @@ Benefits:
                         <div class="vacancy-card-led active"></div>
                         <span class="vacancy-card-code">${sourceIcon} #???</span>
                     </div>
+                    <div class="vacancy-card-date">${dateStr}</div>
                     <span class="vacancy-card-source" title="${escapeHtml(v.channel || 'Unknown')}">${escapeHtml(v.channel || 'Unknown')}</span>
                     <span class="vacancy-card-status">ACTIVE</span>
                 </div>
                 <div class="vacancy-card-body">
                     <div class="vacancy-card-title">${escapeHtml(shortTitle)}</div>
+                    <div class="vacancy-card-lead">${escapeHtml(leadText)}</div>
                     ${matchMeterHTML}
                     <div class="vacancy-card-actions">
                         <button class="vacancy-btn details" onclick="showDetails('${v.id}')" title="View details">📋 DETAILS</button>
-                        <button class="vacancy-btn track" onclick="addToTracker('${v.id}')" id="trackBtn_${v.id}" ${isInTracker(v.id) ? 'disabled style="opacity:0.5"' : ''} title="${isInTracker(v.id) ? 'Already tracked' : 'Add to tracker'}">📌 TRACK</button>
+                        <button class="vacancy-btn track" onclick="addToTracker('${v.id}')" id="trackBtn_${v.id}" ${isInTracker(v.id) ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} title="${isInTracker(v.id) ? 'Already tracked' : 'Add to tracker'}">
+                            ${isInTracker(v.id) ? '✓ TRACKED' : '📌 TRACK'}
+                        </button>
                         ${v.link ? `<a class="vacancy-btn open" href="${v.link}" target="_blank" title="Open original">🔗</a>` : `<button class="vacancy-btn open" disabled title="No link">🔗</button>`}
                     </div>
                 </div>
@@ -4692,11 +5803,8 @@ Benefits:
 
             document.getElementById('modalTitle').textContent = 'VACANCY :: ' + (currentVacancy.channel || '').substring(0, 20);
             
-            document.getElementById('tabDetails').innerHTML = `
-                <div style="font-family: var(--font-main); font-size: var(--font-size-sm); color: #c0c8d0; line-height: 1.7; white-space: pre-wrap;">
-                    ${escapeHtml(currentVacancy.text)}
-                </div>
-            `;
+            // Use async parser with API, fallback to client-side
+            parseVacancyAsync(currentVacancy.text, 'tabDetails');
             
             // Формируем контент для вкладки ANALYSIS
             let analysisContent = '';
@@ -4834,7 +5942,7 @@ Benefits:
 
             if (!wsConnected) {
                 console.error('improveResume: WebSocket not connected');
-                alert('WebSocket connection failed. Please refresh the page.');
+                showToast('WebSocket connection failed. Please refresh the page.', 'error', 'Connection Error');
                 return;
             }
 
@@ -4876,6 +5984,7 @@ Benefits:
                 console.error('improveResume: Error:', e);
                 stream.textContent = 'Error: ' + e;
                 btn.style.display = 'block';
+                showToast('Failed to improve resume: ' + e.message, 'error', 'Resume Improvement Error');
             }
         }
 
@@ -4919,11 +6028,11 @@ Benefits:
                     // Update card indicator
                     updateCardStage2Indicator(vacancyId, 'in_progress');
                 } else if (result.status === 'error') {
-                    alert('Error: ' + result.error);
+                    showToast(result.error, 'error', 'Analysis Error');
                 }
             } catch (e) {
                 console.error('startStage2Analysis: Error:', e);
-                alert('Failed to start analysis: ' + e.message);
+                showToast('Failed to start analysis: ' + e.message, 'error', 'Analysis Error');
             }
         }
 
@@ -4994,8 +6103,8 @@ Benefits:
                 refreshAnalysisTabContent();
             }
 
-            // Optionally show error to user
-            alert('Stage 2 analysis failed: ' + data.error);
+            // Show error to user
+            showToast('Stage 2 analysis failed: ' + data.error, 'error', 'Analysis Failed');
         }
 
         // Refresh only the Analysis tab content without switching tabs or opening modal
@@ -5350,7 +6459,7 @@ Benefits:
                 console.log('Elements found:', { stream: !!stream, comp: !!comp });
 
                 if (!comp) {
-                    alert('ERROR: resumeComparison element not found!');
+                    showToast('Resume comparison element not found', 'error', 'Display Error');
                     return;
                 }
 
@@ -5437,7 +6546,7 @@ Benefits:
 
             } catch (outerError) {
                 console.error('=== handleResumeImproved OUTER ERROR ===', outerError);
-                alert('handleResumeImproved error: ' + outerError.message);
+                showToast('Failed to display improved resume: ' + outerError.message, 'error', 'Display Error');
                 const comp = document.getElementById('resumeComparison');
                 if (comp) {
                     comp.innerHTML = `<div style="color: red; padding: 20px;">Fatal error: ${outerError.message}</div>`;
@@ -5482,17 +6591,6 @@ Benefits:
         }
 
         // ============== UTILS ==============
-        function getStatusColor(status) {
-            const colors = {
-                'wishlist': '#4a9eff',
-                'applied': '#a0c040',
-                'interview': '#f69029',
-                'offer': '#7dff7d',
-                'rejected': '#ff6060'
-            };
-            return colors[status] || '#4a9eff';
-        }
-
         function escapeHtml(t) {
             if (!t) return '';
             const d = document.createElement('div');
@@ -5537,9 +6635,313 @@ Benefits:
             if (!d) return '';
             return new Date(d).toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'});
         }
-        
+
         function formatAnalysis(t) {
             return escapeHtml(t).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        }
+
+        /**
+         * Parse vacancy text via backend API and render formatted HTML.
+         * Falls back to client-side parsing if API fails.
+         */
+        async function parseVacancyAsync(text, targetElementId) {
+            if (!text) {
+                document.getElementById(targetElementId).innerHTML = '<div class="vacancy-empty">No description</div>';
+                return;
+            }
+
+            // Show loading state
+            const target = document.getElementById(targetElementId);
+            target.innerHTML = '<div class="vacancy-loading">Parsing...</div>';
+
+            try {
+                const response = await fetch('/api/parse-vacancy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) throw new Error('API error');
+
+                const data = await response.json();
+                if (data.status === 'ok' && data.parsed) {
+                    target.innerHTML = renderParsedVacancy(data.parsed);
+                } else {
+                    throw new Error('Invalid response');
+                }
+            } catch (e) {
+                console.warn('API parse failed, using client-side parser:', e);
+                target.innerHTML = formatVacancyText(text);
+            }
+        }
+
+        /**
+         * Render parsed vacancy data from API to HTML
+         */
+        function renderParsedVacancy(parsed) {
+            let html = '<div class="vacancy-formatted">';
+
+            // Render semantics summary if available
+            if (parsed.semantics) {
+                const sem = parsed.semantics;
+                const badges = [];
+
+                if (sem.salary && sem.salary.text) {
+                    badges.push(`<span class="vacancy-badge salary">${escapeHtml(sem.salary.text)}</span>`);
+                }
+                if (sem.remote === true) {
+                    badges.push('<span class="vacancy-badge remote">Remote</span>');
+                } else if (sem.remote === false) {
+                    badges.push('<span class="vacancy-badge office">Office</span>');
+                }
+                if (sem.employment_type) {
+                    badges.push(`<span class="vacancy-badge">${escapeHtml(sem.employment_type)}</span>`);
+                }
+                if (sem.experience) {
+                    const [min, max] = sem.experience;
+                    const expText = min === max ? `${min} years` : `${min}-${max} years`;
+                    badges.push(`<span class="vacancy-badge">${expText}</span>`);
+                }
+
+                if (badges.length > 0) {
+                    html += `<div class="vacancy-badges">${badges.join('')}</div>`;
+                }
+
+                // Tech stack badges
+                if (sem.technologies && sem.technologies.length > 0) {
+                    html += '<div class="vacancy-tech-stack">';
+                    for (const tech of sem.technologies.slice(0, 15)) {
+                        html += `<span class="vacancy-tech">${escapeHtml(tech)}</span>`;
+                    }
+                    html += '</div>';
+                }
+            }
+
+            // Render sections
+            for (const section of parsed.sections || []) {
+                if (section.is_intro) {
+                    html += `<div class="vacancy-intro">`;
+                    html += renderSectionItems(section.items);
+                    html += `</div>`;
+                } else {
+                    html += `<div class="vacancy-section" data-confidence="${section.confidence}">`;
+                    html += `<div class="vacancy-section-header">${section.icon} ${escapeHtml(section.title)}</div>`;
+                    html += `<div class="vacancy-section-content">`;
+                    html += renderSectionItems(section.items);
+                    html += `</div></div>`;
+                }
+            }
+
+            // Contacts section at the bottom
+            if (parsed.semantics && parsed.semantics.contacts && parsed.semantics.contacts.length > 0) {
+                html += '<div class="vacancy-contacts-section">';
+                html += '<div class="vacancy-contacts-header">📇 Contacts</div>';
+                html += '<div class="vacancy-contacts-list">';
+                for (const contact of parsed.semantics.contacts) {
+                    const icon = contact.icon || '📎';
+                    const label = contact.label ? `<span class="contact-label">${escapeHtml(contact.label)}</span>` : '';
+                    const typeClass = `contact-${contact.type}`;
+
+                    if (contact.url) {
+                        html += `<a href="${escapeHtml(contact.url)}" target="_blank" class="vacancy-contact ${typeClass}">
+                            <span class="contact-icon">${icon}</span>
+                            <span class="contact-value">${escapeHtml(contact.display || contact.value)}</span>
+                            ${label}
+                        </a>`;
+                    } else {
+                        html += `<span class="vacancy-contact ${typeClass}">
+                            <span class="contact-icon">${icon}</span>
+                            <span class="contact-value">${escapeHtml(contact.display || contact.value)}</span>
+                            ${label}
+                        </span>`;
+                    }
+                }
+                html += '</div></div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        /**
+         * Render section items (list or paragraphs)
+         */
+        function renderSectionItems(items) {
+            if (!items || items.length === 0) return '';
+
+            // Check if items look like a list (most have short single-line content)
+            const listLike = items.filter(i => !i.text.includes('\n') && i.text.length < 200).length > items.length / 2;
+
+            if (listLike && items.length > 1) {
+                let html = '<ul class="vacancy-list">';
+                for (const item of items) {
+                    html += `<li>${formatInlineText(item.text)}</li>`;
+                }
+                html += '</ul>';
+                return html;
+            } else {
+                let html = '';
+                for (const item of items) {
+                    // Handle multi-line items
+                    const lines = item.text.split('\n');
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            html += `<p class="vacancy-paragraph">${formatInlineText(line)}</p>`;
+                        }
+                    }
+                }
+                return html;
+            }
+        }
+
+        /**
+         * Synchronous client-side vacancy parser (fallback)
+         * Used when API is unavailable
+         */
+        function formatVacancyText(text) {
+            if (!text) return '<div class="vacancy-empty">No description</div>';
+
+            // Section header patterns (Russian + English)
+            const sectionPatterns = [
+                { regex: /^(требования|requirements?|что нужно|что мы ждём|что мы ждем|необходимые навыки|обязательные требования|must have|hard skills?|ключевые навыки|навыки|skills?)[\s:]*$/im, title: 'Requirements', icon: '📋' },
+                { regex: /^(обязанности|задачи|responsibilities|job responsibilities|что предстоит|чем предстоит заниматься|чем будете заниматься|что нужно будет делать|основные задачи|duties)[\s:]*$/im, title: 'Responsibilities', icon: '💼' },
+                { regex: /^(о компании|о нас|about( the)? company|about us|кто мы|company|компания)[\s:]*$/im, title: 'About Company', icon: '🏢' },
+                { regex: /^(о (вакансии|позиции|работе)|about( the)? (job|position|role)|описание (вакансии|позиции))[\s:]*$/im, title: 'About Position', icon: '📝' },
+                { regex: /^(условия|мы предлагаем|что предлагаем|benefits?|compensation( and benefits)?|perks|мы гарантируем|наше предложение|бонусы|плюшки|what we offer)[\s:]*$/im, title: 'Benefits', icon: '🎁' },
+                { regex: /^(будет плюсом|nice to have|preferred|желательно|дополнительно|преимуществом будет|preferred qualifications?|бонусом будет)[\s:]*$/im, title: 'Nice to Have', icon: '⭐' },
+                { regex: /^(стек|технологии|tech stack|technologies|инструменты|tools)[\s:]*$/im, title: 'Tech Stack', icon: '🛠️' },
+                { regex: /^(контакты?|откликнуться|contact|apply|how to apply|как откликнуться|отклик)[\s:]*$/im, title: 'Contact', icon: '📧' },
+                { regex: /^(зарплата|оплата|salary|compensation|вознаграждение|оклад)[\s:]*$/im, title: 'Salary', icon: '💰' },
+                { regex: /^(опыт работы|experience|требуемый опыт)[\s:]*$/im, title: 'Experience', icon: '📈' },
+                { regex: /^(локация|формат|location|work format|график|режим работы|место работы)[\s:]*$/im, title: 'Work Format', icon: '📍' },
+                { regex: /^(команда|team|о команде|about team)[\s:]*$/im, title: 'Team', icon: '👥' },
+            ];
+
+            // Normalize and split
+            let processed = text.replace(/\r\n/g, '\n').trim();
+            const lines = processed.split('\n');
+            let sections = [];
+            let currentSection = { title: null, icon: '📄', content: [] };
+
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+
+                if (!trimmedLine) {
+                    if (currentSection.content.length > 0) {
+                        currentSection.content.push('');
+                    }
+                    continue;
+                }
+
+                let foundSection = false;
+                for (const pattern of sectionPatterns) {
+                    if (pattern.regex.test(trimmedLine)) {
+                        if (currentSection.content.length > 0 || currentSection.title) {
+                            sections.push(currentSection);
+                        }
+                        currentSection = { title: pattern.title, icon: pattern.icon, content: [] };
+                        foundSection = true;
+                        break;
+                    }
+                }
+
+                if (!foundSection) {
+                    currentSection.content.push(trimmedLine);
+                }
+            }
+
+            if (currentSection.content.length > 0 || currentSection.title) {
+                sections.push(currentSection);
+            }
+
+            // Build HTML
+            let html = '<div class="vacancy-formatted">';
+            for (const section of sections) {
+                if (section.title) {
+                    html += `<div class="vacancy-section">`;
+                    html += `<div class="vacancy-section-header">${section.icon} ${escapeHtml(section.title)}</div>`;
+                    html += `<div class="vacancy-section-content">${formatSectionContent(section.content)}</div>`;
+                    html += `</div>`;
+                } else {
+                    html += `<div class="vacancy-intro">${formatSectionContent(section.content)}</div>`;
+                }
+            }
+            html += '</div>';
+            return html;
+        }
+
+        /**
+         * Format section content with proper list handling
+         */
+        function formatSectionContent(lines) {
+            if (!lines || lines.length === 0) return '';
+
+            let html = '';
+            let listItems = [];
+            const bulletPattern = /^[\-•◆●○▪▸►★✓✔☑︎\*·]\s+(.*)$/;
+            const numberedPattern = /^\d+[\.\)]\s+(.*)$/;
+
+            const flushList = () => {
+                if (listItems.length > 0) {
+                    html += '<ul class="vacancy-list">';
+                    for (const item of listItems) {
+                        html += `<li>${formatInlineText(item)}</li>`;
+                    }
+                    html += '</ul>';
+                    listItems = [];
+                }
+            };
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    flushList();
+                    continue;
+                }
+
+                let match = trimmed.match(bulletPattern) || trimmed.match(numberedPattern);
+                if (match) {
+                    listItems.push(match[1]);
+                } else {
+                    flushList();
+                    html += `<p class="vacancy-paragraph">${formatInlineText(trimmed)}</p>`;
+                }
+            }
+            flushList();
+            return html;
+        }
+
+        /**
+         * Format inline text with bold, links, hashtags, etc.
+         */
+        function formatInlineText(text) {
+            if (!text) return '';
+
+            let result = escapeHtml(text);
+
+            // Bold: **text** or __text__
+            result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            result = result.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+            // Italic: *text* or _text_
+            result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+
+            // Hashtags: #Tag
+            result = result.replace(/#(\w+)/g, '<span class="vacancy-tag">#$1</span>');
+
+            // Email
+            result = result.replace(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1" class="vacancy-link">$1</a>');
+
+            // URLs
+            result = result.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" class="vacancy-link">$1</a>');
+
+            // Telegram: @username
+            result = result.replace(/@([a-zA-Z][a-zA-Z0-9_]{4,})/g, '<a href="https://t.me/$1" target="_blank" class="vacancy-link">@$1</a>');
+
+            // Salary
+            result = result.replace(/(\$\d[\d\s,]*|\d[\d\s,]*\$|\d[\d\s,]*\s*(USD|EUR|RUB|руб|₽|€))/gi, '<span class="vacancy-salary">$1</span>');
+
+            return result;
         }
     </script>
 

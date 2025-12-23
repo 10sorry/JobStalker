@@ -1,18 +1,15 @@
-"""
-Vacancy Monitor Bot - Main Module
-
-Handles Telegram channel monitoring and vacancy processing.
-Uses centralized state management for thread-safety.
-"""
 import asyncio
-import os
+import sys
 import logging
 import uuid
 from datetime import datetime, timedelta
+from pathlib import Path
 from pyrogram import Client, filters
 from pyrogram.handlers import MessageHandler
 
 from .config import API_ID, API_HASH, SESSION_NAME
+
+DATA_DIR = Path("data")
 from .db import init_db, is_forwarded, mark_forwarded
 from .ml_filter import ml_interesting_async, recruiter_analysis, RESUME_DATA
 from .vacancy_storage import update_vacancy
@@ -21,24 +18,25 @@ from .state import get_state
 # Logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    datefmt='%H:%M:%S'
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S",
 )
 log = logging.getLogger("main")
 
-# Web UI imports
 from .web_ui import (
-    broadcast_vacancy, broadcast_status, broadcast_progress,
-    update_stats, get_current_settings, broadcast_message
+    broadcast_vacancy,
+    broadcast_status,
+    broadcast_progress,
+    update_stats,
+    get_current_settings,
+    broadcast_message,
 )
 
-# Semaphore for parallel analysis
 CONCURRENT_ANALYSIS = 3
 analysis_semaphore = asyncio.Semaphore(CONCURRENT_ANALYSIS)
 
 
 def is_message_recent(message_date, days_back: int) -> bool:
-    """Check if message is within the time window"""
     if not message_date:
         return True
     cutoff = datetime.now() - timedelta(days=days_back)
@@ -46,7 +44,6 @@ def is_message_recent(message_date, days_back: int) -> bool:
 
 
 class Stats:
-    """Statistics counter"""
     def __init__(self):
         self.processed = 0
         self.rejected = 0
@@ -64,20 +61,14 @@ stats = Stats()
 
 
 async def run_stage2_async(vacancy_id: str, vacancy_text: str):
-    """Stage 2: Async recruiter analysis (non-blocking)
-
-    DEPRECATED: Stage 2 is now triggered manually via the "Ask Recruiter" button in the UI.
-    This function is kept for backwards compatibility but is no longer called from the scan process.
-    See /api/stage2/start in web_ui.py for the new implementation.
-    """
     try:
-        if not RESUME_DATA or 'raw_text' not in RESUME_DATA:
+        if not RESUME_DATA or "raw_text" not in RESUME_DATA:
             log.info(f"Stage 2 skipped for {vacancy_id[:8]}: no resume loaded")
             return
 
         log.info(f"Stage 2: Starting async recruiter analysis for {vacancy_id[:8]}...")
 
-        ra = await recruiter_analysis(vacancy_text, RESUME_DATA['raw_text'])
+        ra = await recruiter_analysis(vacancy_text, RESUME_DATA["raw_text"])
 
         if ra and ra.match_score > 0:
             recruiter_data = {
@@ -88,20 +79,21 @@ async def run_stage2_async(vacancy_id: str, vacancy_text: str):
                 "risks": ra.risks,
                 "recommendations": ra.recommendations,
                 "verdict": ra.verdict,
-                "cover_letter_hint": ra.cover_letter_hint
+                "cover_letter_hint": ra.cover_letter_hint,
             }
 
-            # Save to file
-            update_vacancy(vacancy_id, {
-                "recruiter_analysis": recruiter_data,
-                "comparison": {"match_score": ra.match_score}
-            })
+            update_vacancy(
+                vacancy_id,
+                {
+                    "recruiter_analysis": recruiter_data,
+                    "comparison": {"match_score": ra.match_score},
+                },
+            )
 
-            # Send update to UI
             update_msg = {
                 "type": "vacancy_update",
                 "vacancy_id": vacancy_id,
-                "recruiter_analysis": recruiter_data
+                "recruiter_analysis": recruiter_data,
             }
             await broadcast_message(update_msg)
             log.info(f"Stage 2 done for {vacancy_id[:8]}: match_score={ra.match_score}")
@@ -116,14 +108,12 @@ async def run_stage2_async(vacancy_id: str, vacancy_text: str):
 
 
 def keyword_filter_check(text: str, keyword_filter: str) -> bool:
-    """Check if message matches keyword filter (case-insensitive)"""
     if not keyword_filter.strip():
-        return True  # No keyword filter = accept all
+        return True
 
-    keywords = [kw.strip().lower() for kw in keyword_filter.split(',') if kw.strip()]
+    keywords = [kw.strip().lower() for kw in keyword_filter.split(",") if kw.strip()]
     text_lower = text.lower()
 
-    # At least one keyword should be present in the text
     for keyword in keywords:
         if keyword in text_lower:
             return True
@@ -132,7 +122,6 @@ def keyword_filter_check(text: str, keyword_filter: str) -> bool:
 
 
 async def process_message(message, channel_title: str) -> bool:
-    """Process single message"""
     async with analysis_semaphore:
         chat_id = message.chat.id
         msg_id = message.id
@@ -145,26 +134,25 @@ async def process_message(message, channel_title: str) -> bool:
         update_stats(found=stats.found)
 
         try:
-            # Get current settings to determine search mode
             settings = get_current_settings()
             search_mode = settings.get("search_mode", "basic")
             keyword_filter = settings.get("keyword_filter", "")
 
-            # Apply filtering based on search mode
             if search_mode == "basic":
-                # Basic mode: keyword filtering only
                 if not keyword_filter_check(text, keyword_filter):
                     stats.rejected += 1
                     update_stats(rejected=stats.rejected)
                     log.info(f"Keyword filtered: {chat_id}:{msg_id}")
                     return False
 
-                # If keyword filter passes, create vacancy with basic analysis
                 result_suitable = True
-                analysis_text = f"Matched keyword filter: {keyword_filter}" if keyword_filter else "Basic mode: accepted"
+                analysis_text = (
+                    f"Matched keyword filter: {keyword_filter}"
+                    if keyword_filter
+                    else "Basic mode: accepted"
+                )
 
             else:
-                # Advanced mode: AI-based filtering
                 result = await ml_interesting_async(text)
                 result_suitable = result.suitable
                 analysis_text = result.analysis
@@ -178,11 +166,14 @@ async def process_message(message, channel_title: str) -> bool:
                 log.info(f"Rejected: {chat_id}:{msg_id}")
                 return False
 
-            # Suitable! Show card immediately
             stats.suitable += 1
             update_stats(suitable=stats.suitable)
 
-            link = f"https://t.me/{message.chat.username}/{message.id}" if message.chat.username else None
+            link = (
+                f"https://t.me/{message.chat.username}/{message.id}"
+                if message.chat.username
+                else None
+            )
 
             vacancy_id = str(uuid.uuid4())
             vacancy = {
@@ -192,19 +183,14 @@ async def process_message(message, channel_title: str) -> bool:
                 "date": str(message.date),
                 "link": link,
                 "analysis": analysis_text,
-                "is_new": True
+                "is_new": True,
             }
 
             log.info(f"Found: {channel_title}")
 
-            # Send card to UI immediately (without waiting for Stage 2)
             await broadcast_vacancy(vacancy)
 
-            # Mark as processed
             await mark_forwarded(chat_id, msg_id)
-
-            # Stage 2 is now triggered manually via "Ask Recruiter" button in the UI
-            # Auto-stage2 removed from scan process
 
             return True
 
@@ -216,12 +202,11 @@ async def process_message(message, channel_title: str) -> bool:
 
 
 async def start_bot():
-    """Main bot function"""
     from .telegram_auth import is_authorized
     from .config import validate_config
+
     state = get_state()
 
-    # Validate configuration
     try:
         validate_config()
     except RuntimeError as e:
@@ -229,20 +214,18 @@ async def start_bot():
         await broadcast_status(f"Error: {e}", "Warning")
         return
 
-    # Check authorization before starting
     if not await is_authorized():
         log.warning("Not authorized! Open web interface for authorization")
         await broadcast_status("Telegram authorization required", "Warning")
         return
 
     await init_db()
-    os.makedirs("./data", exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     settings = get_current_settings()
     days_back = settings.get("days_back", 7)
     channels = settings.get("channels", [])
 
-    # Check that channels are configured
     if not channels or len(channels) == 0:
         log.error("No channels configured!")
         await broadcast_status("Configure channels in settings", "Warning")
@@ -253,7 +236,7 @@ async def start_bot():
 
     stats.reset()
 
-    app = Client(SESSION_NAME, api_id=API_ID, api_hash=API_HASH, workdir="./data")
+    app = Client(SESSION_NAME, api_id=API_ID, api_hash=API_HASH, workdir=str(DATA_DIR))
 
     async with app:
         log.info("Bot started")
@@ -262,22 +245,20 @@ async def start_bot():
         total_channels = len(channels)
 
         for idx, channel in enumerate(channels):
-            # Check monitoring flag
             if not state.monitoring_active:
                 log.info("Stopped")
                 break
 
             try:
                 chat = await app.get_chat(channel)
-                log.info(f"[{idx+1}/{total_channels}] {chat.title}")
+                log.info(f"[{idx + 1}/{total_channels}] {chat.title}")
                 await broadcast_status(f"{chat.title}", "Channel")
 
                 progress = int((idx / total_channels) * 100)
                 await broadcast_progress(progress, total_channels - idx)
 
-                # Collect messages
                 messages = []
-                async for message in app.get_chat_history(chat.id, limit=100):
+                async for message in app.get_chat_history(chat.id, limit=600):
                     if not state.monitoring_active:
                         break
                     if not is_message_recent(message.date, days_back):
@@ -286,17 +267,17 @@ async def start_bot():
                         continue
                     messages.append((message, chat.title))
 
-                # Parallel processing
                 if messages:
-                    await broadcast_status(f"Analyzing {len(messages)} messages...", "Robot")
+                    await broadcast_status(
+                        f"Analyzing {len(messages)} messages...", "Robot"
+                    )
 
                     tasks = [process_message(m, t) for m, t in messages]
 
-                    # Process in batches
                     for i in range(0, len(tasks), 5):
                         if not state.monitoring_active:
                             break
-                        batch = tasks[i:i+5]
+                        batch = tasks[i : i + 5]
                         await asyncio.gather(*batch, return_exceptions=True)
                         await asyncio.sleep(0.1)
 
@@ -310,7 +291,6 @@ async def start_bot():
         await broadcast_progress(100, 0)
         await broadcast_status(f"Found {stats.suitable} vacancies", "Done")
 
-        # Real-time monitoring
         if state.monitoring_active:
             log.info("Monitoring...")
             await broadcast_status("Monitoring for new...", "Eyes")
@@ -323,11 +303,9 @@ async def start_bot():
                 chat_id = str(message.chat.id)
                 chat_username = message.chat.username
 
-                # Get current channel list from settings
                 settings = get_current_settings()
                 current_channels = settings.get("channels", [])
 
-                # Check if this is our channel
                 is_our_channel = False
                 for ch in current_channels:
                     if str(ch) == chat_id or ch == chat_username:
@@ -337,7 +315,6 @@ async def start_bot():
                 if is_our_channel:
                     await process_message(message, message.chat.title)
 
-            # Wait while active
             while state.monitoring_active:
                 await asyncio.sleep(1)
 
@@ -349,4 +326,6 @@ async def main():
 
 
 if __name__ == "__main__":
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main())
